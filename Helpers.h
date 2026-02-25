@@ -102,7 +102,7 @@ void NormalizeHist(TH3 *h)
 
 double eta_to_theta(double eta1, double eta2)
 {
-  return fabs(-2 * atan(exp(-eta1)) + 2 * atan(exp(-eta2)));
+  return std::fabs(-2 * atan(exp(-eta1)) + 2 * atan(exp(-eta2)));
 }
 
 template <typename T>
@@ -120,7 +120,7 @@ double getLargestAngle(double etaMin, double etaMax)
   double smallest_eta;
   if (etaMin < 0 && etaMax > 0)
     smallest_eta = 0;
-  else if (fabs(etaMin) < fabs(etaMax))
+  else if (std::fabs(etaMin) < std::fabs(etaMax))
     smallest_eta = etaMin;
   else
     smallest_eta = etaMax;
@@ -224,7 +224,7 @@ double GetPullPerformance(TH2 *hpull, double sigma)
       double content = hpull->GetBinContent(i, j);
       if (content == 0)
         continue;
-      if (fabs(content) < sigma)
+      if (std::fabs(content) < sigma)
         num++;
       denom++;
     }
@@ -316,7 +316,7 @@ double GetWeightedAverage(TH2D *h2)
     for (int j = 1; j < h2->GetNbinsY() + 1; j++)
     {
       double weight = 1. / h2->GetBinError(i, j);
-      double val = fabs(h2->GetBinContent(i, j) - 1.);
+      double val = std::fabs(h2->GetBinContent(i, j) - 1.);
       if (val == 1.)
         continue;
       num += val * weight;
@@ -334,7 +334,7 @@ double GetWeightedAverage(TH1D *h1)
   for (int i = 1; i < h1->GetNbinsX() + 1; i++)
   {
     double weight = 1. / h1->GetBinError(i);
-    double val = fabs(h1->GetBinContent(i) - 1.);
+    double val = std::fabs(h1->GetBinContent(i) - 1.);
     if (val == 1.)
       continue;
     num += val * weight;
@@ -353,7 +353,7 @@ double GetWeightedAverage(TH2D *h2, TH2D *h2_weight)
   {
     for (int j = 1; j < h2->GetNbinsY() + 1; j++)
     {
-      double val = fabs(h2->GetBinContent(i, j));
+      double val = std::fabs(h2->GetBinContent(i, j));
       double weight = h2_weight->GetBinContent(i, j) / h2_weight->GetBinError(i, j);
       if (val == 100.)
         continue;
@@ -632,7 +632,7 @@ void SmearObservables(TH1 *h1, TH1 *h1_data, TRandom3 *myRNG)
 
 void SmearDtrPt(TLorentzVector &dtr, double charge, double id, TRandom3 *myRNG)
 {
-  if (fabs(charge) > 0)
+  if (std::fabs(charge) > 0)
   {
     double rand = myRNG->Gaus(1, 0.03);
     dtr.SetPxPyPzE(dtr.Px() * rand,
@@ -681,7 +681,7 @@ bool DropFSPHist(TLorentzVector dtr, TH2 *h2, TRandom3 *myUniform)
   int pbin = h2->GetXaxis()->FindBin(dtr.P());
   int etabin = h2->GetYaxis()->FindBin(dtr.Eta());
   double ratio = h2->GetBinContent(pbin, etabin);
-  double prob_trk = fabs(ratio - 1.);
+  double prob_trk = std::fabs(ratio - 1.);
   if (rand < prob_trk)
     return true;
   else
@@ -725,8 +725,8 @@ void MakeHistPositive(TH1 *h1)
 
 int SampleTH1(TH1D *hist, TRandom3 *randomGenerator)
 {
-  int numBins = hist->GetNbinsX();
-  double cumulativeProbabilities[numBins + 1];
+  const int numBins = hist->GetNbinsX();
+  double cumulativeProbabilities[(const int) numBins + 1];
 
   // Fill the array with cumulative probabilities
   cumulativeProbabilities[0] = 0.0;

@@ -18,25 +18,15 @@ using namespace std;
 void MakeVarTree(int NumEvts_user = -1,
                  int dataset = 91599,
                  bool isData = true,
-                 //bool DoJER = false,
-                 //bool DoJES = false,
                  bool DoJESJER = false,
                  bool DoJetID = false,
-                 bool L0MuonDiMuon = false,
-                 bool onlysim9 = false)
+                 bool L0MuonDiMuon = false)
 {
 
     int NumEvts = NumEvts_user;
     int NumEvtsTruth = NumEvts_user;
     bool MCflag = !isData;
-    followHardest = false;
-    truthLevel = false;
-
-    if (truthLevel)
-    {
-        ghostCut = false;
-    }
-
+    
     int year = (dataset / 10000) % 10;
     int JetMeth = (dataset / 1000) % 10;
     int flavor = (dataset / 100) % 10;
@@ -67,7 +57,6 @@ void MakeVarTree(int NumEvts_user = -1,
     else if (flavor == 1)
     {
         mass_num = 0.001;
-        followHardest = true;
     }
 
     //
@@ -103,24 +92,15 @@ void MakeVarTree(int NumEvts_user = -1,
         str_level = "data";
     else
     {
-        if (truthLevel)
-            str_level = "truth";
-        else
-            str_level = "reco";
+        str_level = "reco";
     }
 
     if (flavor == 1)
         str_followHard = "_hard";
     else
     {
-        if (followHardest)
-            str_followHard = "_hard";
-        else
-            str_followHard = "_HF";
+        str_followHard = "_HF";
     }
-
-    if (ghostCut)
-        str_ghost = Form("_ghost_%.1f", ghostProb);
 
     TString str_L0 = "";
     if (L0MuonDiMuon)

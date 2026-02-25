@@ -1,6 +1,5 @@
 void CreateTree(TString particle = "B")
 {
-
 	TChain *t = new TChain("Jets/DecayTree");
 	if (particle == "B")
 	{
