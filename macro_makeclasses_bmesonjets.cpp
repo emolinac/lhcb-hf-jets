@@ -15,6 +15,7 @@ void macro_makeclasses_bmesonjets()
         // sim_mc->Add((input_folder + "Bjet_MC_Jpsi2MuMu_HighPT_2016_Sim09k_MU_02092025_full.root").c_str());
         // sim_mc->Add((input_folder + "Bjet_MC_Jpsi2MuMu_HighPT_2016_Sim09l_MU_02092025_full.root").c_str());
         // sim_mc->Add((input_folder + "Bjet_MC_Jpsi2MuMu_HighPT_2016_Sim10a_MU_02092025_full.root").c_str());
+        
         // sim_mc->Add((input_folder + "Bjet_MC_Jpsi2MuMu_HighPT_2017_Sim09h_MD_02092025_full.root").c_str());
         // sim_mc->Add((input_folder + "Bjet_MC_Jpsi2MuMu_HighPT_2017_Sim09h_MU_02092025_full.root").c_str());
         // sim_mc->Add((input_folder + "Bjet_MC_Jpsi2MuMu_HighPT_2017_Sim09i_MD_02092025_full.root").c_str());
@@ -23,13 +24,14 @@ void macro_makeclasses_bmesonjets()
         // sim_mc->Add((input_folder + "Bjet_MC_Jpsi2MuMu_HighPT_2017_Sim09k_MU_02092025_full.root").c_str());
         // sim_mc->Add((input_folder + "Bjet_MC_Jpsi2MuMu_HighPT_2017_Sim09l_MD_02092025_full.root").c_str());
         // sim_mc->Add((input_folder + "Bjet_MC_Jpsi2MuMu_HighPT_2017_Sim09l_MU_02092025_full.root").c_str());
-        // sim_mc->Add((input_folder + "Bjet_MC_Jpsi2MuMu_HighPT_2017_Sim10a_MD_02092025_full.root").c_str());
+        sim_mc->Add((input_folder + "Bjet_MC_Jpsi2MuMu_HighPT_2017_Sim10a_MD_02092025_full.root").c_str());
         // sim_mc->Add((input_folder + "Bjet_MC_Jpsi2MuMu_HighPT_2017_Sim10a_MU_02092025_full.root").c_str());
+
         // sim_mc->Add((input_folder + "Bjet_MC_Jpsi2MuMu_HighPT_2018_Sim09h_MD_02092025_full.root").c_str());
         // sim_mc->Add((input_folder + "Bjet_MC_Jpsi2MuMu_HighPT_2018_Sim09h_MU_02092025_full.root").c_str());
         // sim_mc->Add((input_folder + "Bjet_MC_Jpsi2MuMu_HighPT_2018_Sim09i_MD_02092025_full.root").c_str());
         // sim_mc->Add((input_folder + "Bjet_MC_Jpsi2MuMu_HighPT_2018_Sim09i_MU_02092025_full.root").c_str());
-        sim_mc->Add((input_folder + "Bjet_MC_Jpsi2MuMu_HighPT_2018_Sim09k_MD_02092025_full.root").c_str());
+        // sim_mc->Add((input_folder + "Bjet_MC_Jpsi2MuMu_HighPT_2018_Sim09k_MD_02092025_full.root").c_str());
         // sim_mc->Add((input_folder + "Bjet_MC_Jpsi2MuMu_HighPT_2018_Sim09k_MU_02092025_full.root").c_str());
         // sim_mc->Add((input_folder + "Bjet_MC_Jpsi2MuMu_HighPT_2018_Sim09l_MD_02092025_full.root").c_str());
         // sim_mc->Add((input_folder + "Bjet_MC_Jpsi2MuMu_HighPT_2018_Sim09l_MU_02092025_full.root").c_str());

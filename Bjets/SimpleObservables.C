@@ -143,7 +143,7 @@ void SimpleObservables(int NumEvts = -1, int dataset = 91599,
   extension_RootFilesMC = TString("../../root_files/BjetsMC/");
   extension_RootFiles = isData ?  TString("../../root_files/Bjets/") : extension_RootFilesMC;
     
-  eff_path = TString( "../../Effs/");
+  eff_path = TString( "./efficiencies/");
     
   float minimum_dR = 0.1;
 
@@ -237,8 +237,8 @@ void SimpleObservables(int NumEvts = -1, int dataset = 91599,
   extension_trig_MC = "jpsieff_reco_ev_-1_b_PID" + str_L0 + "_91599.root";
   extension_trig_Data = "jpsieff_data_ev_-1_b_PID" + str_L0 + "_91599.root";
 
-  TFile file_trigeffMC("../../Effs/TrigEff/MC/" + extension_trig_MC, "READ");
-  TFile file_trigeffData("../../Effs/TrigEff/data/" + extension_trig_Data, "READ");
+  TFile file_trigeffMC("./efficiencies/TrigEff/MC/" + extension_trig_MC, "READ");
+  TFile file_trigeffData("./efficiencies/TrigEff/data/" + extension_trig_Data, "READ");
 
   h2_trigeff_Data = (TH2D *)file_trigeffData.Get("efficiency_Jpsiptrap");
   h2_trigeff_MC = (TH2D *)file_trigeffMC.Get("efficiency_Jpsiptrap");

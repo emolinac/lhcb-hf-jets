@@ -141,7 +141,7 @@ void JpsiTrigEff(int NumEvts_user = -1, int dataset = 91599,
     vec_datasets = {61590, 61591, 71590, 71591, 81590, 81591};
 
 
-  TString extension_rootFiles = isData ? "../../Effs/TrigEff/data/" : "../../Effs/TrigEff/MC/";
+  TString extension_rootFiles = isData ? "./efficiencies/TrigEff/data/" : "./efficiencies/TrigEff/MC/";
   TString extension_tree = isData ? "../../root_files/Bjets/" : "../../root_files/BjetsMC/";
   TString extension_plots = isData ? "../../plots/Bjets/" : "../../plots/BjetsMC/";
 
@@ -519,8 +519,8 @@ void JpsiTrigEff(int NumEvts_user = -1, int dataset = 91599,
     for (int j = 0; j < Jpsietabinsize; j++)
     {
       int i = j1 * Jpsietabinsize + j;
-      TFile *file_workspacenum = new TFile(Form("../../Effs/TrigEff/MC/workspacenum%d_", i) + extension_reco + ".root", "READ");
-      TFile *file_workspacedenom = new TFile(Form("../../Effs/TrigEff/MC/workspacedenom%d_", i) + extension_reco + ".root", "READ");
+      TFile *file_workspacenum = new TFile(Form("./efficiencies/TrigEff/MC/workspacenum%d_", i) + extension_reco + ".root", "READ");
+      TFile *file_workspacedenom = new TFile(Form("./efficiencies/TrigEff/MC/workspacedenom%d_", i) + extension_reco + ".root", "READ");
 
       RooWorkspace *w_readnum = (RooWorkspace *)file_workspacenum->Get(Form("workspacenum%d", i));
       RooWorkspace *w_readdenom = (RooWorkspace *)file_workspacedenom->Get(Form("workspacedenom%d", i));
@@ -862,7 +862,7 @@ void JpsiTrigEff(int NumEvts_user = -1, int dataset = 91599,
   TFile *file_trigeffMC;
   if (isData)
   {
-    file_trigeffMC = new TFile("../../Effs/TrigEff/MC/" + extension_trig_MC + ".root", "READ");
+    file_trigeffMC = new TFile("./efficiencies/TrigEff/MC/" + extension_trig_MC + ".root", "READ");
     // TFile file_trigeffData("hists/" + extension_trig_Data + ".root", "READ");
 
     // h2_trigeff_Data = (TH2D *)file_trigeffData.Get("efficiency_Jpsiptrap");
