@@ -1,25 +1,28 @@
-
-
-// #include "AnalyzeDijetData_withsubsets.h"
-// #include "LundPlaneData.h"
-
-#include "./BjetTree.C" 
 #include <TCanvas.h>
 #include <vector>
 #include <iostream>
-#include "Settings.h"
-#include "../Helpers.h"
-//#include "fastjet/ClusterSequence.hh"
-//#include "fastjet/contrib/SoftDrop.hh"
-//// #include "../RooHelpers.h"
 
+#include "fastjet/ClusterSequence.hh"
+// #include "fastjet/contrib/SoftDrop.hh"
+
+#include "Settings.h"
+
+#include "../Helpers_IC.h"
+#include "../include/analysis-constants.h"
+#include "../include/analysis-binning.h"
+#include "../include/analysis-cuts.cpp"
+#include "../include/analysis-cuts.h"
+#include "../include/directories.h"
+#include "../include/TBJetsMCReco.h"
+#include "../include/TBJetsMCReco.C"
+
+using namespace fastjet;
 using namespace std;
 
 void MakeVarTree(int NumEvts_user = -1,
-                 int dataset = 91599,
                  int year = 6, // 2016
-                 int Mag = 1; // 1 up, -1 down
-                 bool isData = true,
+                 int Mag = 1, // 1 up, -1 down
+                 bool isData = false,
                  bool DoJESJER = false,
                  bool DoJetID = false,
                  bool L0MuonDiMuon = false)
@@ -57,7 +60,7 @@ void MakeVarTree(int NumEvts_user = -1,
                 str_L0 = "_L0MuonDiMuon";
 
         TString extension = TString("tree_") + str_level + Form("_ev_%d", NumEvts) + Form("_eta_%.1f%.1f", etaMin, etaMax) + 
-                            str_followHard + str_Mag + str_flavor + str_L0 + Form("_%d", dataset);
+                            str_followHard + str_Mag + str_flavor + str_L0;
         
         if (DoJESJER)
                 extension = TString("JESJER_") + extension;
@@ -104,8 +107,8 @@ void MakeVarTree(int NumEvts_user = -1,
         ////////////////////////////////////////////////
         TString extension_RootFilesTrig = TString("./efficiencies/TrigEff/");
         
-        TString extension_trig_MC   = "MC/jpsieff_reco_ev_-1_b_PID" + str_L0 +"_91599.root";
-        TString extension_trig_Data = "data/jpsieff_data_ev_-1_b_PID" + str_L0 + "_91599.root";
+        TString extension_trig_MC   = "PhotonHadronElectronTIS_jpsieff_reco_ev_-1_b_PID_91599.root";
+        TString extension_trig_Data = "PhotonHadronElectronTIS_jpsieff_data_ev_-1_b_PID_91599.root";
 
         TFile file_trigeffMC(extension_RootFilesTrig + extension_trig_MC, "READ");
         TFile file_trigeffData(extension_RootFilesTrig + extension_trig_Data, "READ");
@@ -116,7 +119,7 @@ void MakeVarTree(int NumEvts_user = -1,
         
         h2_trigeff_ratio->Divide(h2_trigeff_MC);
 
-        BjetTree Tree(0, dataset, isData, onlysim9);
+        TBJetsMCReco Tree;
 
         cout << "Total number of events = " << Tree.fChain->GetEntries() << endl;
         
@@ -125,9 +128,9 @@ void MakeVarTree(int NumEvts_user = -1,
         
         cout << "Executing CAJetAlgo" << endl;
 
-        TString extension_RootFiles     = isData ? "../../root_files/Bjets/" : "../../root_files/BjetsMC/"; 
+        TString extension_RootFiles = isData ? "../../root_files/Bjets/" : "../../root_files/BjetsMC/"; 
 
-        TFile f(extension_RootFiles + extension + ".root", "RECREATE");
+        TFile f((output_folder + "ntuple_mcreco_bjets.root").c_str(), "RECREATE");
         
         TH1F *h1_TIS    = new TH1F("h1_TIS"   , "", ptJpsibinsize, ptJpsi_binedges);
         TH1F *h1_TISTOS = new TH1F("h1_TISTOS", "", ptJpsibinsize, ptJpsi_binedges);
@@ -180,7 +183,6 @@ void MakeVarTree(int NumEvts_user = -1,
         float sv_mass, sv_chi2, sv_cosine, sv_ntrks;
         int SVTag;
 
-        bool mup_L0, mum_L0;
         bool jpsi_L0, jpsi_Hlt1, jpsi_Hlt2;
         bool Trig, TIS, TOS;
         // TLorentzVector
@@ -323,8 +325,6 @@ void MakeVarTree(int NumEvts_user = -1,
         BTree->Branch("trigeff_MC", &trigeff_MC);
         BTree->Branch("trigeff_ratio", &trigeff_ratio);
 
-        BTree->Branch("mup_L0", &mup_L0);
-        BTree->Branch("mum_L0", &mum_L0);
         BTree->Branch("jpsi_L0", &jpsi_L0);
         BTree->Branch("jpsi_Hlt1", &jpsi_Hlt1);
         BTree->Branch("jpsi_Hlt2", &jpsi_Hlt2);
@@ -385,10 +385,6 @@ void MakeVarTree(int NumEvts_user = -1,
                         continue;
 
                 jpsi_L0 = L0MuonDiMuon ? Tree.Jpsi_L0MuonDecision_TOS || Tree.Jpsi_L0DiMuonDecision_TOS : Tree.Jpsi_L0DiMuonDecision_TOS;
-                //mup_L0 = Tree.mup_L0MuonDecision_TOS || Tree.mup_L0DiMuonDecision_TOS;
-                //mum_L0 = Tree.mum_L0MuonDecision_TOS || Tree.mum_L0DiMuonDecision_TOS;
-                mup_L0 = Tree.mup_L0DiMuonDecision_TOS;
-                mum_L0 = Tree.mum_L0DiMuonDecision_TOS;
                 jpsi_Hlt1 = Tree.Jpsi_Hlt1DiMuonHighMassDecision_TOS;
                 jpsi_Hlt2 = Tree.Jpsi_Hlt2DiMuonDetachedJPsiDecision_TOS || Tree.Jpsi_Hlt2DiMuonJPsiHighPTDecision_TOS || Tree.Jpsi_Hlt2DiMuonJPsiDecision_TOS;
 
@@ -820,6 +816,7 @@ void MakeVarTree(int NumEvts_user = -1,
                 eventNumber   = Tree.eventNumber;
 
                 events++;
+
                 BTree->Fill();
         }
 

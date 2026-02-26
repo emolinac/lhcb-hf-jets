@@ -1270,3 +1270,37 @@ double CalculateChi2NDF(TH2 *h1, TH2 *h2)
     return -1;
   }
 }
+
+// Returns JES + JER scale factor as a function of jet pT (in GeV)
+// Values and function provided by Ezra Lesser (thank you!)
+double get_JES_JER(const double jet_pt, TRandom3 *myRNG, bool do_sys = false) {
+  double jes_var = 1, jer_var = 1;
+
+  // Low-multiplicity (N_consit < 10) fits
+  if (do_sys) {
+      if      (jet_pt < 10) { jes_var = 0.904; jer_var = 0.006; }
+      else if (jet_pt < 12) { jes_var = 0.936; jer_var = 0.180; }
+      else if (jet_pt < 15) { jes_var = 0.924; jer_var = 0.264; }
+      else if (jet_pt < 17) { jes_var = 0.972; jer_var = 0.192; }
+      else if (jet_pt < 20) { jes_var = 0.970; jer_var = 0.100; }
+      else if (jet_pt < 25) { jes_var = 0.976; jer_var = 0.114; }
+      else if (jet_pt < 35) { jes_var = 0.984; jer_var = 0.036; }
+      else if (jet_pt < 50) { jes_var = 1.000; jer_var = 0.144; }
+      else                  { jes_var = 1.008; jer_var = 0.126; }
+  }
+
+  // Nominal (inclusive Z+jet) fits
+  else {
+      if      (jet_pt < 10) { jes_var = 0.912; jer_var = 0.006; }
+      else if (jet_pt < 12) { jes_var = 0.948; jer_var = 0.132; }
+      else if (jet_pt < 15) { jes_var = 0.944; jer_var = 0.192; }
+      else if (jet_pt < 17) { jes_var = 0.976; jer_var = 0.114; }
+      else if (jet_pt < 20) { jes_var = 0.972; jer_var = 0.096; }
+      else if (jet_pt < 25) { jes_var = 0.976; jer_var = 0.138; }
+      else if (jet_pt < 35) { jes_var = 0.984; jer_var = 0.054; }
+      else if (jet_pt < 50) { jes_var = 1.000; jer_var = 0.144; }
+      else                  { jes_var = 1.008; jer_var = 0.120; }
+  }
+
+  return jes_var * myRNG->Gaus(1, jer_var);
+}
