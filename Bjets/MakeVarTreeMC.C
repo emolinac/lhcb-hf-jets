@@ -24,10 +24,10 @@ using namespace fastjet;
 using namespace std;
 
 // All events: -1
-void MCMakeVarTree(int NumEvts_user = -1) 
+void MakeVarTreeMC(int NumEvts_user = -1) 
 {    
         TBenchmark* benchmark = new TBenchmark();
-        benchmark->Start("MCMakeVarTree");
+        benchmark->Start("MakeVarTreeMC");
 
         int NumEvts      = NumEvts_user;
         int NumEvtsTruth = NumEvts_user;
@@ -67,7 +67,7 @@ void MCMakeVarTree(int NumEvts_user = -1)
         if (NumEvts == -1)
                 NumEvts = Tree.fChain->GetEntries();
 
-        TFile f((output_folder + "ntuple_mc_bjets.root").c_str(), "RECREATE");
+        TFile f((output_folder + "ntuple_bjets_mc.root").c_str(), "RECREATE");
         
         // FF(z) Histograms 
         TH1D *h1_z_truth   = new TH1D("z_truth"  , "", 80, 0.0, 1.01);
@@ -719,5 +719,5 @@ void MCMakeVarTree(int NumEvts_user = -1)
         f.Write();
         f.Close();
 
-        benchmark->Show("MCMakeVarTree");
+        benchmark->Show("MakeVarTreeMC");
 }

@@ -13,27 +13,30 @@
 #include "../include/analysis-cuts.cpp"
 #include "../include/analysis-cuts.h"
 #include "../include/directories.h"
-#include "../include/TBJetsMCReco.h"
-#include "../include/TBJetsMCReco.C"
+#include "../include/TBJetsData.h"
+#include "../include/TBJetsData.C"
 
 using namespace fastjet;
 using namespace std;
 
-void MakeVarTree(int NumEvts_user = -1,
-                 int year = 6, // 2016
-                 int Mag = 1, // 1 up, -1 down
-                 bool isData = false,
-                 bool DoJESJER = false,
-                 bool DoJetID = false,
-                 bool L0MuonDiMuon = false)
+void MakeVarTreeData(int NumEvts_user = -1,
+                     int year = 6, // 2016
+                     int Mag = 1, // 1 up, -1 down
+                     bool DoJESJER = false,
+                     bool DoJetID = false,
+                     bool L0MuonDiMuon = false)
 {
+        TBenchmark* benchmark = new TBenchmark();
+        benchmark->Start("MakeVarTreeData");
+
         int NumEvts      = NumEvts_user;
         int NumEvtsTruth = NumEvts_user;
         
         int HF_pdgcode = 521;
 
         TString str_followHard = "_HF";
-        TString str_flavor = "_b";
+        TString str_flavor     = "_b";
+        TString str_level      = "data";
 
         TString str_year = "2016";
         if (year == 6)
@@ -48,12 +51,6 @@ void MakeVarTree(int NumEvts_user = -1,
                 str_Mag = "_MD";
         else if (Mag == 1)
                 str_Mag = "_MU";
-
-        TString str_level = "";
-        if (isData)
-                str_level = "data";
-        else
-                str_level = "reco";
         
         TString str_L0 = "";
         if (L0MuonDiMuon)
@@ -66,7 +63,7 @@ void MakeVarTree(int NumEvts_user = -1,
                 extension = TString("JESJER_") + extension;
         if (DoJetID)
                 extension = TString("jetid_") + extension;
-                
+
         ////////////////////////////////////////////////////
         ///              Tracking and PID
         //////////////////////////////////////////////////
@@ -119,7 +116,19 @@ void MakeVarTree(int NumEvts_user = -1,
         
         h2_trigeff_ratio->Divide(h2_trigeff_MC);
 
-        TBJetsMCReco Tree;
+        // WTA related stuff
+        JetDefinition jet_def(cambridge_algorithm, JetDefinition::max_allowable_R);
+        JetDefinition WTA(cambridge_algorithm, JetDefinition::max_allowable_R, WTA_pt_scheme);
+
+        PseudoJet dtr_pseudojet1, dtr_pseudojet2;
+
+        vector<PseudoJet> jetdtrs;
+
+        double WTA_reco_dist;
+
+        TLorentzVector WTA_reco_axis;
+                
+        TBJetsData Tree;
 
         cout << "Total number of events = " << Tree.fChain->GetEntries() << endl;
         
@@ -128,15 +137,15 @@ void MakeVarTree(int NumEvts_user = -1,
         
         cout << "Executing CAJetAlgo" << endl;
 
-        TString extension_RootFiles = isData ? "../../root_files/Bjets/" : "../../root_files/BjetsMC/"; 
-
-        TFile f((output_folder + "ntuple_mcreco_bjets.root").c_str(), "RECREATE");
+        TFile f((output_folder + "ntuple_bjets_data.root").c_str(), "RECREATE");
         
         TH1F *h1_TIS    = new TH1F("h1_TIS"   , "", ptJpsibinsize, ptJpsi_binedges);
         TH1F *h1_TISTOS = new TH1F("h1_TISTOS", "", ptJpsibinsize, ptJpsi_binedges);
 
         TH2F *h2_TIS_ptrap    = new TH2F("h2_TIS_ptrap"   , "", ptJpsibinsize, ptJpsi_binedges, HFetabinsize, HFeta_binedges);
         TH2F *h2_TISTOS_ptrap = new TH2F("h2_TISTOS_ptrap", "", ptJpsibinsize, ptJpsi_binedges, HFetabinsize, HFeta_binedges);
+
+        TH2D *h2_HFpt_RM = new TH2D("h2_HFpt_RM", "", 30, 0, 100, 30, 0, 100);
 
         float jet_pt, jet_eta, tr_jet_pt, tr_jet_eta;
         float jet_rap, tr_jet_rap;
@@ -155,18 +164,12 @@ void MakeVarTree(int NumEvts_user = -1,
         float jpsi_ipchi2, k_ipchi2;
         float K_PIDK;
 
-        float tr_jet_px, tr_jet_py, tr_jet_pz, tr_jet_e;
-        float tr_HF_px, tr_HF_py, tr_HF_pz, tr_HF_e, tr_HF_pt;
-        float tr_mup_px, tr_mup_py, tr_mup_pz, tr_mup_e;
-        float tr_mum_px, tr_mum_py, tr_mum_pz, tr_mum_e;
-        float tr_K_px, tr_K_py, tr_K_pz, tr_K_e;
-        
         double z, jt, r;
         double tr_z, tr_jt, tr_r;
         double zg, jtg, rg;
 
         int nSV;
-        bool isTrueBjet, Hasbbbar;
+        bool Hasbbbar;
         float bmass_dtf, chi2ndf_dtf, tau_dtf;
         int NumBHads_tr, eventNumber;
         
@@ -178,14 +181,13 @@ void MakeVarTree(int NumEvts_user = -1,
         float trigeff_Data(1.0), trigeff_MC(1.0), trigeff_ratio(1.0);
         
         vector<float> dtr_pt, dtr_rap, dtr_id, dtr_3charge;
-        vector<float> sv_ipchi2, sv_keys, sv_pids;
-
+        
         float sv_mass, sv_chi2, sv_cosine, sv_ntrks;
-        int SVTag;
-
-        bool jpsi_L0, jpsi_Hlt1, jpsi_Hlt2;
+        
+        bool mup_L0, mum_L0;
+        bool jpsi_L0, jpsi_L0Muon, jpsi_L0DiMuon, jpsi_Hlt1, jpsi_Hlt2, jpsi_Hlt2_Detached;
         bool Trig, TIS, TOS;
-        // TLorentzVector
+        
         TTree *BTree = new TTree("BTree", "B-jets Tree Variables");
 
         BTree->Branch("eventNumber", &eventNumber);
@@ -254,54 +256,16 @@ void MakeVarTree(int NumEvts_user = -1,
         BTree->Branch("Jpsi_CHI2NDOF", &Jpsi_CHI2NDOF);
         BTree->Branch("jpsi_ipchi2", &jpsi_ipchi2);
 
-        BTree->Branch("tr_jet_pt", &tr_jet_pt);
-        BTree->Branch("tr_jet_eta", &tr_jet_eta);
-        BTree->Branch("tr_jet_rap", &tr_jet_rap);
-
-        BTree->Branch("tr_jet_px", &tr_jet_px);
-        BTree->Branch("tr_jet_py", &tr_jet_py);
-        BTree->Branch("tr_jet_pz", &tr_jet_pz);
-        BTree->Branch("tr_jet_e", &tr_jet_e);
-
-        BTree->Branch("tr_HF_px", &tr_HF_px);
-        BTree->Branch("tr_HF_py", &tr_HF_py);
-        BTree->Branch("tr_HF_pz", &tr_HF_pz);
-        BTree->Branch("tr_HF_e", &tr_HF_e);
-        BTree->Branch("tr_HF_pt", &tr_HF_pt);
-
-        BTree->Branch("tr_mum_px", &tr_mum_px);
-        BTree->Branch("tr_mum_py", &tr_mum_py);
-        BTree->Branch("tr_mum_pz", &tr_mum_pz);
-        BTree->Branch("tr_mum_e", &tr_mum_e);
-
-        BTree->Branch("tr_mup_px", &tr_mup_px);
-        BTree->Branch("tr_mup_py", &tr_mup_py);
-        BTree->Branch("tr_mup_pz", &tr_mup_pz);
-        BTree->Branch("tr_mup_e", &tr_mup_e);
-
-        BTree->Branch("tr_K_px", &tr_K_px);
-        BTree->Branch("tr_K_py", &tr_K_py);
-        BTree->Branch("tr_K_pz", &tr_K_pz);
-        BTree->Branch("tr_K_e", &tr_K_e);
-
-        BTree->Branch("isTrueBjet", &isTrueBjet);
-
         BTree->Branch("nSV", &nSV);
         BTree->Branch("sv_mass", &sv_mass);
         BTree->Branch("sv_chi2", &sv_chi2);
         BTree->Branch("sv_ntrks", &sv_ntrks);
         BTree->Branch("sv_cosine", &sv_cosine);
-        BTree->Branch("sv_ipchi2", &sv_ipchi2);
-        BTree->Branch("sv_keys", &sv_keys);
-        BTree->Branch("sv_pids", &sv_pids);
-
-        BTree->Branch("SVTag", &SVTag);
-
+        
         BTree->Branch("bmass_dtf", &bmass_dtf);
         BTree->Branch("chi2ndf_dtf", &chi2ndf_dtf);
         BTree->Branch("tau_dtf", &tau_dtf);
         BTree->Branch("NumBHads_tr", &NumBHads_tr);
-        BTree->Branch("Hasbbbar", &Hasbbbar);
         BTree->Branch("K_PIDK", &K_PIDK);
         BTree->Branch("pideff_K", &pideff_K);
         BTree->Branch("pideff_mum", &pideff_mum);
@@ -325,9 +289,17 @@ void MakeVarTree(int NumEvts_user = -1,
         BTree->Branch("trigeff_MC", &trigeff_MC);
         BTree->Branch("trigeff_ratio", &trigeff_ratio);
 
+        BTree->Branch("mup_L0", &mup_L0);
+        BTree->Branch("mum_L0", &mum_L0);
+        
         BTree->Branch("jpsi_L0", &jpsi_L0);
+        BTree->Branch("jpsi_L0Muon", &jpsi_L0Muon);
+        BTree->Branch("jpsi_L0DiMuon", &jpsi_L0DiMuon);
+        
         BTree->Branch("jpsi_Hlt1", &jpsi_Hlt1);
         BTree->Branch("jpsi_Hlt2", &jpsi_Hlt2);
+        BTree->Branch("jpsi_Hlt2_Detached", &jpsi_Hlt2_Detached);
+        
         BTree->Branch("Trig", &Trig);
         BTree->Branch("TIS", &TIS);
         BTree->Branch("TOS", &TOS);
@@ -338,10 +310,9 @@ void MakeVarTree(int NumEvts_user = -1,
         BTree->Branch("zg", &zg);
         BTree->Branch("jtg", &jtg);
         BTree->Branch("rg", &rg);
-        BTree->Branch("tr_z", &tr_z);
-        BTree->Branch("tr_jt", &tr_jt);
-        BTree->Branch("tr_r", &tr_r);
         
+        BTree->Branch("WTA_reco_dist", &WTA_reco_dist);
+
         // Event loop
         unsigned long long last_eventNum = 0;
         int events = 0;
@@ -350,14 +321,21 @@ void MakeVarTree(int NumEvts_user = -1,
         TRandom3 *myRNG = new TRandom3();
 
         TLorentzVector HFjet, recojet, tr_truthjet, HFmeson, mup, mum, Jpsi, Kmeson;
-        TLorentzVector tr_HFjet, tr_Kmeson, tr_mum, tr_mup, tr_HFmeson;
-        TLorentzVector dtr, tr_dtr;
-        TLorentzVector HFmatch;
+        TLorentzVector dtr;
         TLorentzVector dtr_matchtruthjet;
                 
-        for (int ev = ev_min; ev < NumEvts + ev_min; ev++)
-        {
+        ClusterSequence WTA_reco_jets;
+        PseudoJet WTA_reco_jet;
+                
+        for (int ev = ev_min; ev < NumEvts + ev_min; ev++) {
+                dtr_pt.clear();
+                dtr_id.clear();
+                dtr_rap.clear();
+                dtr_3charge.clear();
+                jetdtrs.clear();
+                
                 Tree.GetEntry(ev);
+
                 if (ev%10000 == 0) {
                         double percentage = 100.*ev/NumEvts;
                         std::cout<<"\r"<<percentage<<"\% jets processed."<< std::flush;
@@ -384,17 +362,20 @@ void MakeVarTree(int NumEvts_user = -1,
                 if (WrongB)
                         continue;
 
-                jpsi_L0 = L0MuonDiMuon ? Tree.Jpsi_L0MuonDecision_TOS || Tree.Jpsi_L0DiMuonDecision_TOS : Tree.Jpsi_L0DiMuonDecision_TOS;
-                jpsi_Hlt1 = Tree.Jpsi_Hlt1DiMuonHighMassDecision_TOS;
-                jpsi_Hlt2 = Tree.Jpsi_Hlt2DiMuonDetachedJPsiDecision_TOS || Tree.Jpsi_Hlt2DiMuonJPsiHighPTDecision_TOS || Tree.Jpsi_Hlt2DiMuonJPsiDecision_TOS;
+                // Ibrahim trigger lines
+                mup_L0 = -999; //Tree.mup_L0MuonDecision_TOS || Tree.mup_L0DiMuonDecision_TOS;
+                mum_L0 = -999; //Tree.mum_L0MuonDecision_TOS || Tree.mum_L0DiMuonDecision_TOS;
+        
+                jpsi_L0 = Tree.Jpsi_L0MuonDecision_TOS || Tree.Jpsi_L0DiMuonDecision_TOS;
+                jpsi_L0Muon = Tree.Jpsi_L0MuonDecision_TOS;
+                jpsi_L0DiMuon = Tree.Jpsi_L0DiMuonDecision_TOS;
 
+                jpsi_Hlt1 = Tree.Jpsi_Hlt1DiMuonHighMassDecision_TOS;
+                jpsi_Hlt2 = Tree.Jpsi_Hlt2DiMuonJPsiHighPTDecision_TOS;
+                jpsi_Hlt2_Detached = Tree.Jpsi_Hlt2DiMuonDetachedJPsiDecision_TOS;
+        
                 TIS = (Tree.Jpsi_L0Global_TIS && Tree.Jpsi_Hlt1Global_TIS && Tree.Jpsi_Hlt2Global_TIS);
                 TOS = jpsi_L0 && jpsi_Hlt1 && jpsi_Hlt2;
-
-                dtr_pt.clear();
-                dtr_id.clear();
-                dtr_rap.clear();
-                dtr_3charge.clear();
 
                 HFjet.SetPxPyPzE(Tree.Jet_PX / 1000.,
                                  Tree.Jet_PY / 1000.,
@@ -422,28 +403,6 @@ void MakeVarTree(int NumEvts_user = -1,
                                 Tree.Jpsi_PE / 1000.);
                 
                 HFmeson = mup + mum + Kmeson;
-
-                tr_HFjet.SetPxPyPzE(Tree.Jet_mcjet_PX / 1000.,
-                                    Tree.Jet_mcjet_PY / 1000.,
-                                    Tree.Jet_mcjet_PZ / 1000.,
-                                    Tree.Jet_mcjet_PE / 1000.);
-
-                tr_mup.SetPxPyPzE(Tree.mup_TRUEP_X / 1000., 
-                                  Tree.mup_TRUEP_Y / 1000.,
-                                  Tree.mup_TRUEP_Z / 1000., 
-                                  Tree.mup_TRUEP_E / 1000.);
-
-                tr_mum.SetPxPyPzE(Tree.mum_TRUEP_X / 1000., 
-                                  Tree.mum_TRUEP_Y / 1000.,
-                                  Tree.mum_TRUEP_Z / 1000., 
-                                  Tree.mum_TRUEP_E / 1000.);
-
-                tr_Kmeson.SetPxPyPzE(Tree.K_TRUEP_X / 1000., 
-                                     Tree.K_TRUEP_Y / 1000.,
-                                     Tree.K_TRUEP_Z / 1000., 
-                                     Tree.K_TRUEP_E / 1000.);
-
-                tr_HFmeson = tr_mup + tr_mum + tr_Kmeson;
 
                 if (DoJESJER) {
                         const int n_iters = n_smearing_iter;
@@ -489,7 +448,6 @@ void MakeVarTree(int NumEvts_user = -1,
                 chi2ndf_dtf = Tree.Bu_ConsBu_chi2[0] / Tree.Bu_ConsBu_nDOF[0];
                 tau_dtf     = Tree.Bu_ConsBu_ctau[0];
 
-
                 nSV         = Tree.Jet_SVTag_Nvertices;
                 jpsi_ipchi2 = log10(Tree.Jpsi_IPCHI2_OWNPV);
                 k_ipchi2    = (Tree.K_IPCHI2_OWNPV);
@@ -514,20 +472,26 @@ void MakeVarTree(int NumEvts_user = -1,
                                        Tree.Jet_Dtr_PZ[dtrs0] / 1000.,
                                        Tree.Jet_Dtr_E[dtrs0] / 1000.);
                         
-                        // EFMC: I might want to check this for the PURITIES
-                        tr_dtr.SetPxPyPzE(Tree.Jet_Dtr_TRUE_PX[dtrs0] / 1000.,
-                                          Tree.Jet_Dtr_TRUE_PY[dtrs0] / 1000.,
-                                          Tree.Jet_Dtr_TRUE_PZ[dtrs0] / 1000.,
-                                          Tree.Jet_Dtr_TRUE_E[dtrs0] / 1000.);
+                        if (abs(Tree.Jet_Dtr_ID[dtrs0]) != HF_pdgcode && 
+                            !apply_chargedtrack_cuts(Tree.Jet_Dtr_ThreeCharge[dtrs0], 
+                                                     dtr.P(), 
+                                                     dtr.Pt(), 
+                                                     trchi2ndf, 
+                                                     Tree.Jet_Dtr_ProbNNghost[dtrs0], 
+                                                     dtr.Rapidity()))
+                                continue;
+
+                        // EFMC: in contrast to MCMakeVar, here we know the B meson decays into a JPsi
+                        // due to the trigger lines used.
+                        jetdtrs.push_back(PseudoJet(Tree.Jet_Dtr_PX[dtrs0] / 1000.,
+                                                    Tree.Jet_Dtr_PY[dtrs0] / 1000.,
+                                                    Tree.Jet_Dtr_PZ[dtrs0] / 1000.,
+                                                    Tree.Jet_Dtr_E[dtrs0] / 1000.));
+                        
+                        jetdtrs.back().set_user_info(new MyInfo(Tree.Jet_Dtr_ID[dtrs0]));
                         
                         if (abs(Tree.Jet_Dtr_ID[dtrs0]) == HF_pdgcode) {
                                 HFmeson.SetPxPyPzE(dtr.Px(), dtr.Py(), dtr.Pz(), dtr.E());
-
-                                // EFMC: I might want to check this for the PURITIES
-                                HFmatch.SetPxPyPzE(Tree.Jet_Dtr_TRUE_PX[dtrs0] / 1000.,
-                                                   Tree.Jet_Dtr_TRUE_PY[dtrs0] / 1000.,
-                                                   Tree.Jet_Dtr_TRUE_PZ[dtrs0] / 1000.,
-                                                   Tree.Jet_Dtr_TRUE_E[dtrs0] / 1000.);
 
                                 hasHFhadron = true;
                                 NumBHads++;
@@ -542,76 +506,20 @@ void MakeVarTree(int NumEvts_user = -1,
                 if (!hasHFhadron)
                         continue;
 
-                NumBHads_tr = 0;
-                bool hasHFhadron_matched = false;
-                
-                if (!isData) {
-                        for (int dtrs0 = 0; dtrs0 < Tree.Jet_mcjet_nmcdtrs; dtrs0++) {
-                                float trchi2ndf = 0;
-
-                                dtr_matchtruthjet.SetPxPyPzE(Tree.Jet_mcjet_dtrPX[dtrs0] / 1000.,
-                                                        Tree.Jet_mcjet_dtrPY[dtrs0] / 1000.,
-                                                        Tree.Jet_mcjet_dtrPZ[dtrs0] / 1000.,
-                                                        Tree.Jet_mcjet_dtrE[dtrs0] / 1000.);
-
-                                if (abs(Tree.Jet_mcjet_dtrID[dtrs0]) == HF_pdgcode) {
-                                        NumBHads_tr++;
-
-                                        if (fabs(dtr_matchtruthjet.Pt() - Tree.Bu_TRUEPT / 1000.) < 0.01) {
-                                                tr_HFmeson.SetPxPyPzE(dtr_matchtruthjet.Px(), 
-                                                                      dtr_matchtruthjet.Py(), 
-                                                                      dtr_matchtruthjet.Pz(), 
-                                                                      dtr_matchtruthjet.E());
-
-                                                hasHFhadron_matched = true;
-                                        }
-                                }
-                        }
-                }
-
-                SVTag = 0;
-                Hasbbbar = false;
-
-                if (Tree.hasb && Tree.hasbbar) {
-                        Hasbbbar = true;
-                        
-                        if (Tree.Jet_SVTag_Tag)
-                                SVTag = 1;
-                }
-
-                if (Tree.Jet_SVTag_Tag && !(Tree.hasb && Tree.hasbbar)) // && !(Tree.tr_hasb && Tree.tr_hasbbar))
-                        SVTag = 2;
-
                 TVector3 HF_meson = HFmeson.Vect();
                 TVector3 HF_jet   = HFjet.Vect();
-
-                TVector3 tr_HF_meson = tr_HFmeson.Vect();
-                TVector3 tr_HF_jet   = tr_HFjet.Vect();
 
                 jt = (HF_jet.Cross(HF_meson).Mag()) / (HF_jet.Mag());
                 z  = (HF_meson.Dot(HF_jet) ) / (HF_jet.Mag2() );
                 r  = static_cast < TLorentzVector > (HFmeson).DeltaR(HFjet, kTRUE);
                 
-                if(hasHFhadron_matched ) {
-                        tr_jt = (tr_HF_jet.Cross(tr_HF_meson).Mag()) / (tr_HF_jet.Mag());
-                        tr_z  = (tr_HF_meson.Dot(tr_HF_jet) ) / (tr_HF_jet.Mag2() );
-                        tr_r  =  static_cast < TLorentzVector > (tr_HFmeson).DeltaR(tr_HFjet, kTRUE);
+                // Check WTA Reco
+                WTA_reco_jets = ClusterSequence(jetdtrs, WTA);
 
-                        if(Hasbbbar) {
-                                jtg = (tr_HF_jet.Cross(tr_HF_meson).Mag()) / (tr_HF_jet.Mag());
-                                zg  = (tr_HF_meson.Dot(tr_HF_jet) ) / (tr_HF_jet.Mag2() );
-                                rg  = static_cast < TLorentzVector > (tr_HFmeson).DeltaR(tr_HFjet, kTRUE);
-                        } else {
-                                jtg = -999.;
-                                zg  = -999.;
-                                rg  = -999.;
-                        }
-                } else {
-                        tr_jt = -999.;
-                        tr_z  = -999.;
-                        tr_r  = -999.;
-                }
-
+                WTA_reco_jet = sorted_by_pt(WTA_reco_jets.inclusive_jets())[0];
+                
+                WTA_reco_axis.SetPxPyPzE(WTA_reco_jet.px(), WTA_reco_jet.py(), WTA_reco_jet.pz(), WTA_reco_jet.e());
+                WTA_reco_dist = HFmeson.DeltaR(WTA_reco_axis, true);
                 
                 jet_pt  = HFjet.Pt();
                 jet_eta = HFjet.Eta();
@@ -651,11 +559,11 @@ void MakeVarTree(int NumEvts_user = -1,
                 mup_GHOSTPROB = Tree.mup_TRACK_GhostProb;
                 mup_IPCHI2    = Tree.mup_IPCHI2_OWNPV;
 
-                K_px = Kmeson.Px();
-                K_py = Kmeson.Py();
-                K_pz = Kmeson.Pz();
-                K_e  = Kmeson.E();
-                K_p  = Kmeson.P() * 1000;
+                K_px  = Kmeson.Px();
+                K_py  = Kmeson.Py();
+                K_pz  = Kmeson.Pz();
+                K_e   = Kmeson.E();
+                K_p   = Kmeson.P() * 1000; // DUDE WHAT
                 K_eta = Kmeson.Eta();
                 
                 K_CHI2NDOF  = Tree.K_TRACK_CHI2NDOF;
@@ -677,41 +585,12 @@ void MakeVarTree(int NumEvts_user = -1,
                 nTracks  = Tree.nTracks;
                 nSPDHits = Tree.nSPDHits;
 
-                tr_jet_eta = tr_HFjet.Eta();
-                tr_jet_rap = tr_HFjet.Rapidity();
-                tr_jet_pt  = tr_HFjet.Pt();
-                tr_jet_px  = tr_HFjet.Px();
-                tr_jet_py  = tr_HFjet.Py();
-                tr_jet_pz  = tr_HFjet.Pz();
-                tr_jet_e   = tr_HFjet.E();
-
-                tr_HF_pt = tr_HFmeson.Pt();
-                tr_HF_px = tr_HFmeson.Px();
-                tr_HF_py = tr_HFmeson.Py();
-                tr_HF_pz = tr_HFmeson.Pz();
-                tr_HF_e  = tr_HFmeson.E();
-
-                tr_mum_px = tr_mum.Px();
-                tr_mum_py = tr_mum.Py();
-                tr_mum_pz = tr_mum.Pz();
-                tr_mum_e  = tr_mum.E();
-                
-                tr_mup_px = tr_mup.Px();
-                tr_mup_py = tr_mup.Py();
-                tr_mup_pz = tr_mup.Pz();
-                tr_mup_e  = tr_mup.E();
-                
-                tr_K_px = tr_Kmeson.Px();
-                tr_K_py = tr_Kmeson.Py();
-                tr_K_pz = tr_Kmeson.Pz();
-                tr_K_e  = tr_Kmeson.E();
-
                 sv_mass   = Tree.Jet_SVTag_SigMaxMass / 1000.;
                 sv_chi2   = log10(Tree.Jet_SVTag_SigMaxVtxChi2NDF);
                 sv_ntrks  = Tree.Jet_SVTag_SigMaxNtracks;
                 sv_cosine = Tree.Jet_SVTag_SigMaxDirAngleS2S;
 
-                if (isData && h3_pideff_K_P_ETA_nTracks != NULL && h2_ratio_trkeff_P_ETA != NULL) {
+                if (h3_pideff_K_P_ETA_nTracks != NULL && h2_ratio_trkeff_P_ETA != NULL) {
                         float p_K   = (Kmeson.P() >= 400) ? 399 * 1e3 : Kmeson.P() * 1e3;
                         float p_mum = (mum.P() >= 400) ? 399 * 1e3 : mum.P() * 1e3;
                         float p_mup = (mup.P() >= 400) ? 399 * 1e3 : mup.P() * 1e3;
@@ -733,24 +612,24 @@ void MakeVarTree(int NumEvts_user = -1,
                                                                                 h3_pideff_K_P_ETA_nTracks->GetZaxis()->FindBin(nTracks_new));
                         
                         pideff_mup = h3_pideff_Mu_P_ETA_nTracks->GetBinContent(h3_pideff_Mu_P_ETA_nTracks->GetXaxis()->FindBin(p_mup), 
-                                                                                h3_pideff_Mu_P_ETA_nTracks->GetYaxis()->FindBin(eta_mup), 
-                                                                                h3_pideff_Mu_P_ETA_nTracks->GetZaxis()->FindBin(nTracks_new));
+                                                                               h3_pideff_Mu_P_ETA_nTracks->GetYaxis()->FindBin(eta_mup), 
+                                                                               h3_pideff_Mu_P_ETA_nTracks->GetZaxis()->FindBin(nTracks_new));
                         
                         pideff_mum = h3_pideff_Mu_P_ETA_nTracks->GetBinContent(h3_pideff_Mu_P_ETA_nTracks->GetXaxis()->FindBin(p_mum), 
-                                                                                h3_pideff_Mu_P_ETA_nTracks->GetYaxis()->FindBin(eta_mum), 
-                                                                                h3_pideff_Mu_P_ETA_nTracks->GetZaxis()->FindBin(nTracks_new));
+                                                                               h3_pideff_Mu_P_ETA_nTracks->GetYaxis()->FindBin(eta_mum), 
+                                                                               h3_pideff_Mu_P_ETA_nTracks->GetZaxis()->FindBin(nTracks_new));
 
                         pideff_K_err   = h3_pideff_K_P_ETA_nTracks->GetBinError(h3_pideff_K_P_ETA_nTracks->GetXaxis()->FindBin(p_K), 
                                                                                 h3_pideff_K_P_ETA_nTracks->GetYaxis()->FindBin(eta_K), 
                                                                                 h3_pideff_K_P_ETA_nTracks->GetZaxis()->FindBin(nTracks_new));
 
                         pideff_mup_err = h3_pideff_Mu_P_ETA_nTracks->GetBinError(h3_pideff_Mu_P_ETA_nTracks->GetXaxis()->FindBin(p_mup), 
-                                                                                h3_pideff_Mu_P_ETA_nTracks->GetYaxis()->FindBin(eta_mup), 
-                                                                                h3_pideff_Mu_P_ETA_nTracks->GetZaxis()->FindBin(nTracks_new));
+                                                                                 h3_pideff_Mu_P_ETA_nTracks->GetYaxis()->FindBin(eta_mup), 
+                                                                                 h3_pideff_Mu_P_ETA_nTracks->GetZaxis()->FindBin(nTracks_new));
 
                         pideff_mum_err = h3_pideff_Mu_P_ETA_nTracks->GetBinError(h3_pideff_Mu_P_ETA_nTracks->GetXaxis()->FindBin(p_mum),
-                                                                                h3_pideff_Mu_P_ETA_nTracks->GetYaxis()->FindBin(eta_mum), 
-                                                                                h3_pideff_Mu_P_ETA_nTracks->GetZaxis()->FindBin(nTracks_new));
+                                                                                 h3_pideff_Mu_P_ETA_nTracks->GetYaxis()->FindBin(eta_mum), 
+                                                                                 h3_pideff_Mu_P_ETA_nTracks->GetZaxis()->FindBin(nTracks_new));
 
                         // cout << pideff_mum << ", " << pideff_mup << ", " << pideff_mum_err << ", " << pideff_mup_err << endl;
                         // if (pideff_mum == 0)
@@ -760,32 +639,32 @@ void MakeVarTree(int NumEvts_user = -1,
                                                                                 h2_ratio_trkeff_P_ETA->GetYaxis()->FindBin(eta_K));
                         
                         trkeff_ratio_mup = h2_ratio_trkeff_P_ETA_Muon->GetBinContent(h2_ratio_trkeff_P_ETA_Muon->GetXaxis()->FindBin(p_mup), 
-                                                                                        h2_ratio_trkeff_P_ETA_Muon->GetYaxis()->FindBin(eta_mup));
+                                                                                     h2_ratio_trkeff_P_ETA_Muon->GetYaxis()->FindBin(eta_mup));
                         
                         trkeff_ratio_mum = h2_ratio_trkeff_P_ETA_Muon->GetBinContent(h2_ratio_trkeff_P_ETA_Muon->GetXaxis()->FindBin(p_mum), 
-                                                                                        h2_ratio_trkeff_P_ETA_Muon->GetYaxis()->FindBin(eta_mum));
+                                                                                     h2_ratio_trkeff_P_ETA_Muon->GetYaxis()->FindBin(eta_mum));
                         
                         // double trkeff_K_DATA = h2_ratio_trkeff_P_ETA_DATA->GetBinContent(h2_ratio_trkeff_P_ETA_DATA->GetXaxis()->FindBin(p_K), h2_ratio_trkeff_P_ETA_DATA->GetYaxis()->FindBin(eta_K));
                         // double trkeff_K_MC = h2_ratio_trkeff_P_ETA_MC->GetBinContent(h2_ratio_trkeff_P_ETA_MC->GetXaxis()->FindBin(p_K), h2_ratio_trkeff_P_ETA_MC->GetYaxis()->FindBin(eta_K));
                         // cout << trkeff_ratio_K << ", " << trkeff_K_DATA / trkeff_K_MC << ", " << trkeff_K_MC / trkeff_K_DATA << endl;
 
                         trkeff_ratio_K_errhi   = h2_ratio_trkeff_P_ETA_ERRHI->GetBinContent(h2_ratio_trkeff_P_ETA_ERRHI->GetXaxis()->FindBin(p_K), 
-                                                                                                h2_ratio_trkeff_P_ETA_ERRHI->GetYaxis()->FindBin(eta_K));
+                                                                                            h2_ratio_trkeff_P_ETA_ERRHI->GetYaxis()->FindBin(eta_K));
                         
                         trkeff_ratio_mup_errhi = h2_ratio_trkeff_P_ETA_Muon_ERRHI->GetBinContent(h2_ratio_trkeff_P_ETA_Muon_ERRHI->GetXaxis()->FindBin(p_mup), 
-                                                                                                h2_ratio_trkeff_P_ETA_Muon_ERRHI->GetYaxis()->FindBin(eta_mup));
+                                                                                                 h2_ratio_trkeff_P_ETA_Muon_ERRHI->GetYaxis()->FindBin(eta_mup));
                         
                         trkeff_ratio_mum_errhi = h2_ratio_trkeff_P_ETA_Muon_ERRHI->GetBinContent(h2_ratio_trkeff_P_ETA_Muon_ERRHI->GetXaxis()->FindBin(p_mum), 
-                                                                                                h2_ratio_trkeff_P_ETA_Muon_ERRHI->GetYaxis()->FindBin(eta_mum));
+                                                                                                 h2_ratio_trkeff_P_ETA_Muon_ERRHI->GetYaxis()->FindBin(eta_mum));
 
                         trkeff_ratio_K_errlo   = h2_ratio_trkeff_P_ETA_ERRLO->GetBinContent(h2_ratio_trkeff_P_ETA_ERRLO->GetXaxis()->FindBin(p_K), 
-                                                                                                h2_ratio_trkeff_P_ETA_ERRLO->GetYaxis()->FindBin(eta_K));
+                                                                                            h2_ratio_trkeff_P_ETA_ERRLO->GetYaxis()->FindBin(eta_K));
                         
                         trkeff_ratio_mup_errlo = h2_ratio_trkeff_P_ETA_Muon_ERRLO->GetBinContent(h2_ratio_trkeff_P_ETA_Muon_ERRLO->GetXaxis()->FindBin(p_mup),
-                                                                                                h2_ratio_trkeff_P_ETA_Muon_ERRLO->GetYaxis()->FindBin(eta_mup));
+                                                                                                 h2_ratio_trkeff_P_ETA_Muon_ERRLO->GetYaxis()->FindBin(eta_mup));
                         
                         trkeff_ratio_mum_errlo = h2_ratio_trkeff_P_ETA_Muon_ERRLO->GetBinContent(h2_ratio_trkeff_P_ETA_Muon_ERRLO->GetXaxis()->FindBin(p_mum), 
-                                                                                                h2_ratio_trkeff_P_ETA_Muon_ERRLO->GetYaxis()->FindBin(eta_mum));
+                                                                                                 h2_ratio_trkeff_P_ETA_Muon_ERRLO->GetYaxis()->FindBin(eta_mum));
 
                         if (Kmeson.P() > 100 && Kmeson.P() < 200 && Kmeson.Eta() < 2.5)
                                 trkeff_ratio_K_errhi = trkeff_ratio_K_errlo = 0.04;
@@ -801,17 +680,11 @@ void MakeVarTree(int NumEvts_user = -1,
                                 cout << nTracks << endl;
                         }
                 } else {
-                        if (isData)
-                                std::cout << "input histograms not found! Tracking and pid efficiencies being set to 1.0." << std::endl;
+                        std::cout << "input histograms not found! Tracking and pid efficiencies being set to 1.0." << std::endl;
 
                         pideff_K = pideff_mum = pideff_mup = trkeff_ratio_K = trkeff_ratio_mup = trkeff_ratio_mum = 1.0;
                 }
                 
-                if (hasHFhadron_matched)
-                        isTrueBjet = true;
-                else
-                        isTrueBjet = false;
-
                 last_eventNum = Tree.eventNumber;
                 eventNumber   = Tree.eventNumber;
 
@@ -823,4 +696,6 @@ void MakeVarTree(int NumEvts_user = -1,
         cout << "Number of saved events = " << events << endl;
         f.Write();
         f.Close();
+
+        benchmark->Show("MakeVarTreeData");
 }
