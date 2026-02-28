@@ -257,11 +257,17 @@ void MakeVarTreeMC(int NumEvts_user = -1)
                                Tree.MCJet_truth_mup_PY / 1000.,
                                Tree.MCJet_truth_mup_PZ / 1000.,
                                Tree.MCJet_truth_mup_PE / 1000.);
+
+                if (!apply_muon_cuts(mup.Pt()))
+                        continue;
                 
                 mum.SetPxPyPzE(Tree.MCJet_truth_mum_PX / 1000.,
                                Tree.MCJet_truth_mum_PY / 1000.,
                                Tree.MCJet_truth_mum_PZ / 1000.,
                                Tree.MCJet_truth_mum_PE / 1000.);
+
+                if (!apply_muon_cuts(mum.Pt()))
+                        continue;
                 
                 Kmeson.SetPxPyPzE(Tree.MCJet_truth_K_PX / 1000.,
                                   Tree.MCJet_truth_K_PY / 1000.,
@@ -273,7 +279,7 @@ void MakeVarTreeMC(int NumEvts_user = -1)
                                  Tree.MCJet_PZ / 1000.,
                                  Tree.MCJet_PE / 1000.);
 
-                if (HFjet.Pt() < unfolding_jet_pt_binning[2] || (HFjet.Rapidity() < jet_eta_min || HFjet.Rapidity() > jet_eta_max))
+                if (!apply_jet_cuts(HFjet.Rapidity(), HFjet.Pt()))
                         continue;
 
                 //HFmeson = mup + mum + Kmeson;
@@ -294,7 +300,7 @@ void MakeVarTreeMC(int NumEvts_user = -1)
                                       Tree.MCJet_recojet_PZ / 1000.,
                                       Tree.MCJet_recojet_PE / 1000.);
 
-                if (meas_HFjet.Pt() < unfolding_jet_pt_binning[2] || (meas_HFjet.Rapidity() < jet_eta_min || meas_HFjet.Rapidity() > jet_eta_max))
+                if (!apply_jet_cuts(meas_HFjet.Rapidity(), meas_HFjet.Pt()))
                         continue;
 
                 double matched_mup_e = std::sqrt(pow(Tree.MCJet_truth_match_mup_PX, 2) +

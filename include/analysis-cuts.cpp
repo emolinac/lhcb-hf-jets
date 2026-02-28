@@ -13,7 +13,7 @@ const double jet_pt_min  = 15;
 const double jet_radius = 0.5;
 
 // Z boson cuts
-const double muon_pt_min  = 20.;
+const double muon_pt_min  = 0.5;
 const double lhcb_eta_min = 2;
 const double lhcb_eta_max = 4.5;
 const double dimuon_mass_min = 60;
@@ -38,15 +38,9 @@ bool apply_jet_cuts(double jet_eta, double jet_pt)
         return true;    
 }
 
-bool apply_muon_cuts(double deltaR_mu_jet, double mu_pt, double mu_eta)
+bool apply_muon_cuts(double mu_pt)
 {
-        if (deltaR_mu_jet < jet_radius) 
-                return false; 
-        
         if (mu_pt < muon_pt_min)
-                return false;
-
-        if (mu_eta < lhcb_eta_min || mu_eta > lhcb_eta_max) 
                 return false;
 
         return true;

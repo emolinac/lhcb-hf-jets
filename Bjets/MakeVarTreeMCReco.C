@@ -430,20 +430,32 @@ void MakeVarTreeMCReco(int NumEvts_user = -1,
                 TIS = (Tree.Jpsi_L0Global_TIS && Tree.Jpsi_Hlt1Global_TIS && Tree.Jpsi_Hlt2Global_TIS);
                 TOS = jpsi_L0 && jpsi_Hlt1 && jpsi_Hlt2;
 
+                if (!TOS)
+                        continue;
+
                 HFjet.SetPxPyPzE(Tree.Jet_PX / 1000.,
                                  Tree.Jet_PY / 1000.,
                                  Tree.Jet_PZ / 1000.,
                                  Tree.Jet_PE / 1000.);
+
+                if (!apply_jet_cuts(HFjet.Rapidity(), HFjet.Pt()))
+                        continue;
                                 
                 mup.SetPxPyPzE(Tree.mup_PX / 1000., 
                                Tree.mup_PY / 1000., 
                                Tree.mup_PZ / 1000., 
                                Tree.mup_PE / 1000.);
+
+                if (!apply_muon_cuts(mup.Pt()))
+                        continue;
                 
                 mum.SetPxPyPzE(Tree.mum_PX / 1000., 
                                Tree.mum_PY / 1000., 
                                Tree.mum_PZ / 1000., 
                                Tree.mum_PE / 1000.);
+
+                if (!apply_muon_cuts(mum.Pt()))
+                        continue;
                 
                 Kmeson.SetPxPyPzE(Tree.K_PX / 1000., 
                                   Tree.K_PY / 1000., 
@@ -461,6 +473,9 @@ void MakeVarTreeMCReco(int NumEvts_user = -1,
                                     Tree.Jet_mcjet_PY / 1000.,
                                     Tree.Jet_mcjet_PZ / 1000.,
                                     Tree.Jet_mcjet_PE / 1000.);
+
+                if (!apply_jet_cuts(tr_HFjet.Rapidity(), tr_HFjet.Pt()))
+                        continue;
 
                 tr_mup.SetPxPyPzE(Tree.mup_TRUEP_X / 1000., 
                                   Tree.mup_TRUEP_Y / 1000.,
