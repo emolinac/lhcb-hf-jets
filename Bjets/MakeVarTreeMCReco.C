@@ -554,12 +554,11 @@ void MakeVarTreeMCReco(int NumEvts_user = -1,
                                           Tree.Jet_Dtr_TRUE_E[dtrs0] / 1000.);
 
                         if (abs(Tree.Jet_Dtr_ID[dtrs0]) != HF_pdgcode && 
-                            !apply_chargedtrack_cuts(Tree.Jet_Dtr_ThreeCharge[dtrs0], 
-                                                     dtr.P(), 
-                                                     dtr.Pt(), 
-                                                     trchi2ndf, 
-                                                     Tree.Jet_Dtr_ProbNNghost[dtrs0], 
-                                                     dtr.Rapidity()))
+                            !apply_particle_cuts(dtr.P(), 
+                                                 dtr.Pt(), 
+                                                 trchi2ndf, 
+                                                 Tree.Jet_Dtr_ProbNNghost[dtrs0], 
+                                                 dtr.Rapidity()))
                                 continue;
 
                         // EFMC: in contrast to MCMakeVar, here we know the B meson decays into a JPsi
@@ -605,10 +604,9 @@ void MakeVarTreeMCReco(int NumEvts_user = -1,
                                                      Tree.Jet_mcjet_dtrE[dtrs0] / 1000.);
 
                         if (abs(Tree.Jet_mcjet_dtrID[dtrs0]) != HF_pdgcode && 
-                                !apply_chargedtrack_momentum_cuts(Tree.Jet_mcjet_dtrThreeCharge[dtrs0], 
-                                                                  dtr_matchtruthjet.P(), 
-                                                                  dtr_matchtruthjet.Pt(),
-                                                                  dtr_matchtruthjet.Rapidity()))
+                                !apply_particle_momentum_cuts(dtr_matchtruthjet.P(), 
+                                                              dtr_matchtruthjet.Pt(),
+                                                              dtr_matchtruthjet.Rapidity()))
                                 continue;
 
                         if (abs(Tree.Jet_mcjet_dtrID[dtrs0]) == HF_pdgcode) {

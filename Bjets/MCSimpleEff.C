@@ -2,7 +2,13 @@
 #include <TCanvas.h>
 #include <vector>
 #include "Settings.h"
-#include "../Helpers.h"
+
+#include "../Helpers_IC.h"
+#include "../include/analysis-constants.h"
+#include "../include/analysis-binning.h"
+#include "../include/analysis-cuts.cpp"
+#include "../include/analysis-cuts.h"
+#include "../include/directories.h"
 
 using namespace std;
 
@@ -133,50 +139,50 @@ void MCSimpleEff(int NumEvts = -1, int dataset = 91599,
 
     extension_read = TString("tree_") + str_level + Form("_ev_%d", NumEvts) + Form("_eta_%.1f%.1f", etaMin, etaMax) + str_followHard + str_ghost + str_charged + str_Mag + str_flavor + str_simversion + Form("_%d", dataset);
 
-//    TFile fread(extension_RootFilesMC  + extension_read + ".root", "READ");
-//    TTree *BTree = (TTree *)fread.Get("BTree");
-    TChain *BTree = new TChain("BTree", "");
-    vector<int> vec_datasets;
-    if (Mag ==0)
-        /// MC MD : 2016, 2017, 2018
-      vec_datasets = {61590, 71590, 81590};
-    else if (Mag == 1)
-        /// MC MU : 2016, 2017, 2018
-      vec_datasets = {61591, 71591, 81591};
-    else
-        ///
-      vec_datasets = {61590, 61591, 71590, 71591, 81590, 81591};
+   TFile fread((output_folder + "ntuple_bjets_mc.root").c_str(), "READ");
+   TTree *BTree = (TTree *)fread.Get("BTree");
+    // TChain *BTree = new TChain("BTree", "");
+    // vector<int> vec_datasets;
+    // if (Mag ==0)
+    //     /// MC MD : 2016, 2017, 2018
+    //   vec_datasets = {61590, 71590, 81590};
+    // else if (Mag == 1)
+    //     /// MC MU : 2016, 2017, 2018
+    //   vec_datasets = {61591, 71591, 81591};
+    // else
+    //     ///
+    //   vec_datasets = {61590, 61591, 71590, 71591, 81590, 81591};
 
-    cout << "Loading ntuples: " << endl;
-    if (year == 9 && JetMeth != 9)
-    {
-      for (int i = 0; i < vec_datasets.size(); i++)
-      {
-        Mag = (vec_datasets[i] / 1) % 10;
-        if (Mag == 0)
-          str_Mag = "_MD";
-        else if (Mag == 1)
-          str_Mag = "_MU";
-        extension_read = TString("tree_") + str_level + Form("_ev_%d", NumEvts) + Form("_eta_%.1f%.1f", etaMin, etaMax) + str_followHard + str_ghost + str_charged + str_Mag + str_flavor + str_simversion + Form("_%d", vec_datasets[i]);
-        // extension_read = extension_prefix + extension_read;
-        cout << extension_read << endl;
-        BTree->Add(extension_RootFilesMC  + extension_read + ".root/BTree");
-      }
-    }
-    else
-    {
-      extension_read = TString("tree_") + str_level + Form("_ev_%d", NumEvts) + Form("_eta_%.1f%.1f", etaMin, etaMax) + str_followHard + str_ghost + str_charged + str_Mag + str_flavor + str_simversion + Form("_%d", dataset);
-      // extension_read = extension_prefix + extension_read;
-      cout << extension_read << endl;
-      BTree->Add(extension_RootFilesMC  + extension_read + ".root/BTree");
-    }
+    // cout << "Loading ntuples: " << endl;
+    // if (year == 9 && JetMeth != 9)
+    // {
+    //   for (int i = 0; i < vec_datasets.size(); i++)
+    //   {
+    //     Mag = (vec_datasets[i] / 1) % 10;
+    //     if (Mag == 0)
+    //       str_Mag = "_MD";
+    //     else if (Mag == 1)
+    //       str_Mag = "_MU";
+    //     extension_read = TString("tree_") + str_level + Form("_ev_%d", NumEvts) + Form("_eta_%.1f%.1f", etaMin, etaMax) + str_followHard + str_ghost + str_charged + str_Mag + str_flavor + str_simversion + Form("_%d", vec_datasets[i]);
+    //     // extension_read = extension_prefix + extension_read;
+    //     cout << extension_read << endl;
+    //     BTree->Add(extension_RootFilesMC  + extension_read + ".root/BTree");
+    //   }
+    // }
+    // else
+    // {
+    //   extension_read = TString("tree_") + str_level + Form("_ev_%d", NumEvts) + Form("_eta_%.1f%.1f", etaMin, etaMax) + str_followHard + str_ghost + str_charged + str_Mag + str_flavor + str_simversion + Form("_%d", dataset);
+    //   // extension_read = extension_prefix + extension_read;
+    //   cout << extension_read << endl;
+    //   BTree->Add(extension_RootFilesMC  + extension_read + ".root/BTree");
+    // }
     if (NumEvts > BTree->GetEntries())
       NumEvts = BTree->GetEntries();
     if (NumEvts == -1)
       NumEvts = BTree->GetEntries();
     cout << BTree->GetEntries() << endl;
 
-    TFile f(extension_RootFilesMC + extension + ".root", "RECREATE");
+    TFile f((output_folder + "bjets_efficiencies.root").c_str(), "RECREATE");
 
 
 //    if (NumEvts > BTree->GetEntries()) {
@@ -444,10 +450,7 @@ void MCSimpleEff(int NumEvts = -1, int dataset = 91599,
     // Reco Variables (from Truth Tree)
     double meas_jet_px, meas_jet_py, meas_jet_pz, meas_jet_e;
     double meas_HF_px, meas_HF_py, meas_HF_pz, meas_HF_e;
-    double meas_mup_px, meas_mup_py, meas_mup_pz, meas_mup_e;
-    double meas_mum_px, meas_mum_py, meas_mum_pz, meas_mum_e;
-    double meas_K_px, meas_K_py, meas_K_pz, meas_K_e;
-
+    
     double meas_HF_pt;
 
     double truth_z, truth_jt, truth_r;
@@ -534,19 +537,6 @@ void MCSimpleEff(int NumEvts = -1, int dataset = 91599,
     BTree->SetBranchAddress("Hasbbbar", &Hasbbbar);
     BTree->SetBranchAddress("eventNumber", &eventNumber);
 
-      BTree->Branch("meas_mum_px", &meas_mum_px);
-      BTree->Branch("meas_mum_py", &meas_mum_py);
-      BTree->Branch("meas_mum_pz", &meas_mum_pz);
-      BTree->Branch("meas_mum_e", &meas_mum_e);
-      BTree->Branch("meas_mup_px", &meas_mup_px);
-      BTree->Branch("meas_mup_py", &meas_mup_py);
-      BTree->Branch("meas_mup_pz", &meas_mup_pz);
-      BTree->Branch("meas_mup_e", &meas_mup_e);
-      BTree->Branch("meas_K_px", &meas_K_px);
-      BTree->Branch("meas_K_py", &meas_K_py);
-      BTree->Branch("meas_K_pz", &meas_K_pz);
-      BTree->Branch("meas_K_e", &meas_K_e);
-    
     BTree->SetBranchAddress("GluonTag", &GluonTag);
     BTree->SetBranchAddress("nTracks", &nTracks);
     
