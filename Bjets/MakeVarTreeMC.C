@@ -233,6 +233,7 @@ void MakeVarTreeMC(int NumEvts_user = -1)
         PseudoJet WTA_true_jet;
         PseudoJet WTA_reco_jet;
                 
+        // NOTE: Stripping cuts are not applied at truth level! 
         for (int ev = 0; ev < NumEvts; ev++) {
                 jetdtrs.clear();
                 meas_jetdtrs.clear();

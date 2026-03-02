@@ -395,11 +395,11 @@ void MakeVarTreeMCReco(int NumEvts_user = -1,
                 }
 
                 if (ev != 0)
-                if (Tree.eventNumber == last_eventNum)
-                        continue;
+                        if (Tree.eventNumber == last_eventNum)
+                                continue;
                 
                 if (Tree.nPVs > 1)
-                continue;
+                        continue;
                 
                 bool WrongB = false;
                 
