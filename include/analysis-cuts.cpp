@@ -28,6 +28,9 @@ const double track_p_max           = 1000;
 const double track_pt_min          = 0.25;
 const double track_probnnghost_max = 0.5;
 
+// B jets cuts
+const double WTA_dist_max = 0.005;
+
 bool apply_jet_cuts(double jet_eta, double jet_pt)
 {
         if (jet_eta < jet_eta_min || jet_eta > jet_eta_max) 

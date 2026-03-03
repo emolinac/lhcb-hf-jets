@@ -9,12 +9,21 @@
 #include "TCanvas.h"
 #include "TAxis.h"
 #include "TH1.h"
-#include "Settings.h"
-#include "../Helpers.h"
 
 #include <sstream>
 #include <fstream>
 #include <iostream>
+
+#include "Settings.h"
+
+#include "../Helpers_IC.h"
+#include "../include/analysis-constants.h"
+#include "../include/analysis-binning.h"
+#include "../include/analysis-cuts.cpp"
+#include "../include/analysis-cuts.h"
+#include "../include/directories.h"
+#include "../include/TBJetsMCReco.h"
+#include "../include/TBJetsMCReco.C"
 
 using namespace RooFit;
 
@@ -26,19 +35,12 @@ void MassFit(int NumEvts = -1, int dataset = 91599, bool isData = true,
              float ptmax_user = 250.,
              bool L0MuonDiMuon = false)
 {
-    bool MCflag = !isData;
-    followHardest = false;
-    truthLevel = false;
-    chargedJetCut = false;
     ptMin = ptmin_user;
     ptMax = ptmax_user;
-    if (truthLevel)
-    {
-        ghostCut = false;
-    }
+    
     int year = (dataset / 10000) % 10;
     int JetMeth = (dataset / 1000) % 10;
-    int flavor = (dataset / 100) % 10;
+    int flavor = 5;
     int ptRange = (dataset / 10) % 10;
     int Mag = (dataset / 1) % 10;
     int HF_pdgcode = -99;
@@ -143,40 +145,51 @@ void MassFit(int NumEvts = -1, int dataset = 91599, bool isData = true,
     
     cout << extension << endl;
     cout << extension_reco << endl;
+    
     // Setup Tree
-
     TChain *BTree = new TChain("BTree", "B-jets Tree Variables");
-    vector<int> vec_datasets;
-    if (Mag == 0)
-        vec_datasets = {61590, 71590, 81590};
-    else if (Mag == 1)
-        vec_datasets = {61591, 71591, 81591};
-    else
-        vec_datasets = {61590, 61591, 71590, 71591, 81590, 81591};
 
-    if (year == 9 && JetMeth != 9)
-    {
-        for (int i = 0; i < vec_datasets.size(); i++)
-        {
-            Mag = (vec_datasets[i] / 1) % 10;
-            if (Mag == 0)
-                str_Mag = "_MD";
-            else if (Mag == 1)
-                str_Mag = "_MU";
-            extension_read = TString("tree_") + str_level + Form("_ev_%d", NumEvts) + Form("_eta_%.1f%.1f", etaMin, etaMax) + str_followHard + str_ghost + str_charged + str_Mag + str_flavor + str_L0 + Form("_%d", vec_datasets[i]);
-
-            BTree->Add(extension_RootFiles + extension_read + ".root/BTree");
-        }
-    }
+    if (isData)
+        BTree->Add((output_folder + "ntuple_bjets_data.root/BTree").c_str());
     else
-    {
-        extension_read = TString("tree_") + str_level + Form("_ev_%d", NumEvts) + Form("_eta_%.1f%.1f", etaMin, etaMax) + str_followHard + str_ghost + str_charged + str_Mag + str_flavor + str_L0 + Form("_%d", dataset);
-        BTree->Add(extension_RootFiles + extension_read + ".root/BTree");
-    }
+        BTree->Add((output_folder + "ntuple_bjets_mcreco.root/BTree").c_str());
+
+    
+    // vector<int> vec_datasets;
+    // if (Mag == 0)
+    //     vec_datasets = {61590, 71590, 81590};
+    // else if (Mag == 1)
+    //     vec_datasets = {61591, 71591, 81591};
+    // else
+    //     vec_datasets = {61590, 61591, 71590, 71591, 81590, 81591};
+
+    // // Reading the output of the MakeVarTree codes 
+    // if (year == 9 && JetMeth != 9)
+    // {
+    //     for (int i = 0; i < vec_datasets.size(); i++)
+    //     {
+    //         Mag = (vec_datasets[i] / 1) % 10;
+    //         if (Mag == 0)
+    //             str_Mag = "_MD";
+    //         else if (Mag == 1)
+    //             str_Mag = "_MU";
+    //         extension_read = TString("tree_") + str_level + Form("_ev_%d", NumEvts) + Form("_eta_%.1f%.1f", etaMin, etaMax) + str_followHard + str_ghost + str_charged + str_Mag + str_flavor + str_L0 + Form("_%d", vec_datasets[i]);
+
+    //         BTree->Add(extension_RootFiles + extension_read + ".root/BTree");
+    //     }
+    // }
+    // else
+    // {
+    //     extension_read = TString("tree_") + str_level + Form("_ev_%d", NumEvts) + Form("_eta_%.1f%.1f", etaMin, etaMax) + str_followHard + str_ghost + str_charged + str_Mag + str_flavor + str_L0 + Form("_%d", dataset);
+    //     BTree->Add(extension_RootFiles + extension_read + ".root/BTree");
+    // }
+    
     if (NumEvts > BTree->GetEntries())
         NumEvts = BTree->GetEntries();
+    
     if (NumEvts == -1)
         NumEvts = BTree->GetEntries();
+
     cout << "Number of entries : " << BTree->GetEntries() << endl;
     
     float mup_px, mup_py, mup_pz, mup_e;
@@ -188,6 +201,7 @@ void MassFit(int NumEvts = -1, int dataset = 91599, bool isData = true,
     float Jpsi_CHI2NDOF, Jpsi_BPVDLS, Jpsi_CHI2, Jpsi_FDCHI2, Jpsi_IPCHI2;
     float Bu_CHI2NDOF, Bu_CHI2, Bu_IPCHI2;
     float jet_eta, jet_rap;
+    double WTA_dist;
     bool isTrueBjet, TOS;
     int nSV;
     
@@ -195,11 +209,6 @@ void MassFit(int NumEvts = -1, int dataset = 91599, bool isData = true,
     BTree->SetBranchAddress("HF_py", &HF_py);
     BTree->SetBranchAddress("HF_pz", &HF_pz);
     BTree->SetBranchAddress("HF_e", &HF_e);
-
-    BTree->SetBranchAddress("tr_HF_px", &tr_HF_px);
-    BTree->SetBranchAddress("tr_HF_py", &tr_HF_py);
-    BTree->SetBranchAddress("tr_HF_pz", &tr_HF_pz);
-    BTree->SetBranchAddress("tr_HF_e", &tr_HF_e);
 
     BTree->SetBranchAddress("Bu_IPCHI2", &Bu_IPCHI2);
     BTree->SetBranchAddress("Bu_CHI2", &Bu_CHI2);
@@ -236,13 +245,23 @@ void MassFit(int NumEvts = -1, int dataset = 91599, bool isData = true,
 
     BTree->SetBranchAddress("TOS", &TOS);
 
+    BTree->SetBranchAddress("WTA_reco_dist", &WTA_dist);
+
+    if (!isData) {
+        BTree->SetBranchAddress("tr_HF_px", &tr_HF_px);
+        BTree->SetBranchAddress("tr_HF_py", &tr_HF_py);
+        BTree->SetBranchAddress("tr_HF_pz", &tr_HF_pz);
+        BTree->SetBranchAddress("tr_HF_e", &tr_HF_e);
+    }
+ 
     float mass_low = 5.15;
     float mass_high = 5.55;
 
     vector<TH1D *> h1_mass_HFpt;
     vector<float> vec_bkg_frac, vec_res_frac, vec_bkg_yield, vec_sig_yield;
 
-    TFile f(extension_RootFiles  + extension + ".root", "RECREATE");
+    std::string type_of_event = (isData) ? "data" : "mcreco";
+    TFile f((output_folder + "results_mass_fit_" + type_of_event + ".root").c_str(), "RECREATE");
 
     int nBins = 80;
     float binsize;
@@ -280,23 +299,33 @@ void MassFit(int NumEvts = -1, int dataset = 91599, bool isData = true,
     TH1D *h1_BkgScale_forSysLower = new TH1D("h1_BkgScale_forSysLower", "", ptHFbinsize, ptHF_binedges);
     TH1D *h1_BkgScale_forSysUpper = new TH1D("h1_BkgScale_forSysUpper", "", ptHFbinsize, ptHF_binedges);
     
+    TLorentzVector HFmeson, HFjet, mum, mup, Kmeson, Jpsi, tr_HFmeson;
 
-    for (int ev = 0; ev < NumEvts; ev++)
-    {
+    // Fill the mass plots
+    for (int ev = 0; ev < NumEvts; ev++) {
         BTree->GetEntry(ev);
 
-        if (ev % 10000 == 0)
-            cout << "Executing event " << ev << endl;
+        if (ev%10000 == 0) {
+                double percentage = 100.*ev/NumEvts;
+                std::cout<<"\r"<<percentage<<"\% jets processed."<< std::flush;
+        }
+
         if (jet_rap < etaMin || jet_rap > etaMax)
             continue;
+
         if (jet_pt > ptMax)
             continue;
+
         if (jet_pt < ptMin)
             continue;
+        
         if (!TOS)
             continue;
-        if (DoRecSelEff)
-        {
+        
+        if (WTA_dist > WTA_dist_max)
+            continue;
+
+        if (DoRecSelEff) {
             // cout << Bu_IPCHI2 << ", " << Bu_CHI2 << ", " << Jpsi_CHI2 << ", " << Jpsi_CHI2NDOF << ", " << sqrt(Jpsi_FDCHI2) << endl;
             if (Bu_IPCHI2 > 22)
                 continue;
@@ -308,30 +337,51 @@ void MassFit(int NumEvts = -1, int dataset = 91599, bool isData = true,
                 continue;
             if (fabs(Jpsi_BPVDLS) < 3.2)
                 continue;
-
         }
 
-        TLorentzVector HFmeson, HFjet, mum, mup, Kmeson, Jpsi, tr_HFmeson;
-        mup.SetPxPyPzE(mup_px, mup_py, mup_pz, mup_e);
-        mum.SetPxPyPzE(mum_px, mum_py, mum_pz, mum_e);
-        Kmeson.SetPxPyPzE(K_px, K_py, K_pz, K_e);
+        mup.SetPxPyPzE(mup_px, 
+                       mup_py, 
+                       mup_pz, 
+                       mup_e);
+
+        mum.SetPxPyPzE(mum_px, 
+                       mum_py, 
+                       mum_pz, 
+                       mum_e);
+
+        Kmeson.SetPxPyPzE(K_px, 
+                          K_py, 
+                          K_pz, 
+                          K_e);
+        
         // HFmeson = mup + mum + Kmeson;
-        HFmeson.SetPxPyPzE(HF_px, HF_py, HF_pz, HF_e);
-        tr_HFmeson.SetPxPyPzE(tr_HF_px, tr_HF_py, tr_HF_pz, tr_HF_e);
+        
+        HFmeson.SetPxPyPzE(HF_px, 
+                           HF_py, 
+                           HF_pz, 
+                           HF_e);
+
+        tr_HFmeson.SetPxPyPzE(tr_HF_px, 
+                              tr_HF_py, 
+                              tr_HF_pz, 
+                              tr_HF_e);
 
         // if(dtf_chi2ndf > 5) continue;
         // cout<<bmass_dtf<<endl;
         float bmass = HFmeson.M();
+        
         if (UseDTF)
             bmass = bmass_dtf;
+        
         bool PID_cond = (K_PIDK > 0);
+        
         if (!PID_cond && PID_cut)
             continue;
+        
         if (!isData)
-        {
             if (!isTrueBjet)
                 continue;
-        }
+
         h1_mass->Fill(bmass);
         h1_mass_all->Fill(bmass);
 
@@ -401,7 +451,10 @@ void MassFit(int NumEvts = -1, int dataset = 91599, bool isData = true,
     rootfile = extension_RootFiles + extension + TString(".root");
     plotfile = plotextension + extension + TString(".ps");
     
-    plotfilePDF = plotextension + extension + TString(".pdf");
+    // plotfilePDF = plotextension + extension + TString(".pdf");
+
+    plotfilePDF = Form("./massfit_%s.pdf",(isData)?"data":"mcreco");
+
     plotfileO = plotfilePDF + TString("(");
     plotfileC = plotfilePDF + TString("]");
     
@@ -446,6 +499,10 @@ void MassFit(int NumEvts = -1, int dataset = 91599, bool isData = true,
     // Declare observable x
     std::string latexFileName = "fit_results.tex";
     std::ofstream latexFile(latexFileName);
+
+    TFile *file_workspace;
+    TFile *file_workspace_misid;
+    
     for (int i = 0; i < ptHFbinsize; i++)
     {
         if (i >= ptHFbinsize - 2)
@@ -454,16 +511,26 @@ void MassFit(int NumEvts = -1, int dataset = 91599, bool isData = true,
             nBins = 80;
         binsize = (mass_high - mass_low) / (float)nBins;
 
-        TFile *file_workspace = new TFile( extension_RootFilesMC + Form("workspace%d_", i) + extension_reco + ".root", "READ");
-        TFile *file_workspace_misid = new TFile(extension_RootFilesMC + TString("MisID/") + Form("workspace%d_", i) + extension_misid + TString(".root"), "READ");
+        // file_workspace works when the mass fits are executed for the MCReco first!
+
+        file_workspace       = new TFile((output_folder + Form("workspace%d_", i) + "testing_massfitsmcreco.root").c_str(), "READ");
+        file_workspace_misid = new TFile((output_folder + Form("workspace%d_", i) + "testing_massfits.root").c_str(), "READ");
         
-        std::cout <<  extension_RootFilesMC << Form("workspace%d_", i) << extension_reco << ".root" << std::endl;
-        std::cout << extension_RootFilesMC << TString("MisID/") << extension_misid << TString(".root");
-        
-        if (file_workspace_misid == NULL)
-        {
-            cout << "no file at " << extension_misid << endl;
+        // std::cout << extension_RootFilesMC << Form("workspace%d_", i) << extension_reco << ".root" << std::endl;
+        // std::cout << extension_RootFilesMC << TString("MisID/") << extension_misid << TString(".root");
+
+        if (file_workspace == NULL) {
+            std::cout<<"First execute the massfits for mcreco!"<<std::endl;
+
+            return;
         }
+        
+        if (file_workspace_misid == NULL) {
+            std::cout<<"First execute the massfits for MisID!"<<std::endl;
+
+            return;
+        }
+
         RooWorkspace *w_read = (RooWorkspace *)file_workspace->Get(Form("w%d", i));
         RooWorkspace *w_read_misid = (RooWorkspace *)file_workspace_misid->Get(Form("w%d", i));
         RooRealVar *sigma_ratio, *mean, *sigma1, *sigma2;
@@ -508,14 +575,16 @@ void MassFit(int NumEvts = -1, int dataset = 91599, bool isData = true,
         RooGaussian gauss1("gauss_sig1", "Signal component 1", HFMass, *mean, *sigma1);
         RooGaussian gauss2("gauss_sig2", "Signal component 2", HFMass, *mean, *sigma2);
 
-        mu_sig = new RooRealVar("mu_sig", "mu", 5.279, 5.27, 5.282);
+        mu_sig     = new RooRealVar("mu_sig", "mu", 5.279, 5.27, 5.282);
         alpha1_sig = new RooRealVar("alpha1_sig", "alpha1", 2., 0.01, 10.);
         alpha2_sig = new RooRealVar("alpha2_sig", "alpha2", 2., 0.01, 10.);
 
         alpha1_sig2 = new RooRealVar("alpha1_sig2", "alpha1", 2., 0.01, 10.);
         alpha2_sig2 = new RooRealVar("alpha2_sig2", "alpha2", 2., 0.01, 10.);
+        
         // p1_sig = RooRealVar("p1_sig", "p1", 1., 0.6, 4.);
         // p2_sig = RooRealVar("p2_sig", "p2", 1., 0.6, 4.);
+        
         p1_sig = new RooRealVar("p1_sig", "p1", 2., 1., 6.);
         p2_sig = new RooRealVar("p2_sig", "p2", 3., 1., 6.);
 
@@ -578,7 +647,7 @@ void MassFit(int NumEvts = -1, int dataset = 91599, bool isData = true,
         }
         else
         {
-            return;
+            return; // sorry, but wtf
             mu = new RooRealVar("mu", "mu", 5.33183e+00);
             width = new RooRealVar("width", "width", 2.62897e-02);
             alpha1 = new RooRealVar("alpha1", "alpha1", 1.72233e+00);
@@ -733,7 +802,11 @@ void MassFit(int NumEvts = -1, int dataset = 91599, bool isData = true,
         w->import(*model);
         w->import(B_mass);
         w->Print();
-        w->writeToFile(Form(extension_RootFiles + "workspace%d_", i) + extension + ".root");
+
+        if (isData)
+            w->writeToFile((output_folder + Form("workspace%d_", i) + "testing_massfitsdata.root").c_str());
+        else
+            w->writeToFile((output_folder + Form("workspace%d_", i) + "testing_massfitsmcreco.root").c_str());
 
         cout << "Chi2/dof = " << chi2 << endl;
         cout << "a1 = " << a1->getVal() << endl;
@@ -785,7 +858,7 @@ void MassFit(int NumEvts = -1, int dataset = 91599, bool isData = true,
         Sideband1_Max = (MassMu - 7 * MassSigma) > Sideband1_Min ? (MassMu - 7 * MassSigma) : 5.17;
 
         Sideband2_Min = MassMu + 10 * MassSigma;
-        Sideband2_Max = (MassMu + 25 * MassSigma) < 5.55 ? (MassMu + 25 * MassSigma) : 5.55;
+        Sideband2_Max = (MassMu + 25 * MassSigma) < 5.55 ? (MassMu + 25 * MassSigma) : 5.55; // Biggest difference wrt IC code
         
         float Sideband1_Min_forSysNear = Sideband1_Min + MassSigma;
         float Sideband1_Max_forSysNear = Sideband1_Max;
@@ -1057,7 +1130,11 @@ void MassFit(int NumEvts = -1, int dataset = 91599, bool isData = true,
 
         BkgParams << a1->getVal() << "," << nbkg->getVal() << endl;
         ResonantParams << mu->getVal() << "," << width->getVal() << "," << alpha1->getVal() << "," << p1->getVal() << "," << alpha2->getVal() << "," << p2->getVal() << "," << nsig->getVal() << endl;
-    }
+    } // End of mass fit loop
+
+    file_workspace->Close();
+    file_workspace_misid->Close();
+
     latexFile.close();
 
     ican = 0;

@@ -293,9 +293,13 @@ void MassFit(int NumEvts = -1, int dataset = 91599, bool isData = false,
             nBins = 80;
         binsize = (mass_high - mass_low) / (float)nBins;
 
+        // This lines made no sense in the functioning of the code.
         // TFile *file_workspace = new TFile(output_folder + Form("workspace%d_", i) + extension_reco + ".root", "READ");
         // RooWorkspace *w_read = (RooWorkspace *)file_workspace->Get(Form("w%d", i));
 
+        // EFMC: it seems that this piece of the code is not relevant
+        //       it is only worth reading when the file processed is data!
+        
         w_read = new RooWorkspace(Form("w%d", i));
         RooRealVar *sigma_ratio, *mean, *sigma1, *sigma2;
         RooRealVar *mu_sig, *alpha1_sig, *alpha2_sig, *p1_sig, *p2_sig;
