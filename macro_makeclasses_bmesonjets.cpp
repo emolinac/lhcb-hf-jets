@@ -9,6 +9,8 @@ void macro_makeclasses_bmesonjets()
         // TChain* data_2017 = new TChain("StdHltZJets/DecayTree");
         // TChain* data_2018 = new TChain("StdHltZJets/DecayTree");
 
+        TChain* sim_mcreco_misid = new TChain("Jets/DecayTree");
+
         sim_mc->Add((input_folder + "Bjet_MC_Jpsi2MuMu_HighPT_2016_Sim09k_MD_02092025_full.root").c_str());
         sim_mc->Add((input_folder + "Bjet_MC_Jpsi2MuMu_HighPT_2016_Sim09l_MD_02092025_full.root").c_str());
         // sim_mc->Add((input_folder + "Bjet_MC_Jpsi2MuMu_HighPT_2016_Sim10a_MD_02092025_full.root").c_str());
@@ -55,4 +57,8 @@ void macro_makeclasses_bmesonjets()
         // data_2018->Add((input_folder + "Bjet_Jpsi2MuMu_Data_HighPT_2018_MD_02092025.root").c_str());
         // data_2018->Add((input_folder + "Bjet_Jpsi2MuMu_Data_HighPT_2018_MU_02092025.root").c_str());
         data_2016->MakeClass("TBJetsData");
+
+        sim_mcreco_misid->Add((input_folder + "BjetMisID_MC_nojetid_DTF_Sim09l_MD_05202024_full.root").c_str());
+        sim_mcreco_misid->Add((input_folder + "BjetMisID_MC_nojetid_DTF_Sim09l_MU_05202024_full.root").c_str());
+        sim_mcreco_misid->MakeClass("TBJetsMisID");
 }

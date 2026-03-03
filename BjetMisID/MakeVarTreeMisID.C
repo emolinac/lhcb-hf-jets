@@ -1,139 +1,46 @@
-#include "MisIDTree.C"
+// #include "MisIDTree.C"
+#include "../include/TBJetsMisID.C"
 //#include "MisIDMCTree.C"
 #include <TCanvas.h>
 #include <vector>
 #include <iostream>
-#include "../Bjets/Settings.h"
-#include "../Helpers.h"
 
-//using namespace fastjet;
+#include "fastjet/ClusterSequence.hh"
+
+#include "../Bjets/Settings.h"
+#include "../Helpers_IC.h"
+
+#include "../include/analysis-constants.h"
+#include "../include/analysis-binning.h"
+#include "../include/analysis-cuts.cpp"
+#include "../include/analysis-cuts.h"
+#include "../include/directories.h"
+
+using namespace fastjet;
 using namespace std;
 
-void MakeVarTree(int NumEvts_user = -1, int dataset = 91599, bool isData = false,
-                 bool chargedJetCut_user = false)
+void MakeVarTreeMisID(int NumEvts_user = -1, int dataset = 91599, bool isData = false)
 {
 
-  int NumEvts = NumEvts_user;
-  int NumEvtsTruth = NumEvts_user;
-  bool MCflag = !isData;
-  followHardest = false;
-  truthLevel = false;
-  chargedJetCut = chargedJetCut_user;
-  if (truthLevel)
-  {
-    ghostCut = false;
-  }
+  int NumEvts    = NumEvts_user;
+  int HF_pdgcode = 521;
 
-  int JetMeth = (dataset / 1000) % 10;
-  int flavor = (dataset / 100) % 10;
-  int ptRange = (dataset / 10) % 10;
-  int Mag = (dataset / 1) % 10;
-  int HF_pdgcode = -99;
-
-  if (flavor == 5)
-  {
-    mass_num = 4.2;
-    HF_pdgcode = 521;
-  }
-  else if (flavor == 4)
-  {
-    mass_num = 1.25;
-    HF_pdgcode = 421;
-  }
-  else if (flavor == 1)
-  {
-    mass_num = 0.001;
-    followHardest = true;
-  }
-
-  //
-  //  Naming Convention:
-  //  {$1}{$2}{$3}{$4}{$5}
-  //  $1: Year: 2016 = 6, 2017 = 7, 2018 = 8, All = 9
-  //  $2: jets or dijets: TaggedDijets = 1, else = 2
-  //  $3: flavor: b = 5, c = 4, udsg = 1
-  //  $4: pT: pt15pt20 = 0, pt20pt50 = 1, pt50 = 2, else = 3
-  //  $5: Magnet: MD = 0, MU = 1, Both = 9
-
-  TString str_Mag = "";
-  TString str_pT = "";
-  TString str_level = "";
-  TString str_followHard = "";
-  TString str_flavor = "";
-  TString str_ghost = "";
-
-  TString str_charged = "";
-
-  if (Mag == 0)
-    str_Mag = "_MD";
-  else if (Mag == 1)
-    str_Mag = "_MU";
-
-  if (flavor == 1)
-    str_flavor = "_udsg";
-  else if (flavor == 4)
-    str_flavor = "_c";
-  else if (flavor == 5)
-    str_flavor = "_b";
-
-  // if(ptRange == 0) str_pT = "pt15pt20";
-  // else if(ptRange == 1) str_pT = "pt20pt50";
-  // else if(ptRange == 2) str_pT = "pt50";
-
-  if (isData)
-    str_level = "data";
-  else
-  {
-    if (truthLevel)
-      str_level = "truth";
-    else
-      str_level = "reco";
-  }
-
-  if (flavor == 1)
-    str_followHard = "_hard";
-  else
-  {
-    if (followHardest)
-      str_followHard = "_hard";
-    else
-      str_followHard = "_HF";
-  }
-
-  if (ghostCut)
-    str_ghost = Form("_ghost_%.1f", ghostProb);
-
-  if (chargedJetCut)
-    str_charged = "_charge";
-  // TString str_trees[5];
-  // str_trees[0] = "TaggedDijets/DecayTree";
-  // str_trees[1] = "D0KPiJet/DecayTree";
-  // str_trees[2] = "B0KPiJet/DecayTree";
-  // str_trees[3] = "Jets/DecayTree";
-  TString str_tree;
-    
- TString extension_read, extension_RootFilesMC, extension;
-    extension_RootFilesMC = TString("../../root_files/BjetsMC/MisID/");
-
-  extension = TString("tree_") + str_level + Form("_ev_%d", NumEvts) + Form("_eta_%.1f%.1f", etaMin, etaMax) + str_followHard + str_ghost + str_charged + str_Mag + str_flavor + Form("_%d", dataset);
-
-  MisIDTree Tree(0, dataset, isData);
-  // HFjetTree TreeAnti(0, dataset, !isData);
-
+  mass_num = 4.2;
+  
+  // MisIDTree Tree(0, dataset, isData);
+  TBJetsMisID Tree;
+  
   cout << "Total number of events = " << Tree.fChain->GetEntries() << endl;
+  
   if (NumEvts == -1)
     NumEvts = Tree.fChain->GetEntries();
-  // int NumEvts = 0;
-  // cout <<"Choose number of events (-1: All Events, or enter integer): ";
-  // cin>> NumEvts;
+  
+  TFile f((output_folder + "ntuple_bjets_misid.root").c_str(), "RECREATE");
 
-//  cout << "Executing CAJetAlgo" << endl;
   float dtr_rap;
   float dtr_phi;
   float delta_rap;
   float delta_phi;
-
-  TFile f(extension_RootFilesMC + extension + ".root", "RECREATE");
 
   float jet_pt, jet_eta, tr_jet_pt, tr_jet_eta;
   float jet_rap, tr_jet_rap;
@@ -173,11 +80,11 @@ void MakeVarTree(int NumEvts_user = -1, int dataset = 91599, bool isData = false
 //  LundTree->Branch("raps", &raps);
 //  LundTree->Branch("phis", &phis);
 
-    BTree->Branch("jet_pt", &jet_pt);
-    BTree->Branch("jet_eta", &jet_eta);
-    BTree->Branch("jet_rap", &jet_rap);
+  BTree->Branch("jet_pt", &jet_pt);
+  BTree->Branch("jet_eta", &jet_eta);
+  BTree->Branch("jet_rap", &jet_rap);
 
-    BTree->Branch("jet_px", &jet_px);
+  BTree->Branch("jet_px", &jet_px);
   BTree->Branch("jet_py", &jet_py);
   BTree->Branch("jet_pz", &jet_pz);
   BTree->Branch("jet_e", &jet_e);
@@ -243,12 +150,7 @@ void MakeVarTree(int NumEvts_user = -1, int dataset = 91599, bool isData = false
   BTree->Branch("bmass_dtf", &bmass_dtf);
   BTree->Branch("dtf_chi2ndf", &dtf_chi2ndf);
 
-  // TClonesArray *arr = new TClonesArray("TLorentzVector");
-
-  //
   // Event loop
-  //
-
   int eventNum;
   unsigned long long last_eventNum = 0;
   int events = 0;
@@ -265,17 +167,29 @@ void MakeVarTree(int NumEvts_user = -1, int dataset = 91599, bool isData = false
   float kaonMass = 0.493677;
   float jpsiMass = 3.096916;
 
+  TLorentzVector HFjet, recojet, tr_truthjet, HFmeson, mup, mum, pion, jpsi;
+  TLorentzVector tr_HFjet, tr_pion, tr_mum, tr_mup, tr_HFmeson;
+  TLorentzVector dtr;
+
+  vector<PseudoJet> jetdtrs, tr_jetdtrs;
+
   for (int ev = 0; ev < NumEvts; ev++)
   {
-    Tree.GetEntry(ev);
-    if (ev % 10000 == 0)
-      cout << "Executing event " << ev << endl;
+    jetdtrs.clear();
+    tr_jetdtrs.clear();
 
+    if (ev%10000 == 0) {
+            double percentage = 100.*ev/NumEvts;
+            std::cout<<"\r"<<percentage<<"\% jets processed."<< std::flush;
+    }
+
+    Tree.GetEntry(ev);
+    
     if (ev != 0)
     {
       if (Tree.eventNumber != last_eventNum)
       {
-        maxjetpT_found = false;
+        maxjetpT_found = false; // EFMC: Should we take all the jets in the event?
       }
     }
 
@@ -284,13 +198,15 @@ void MakeVarTree(int NumEvts_user = -1, int dataset = 91599, bool isData = false
     int n_mindr_cand = -999;
     int n_mindr_entry = -999;
 
-    TLorentzVector HFjet, recojet, tr_truthjet, HFmeson, mup, mum, pion, jpsi;
-    TLorentzVector tr_HFjet, tr_pion, tr_mum, tr_mup, tr_HFmeson;
-
-//    vector<PseudoJet> jetdtrs, tr_jetdtrs;
     // TLorentzVector recojet, tr_Zjet, zjet;
-    mup.SetPxPyPzE(Tree.mup_PX / 1000., Tree.mup_PY / 1000., Tree.mup_PZ / 1000., Tree.mup_PE / 1000.);
-    mum.SetPxPyPzE(Tree.mum_PX / 1000., Tree.mum_PY / 1000., Tree.mum_PZ / 1000., Tree.mum_PE / 1000.);
+    mup.SetPxPyPzE(Tree.mup_PX / 1000., 
+                   Tree.mup_PY / 1000., 
+                   Tree.mup_PZ / 1000., 
+                   Tree.mup_PE / 1000.);
+    mum.SetPxPyPzE(Tree.mum_PX / 1000., 
+                   Tree.mum_PY / 1000., 
+                   Tree.mum_PZ / 1000., 
+                   Tree.mum_PE / 1000.);
     jpsi = mup + mum;
     // jpsi.SetE(sqrt(jpsi.E() * jpsi.E() - jpsi.M() * jpsi.M() + jpsiMass * jpsiMass));
     // cout<<jpsi.M()<<",";
@@ -312,21 +228,30 @@ void MakeVarTree(int NumEvts_user = -1, int dataset = 91599, bool isData = false
                         Tree.Jet_mcjet_PZ / 1000.,
                         Tree.Jet_mcjet_PE / 1000.);
 
-    tr_mup.SetPxPyPzE(Tree.mup_TRUEP_X / 1000., Tree.mup_TRUEP_Y / 1000.,
-                      Tree.mup_TRUEP_Z / 1000., Tree.mup_TRUEP_E / 1000.);
-    tr_mum.SetPxPyPzE(Tree.mum_TRUEP_X / 1000., Tree.mum_TRUEP_Y / 1000.,
-                      Tree.mum_TRUEP_Z / 1000., Tree.mum_TRUEP_E / 1000.);
-    tr_pion.SetPxPyPzE(Tree.pi_TRUEP_X / 1000., Tree.pi_TRUEP_Y / 1000.,
-                       Tree.pi_TRUEP_Z / 1000., Tree.pi_TRUEP_E / 1000.);
+    tr_mup.SetPxPyPzE(Tree.mup_TRUEP_X / 1000., 
+                      Tree.mup_TRUEP_Y / 1000.,
+                      Tree.mup_TRUEP_Z / 1000., 
+                      Tree.mup_TRUEP_E / 1000.);
+
+    tr_mum.SetPxPyPzE(Tree.mum_TRUEP_X / 1000., 
+                      Tree.mum_TRUEP_Y / 1000.,
+                      Tree.mum_TRUEP_Z / 1000., 
+                      Tree.mum_TRUEP_E / 1000.);
+
+    tr_pion.SetPxPyPzE(Tree.pi_TRUEP_X / 1000., 
+                       Tree.pi_TRUEP_Y / 1000.,
+                       Tree.pi_TRUEP_Z / 1000., 
+                       Tree.pi_TRUEP_E / 1000.);
 
     HFmeson.SetPxPyPzE(Tree.Bu_PX / 1000.,
                        Tree.Bu_PY / 1000.,
                        Tree.Bu_PZ / 1000.,
                        Tree.Bu_PE / 1000.);
+
     tr_HFmeson = tr_mup + tr_mum + tr_pion;
     // cout<<tr_HFmeson.M()<<",";
 
-    float HF_jet_dR = HFmeson.DeltaR(HFjet);
+    float HF_jet_dR     = HFmeson.DeltaR(HFjet);
     float HF_jet_truedR = tr_HFmeson.DeltaR(tr_HFjet);
     bmass_dtf = Tree.Bu_ConsBu_M[0] / 1000.;
     dtf_chi2ndf = Tree.Bu_ConsBu_chi2[0] / Tree.Bu_ConsBu_nDOF[0];
@@ -346,39 +271,71 @@ void MakeVarTree(int NumEvts_user = -1, int dataset = 91599, bool isData = false
     // cout<<HFmeson.M()<<endl;
 
     bool hasHFhadron = false;
+
     int NumHF = 0;
+    
     for (int dtrs0 = 0; dtrs0 < Tree.Jet_Dtr_nrecodtr; dtrs0++)
     {
-
       float trchi2ndf = Tree.Jet_Dtr_TrackChi2[dtrs0] / Tree.Jet_Dtr_TrackNDF[dtrs0];
-      TLorentzVector dtr(Tree.Jet_Dtr_PX[dtrs0] / 1000.,
-                         Tree.Jet_Dtr_PY[dtrs0] / 1000.,
-                         Tree.Jet_Dtr_PZ[dtrs0] / 1000.,
-                         Tree.Jet_Dtr_E[dtrs0] / 1000.);
+      
+      dtr.SetPxPyPzE(Tree.Jet_Dtr_PX[dtrs0] / 1000.,
+                     Tree.Jet_Dtr_PY[dtrs0] / 1000.,
+                     Tree.Jet_Dtr_PZ[dtrs0] / 1000.,
+                     Tree.Jet_Dtr_E[dtrs0] / 1000.);
 
+      if (abs(Tree.Jet_Dtr_ID[dtrs0]) != HF_pdgcode && 
+          !apply_particle_cuts(dtr.P(), 
+                               dtr.Pt(), 
+                               trchi2ndf, 
+                               Tree.Jet_Dtr_ProbNNghost[dtrs0], 
+                               dtr.Rapidity()))
+        continue;
+
+      jetdtrs.push_back(PseudoJet(Tree.Jet_Dtr_PX[dtrs0] / 1000.,
+                                  Tree.Jet_Dtr_PY[dtrs0] / 1000.,
+                                  Tree.Jet_Dtr_PZ[dtrs0] / 1000.,
+                                  Tree.Jet_Dtr_E[dtrs0] / 1000.));
+      
+      jetdtrs.back().set_user_info(new MyInfo(Tree.Jet_Dtr_ID[dtrs0]));
+      
       if (abs(Tree.Jet_Dtr_ID[dtrs0]) == HF_pdgcode)
       {
         hasHFhadron = true;
         NumHF++;
-        Bfromjet_px = Tree.Jet_Dtr_PX[dtrs0] / 1000.;
-        Bfromjet_py = Tree.Jet_Dtr_PY[dtrs0] / 1000.;
-        Bfromjet_pz = Tree.Jet_Dtr_PZ[dtrs0] / 1000.;
-        Bfromjet_e = Tree.Jet_Dtr_E[dtrs0] / 1000.;
+        // Not used in the whole repo. What was their use then?
+        // Bfromjet_px = Tree.Jet_Dtr_PX[dtrs0] / 1000.;
+        // Bfromjet_py = Tree.Jet_Dtr_PY[dtrs0] / 1000.;
+        // Bfromjet_pz = Tree.Jet_Dtr_PZ[dtrs0] / 1000.;
+        // Bfromjet_e = Tree.Jet_Dtr_E[dtrs0] / 1000.;
       }
     }
+
     if (!hasHFhadron)
       continue;
+    
     if (NumHF > 1)
       continue;
 
     bool hasHFhadron_matched = false;
     for (int dtrs0 = 0; dtrs0 < Tree.Jet_mcjet_nmcdtrs; dtrs0++)
     {
-      float trchi2ndf = 0;
-      TLorentzVector dtr(Tree.Jet_mcjet_dtrPX[dtrs0] / 1000.,
-                         Tree.Jet_mcjet_dtrPY[dtrs0] / 1000.,
-                         Tree.Jet_mcjet_dtrPZ[dtrs0] / 1000.,
-                         Tree.Jet_mcjet_dtrE[dtrs0] / 1000.);
+      dtr.SetPxPyPzE(Tree.Jet_mcjet_dtrPX[dtrs0] / 1000.,
+                     Tree.Jet_mcjet_dtrPY[dtrs0] / 1000.,
+                     Tree.Jet_mcjet_dtrPZ[dtrs0] / 1000.,
+                     Tree.Jet_mcjet_dtrE[dtrs0] / 1000.);
+
+      if (abs(Tree.Jet_mcjet_dtrID[dtrs0]) != HF_pdgcode && 
+          !apply_particle_momentum_cuts(dtr.P(), 
+                                        dtr.Pt(),
+                                        dtr.Rapidity()))
+        continue;
+
+      tr_jetdtrs.push_back(PseudoJet(Tree.Jet_mcjet_dtrPX[dtrs0] / 1000.,
+                                     Tree.Jet_mcjet_dtrPY[dtrs0] / 1000.,
+                                     Tree.Jet_mcjet_dtrPZ[dtrs0] / 1000.,
+                                     Tree.Jet_mcjet_dtrE[dtrs0] / 1000.));
+
+      tr_jetdtrs.back().set_user_info(new MyInfo(Tree.Jet_mcjet_dtrID[dtrs0]));
 
       if (abs(Tree.Jet_mcjet_dtrID[dtrs0]) == HF_pdgcode)
       {
@@ -388,11 +345,8 @@ void MakeVarTree(int NumEvts_user = -1, int dataset = 91599, bool isData = false
                               dtr.E());
         hasHFhadron_matched = true;
       }
-
       // jet_Nmcdtrs++;
     }
-
-
 
     jet_pt = HFjet.Pt();
     jet_eta = HFjet.Eta();

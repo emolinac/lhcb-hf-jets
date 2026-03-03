@@ -1757,7 +1757,7 @@ MisIDTree::MisIDTree(TTree *tree = 0, int dataset = 93539, bool isData = true) :
       // The following code should be used if you want this class to access a chain
       // of trees.
       TChain *chain = new TChain("Jets/DecayTree", "");
-      TString data_dir = "../../data/";
+      TString data_dir = "/home/emolinac/Documents/work/lhcb/b-jets/";
       if (dataset == 91599)
       {
 

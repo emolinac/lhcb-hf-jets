@@ -234,10 +234,11 @@ void MakeVarTreeMC(int NumEvts_user = -1)
         PseudoJet WTA_reco_jet;
                 
         // NOTE: Stripping cuts are not applied at truth level! 
+
         for (int ev = 0; ev < NumEvts; ev++) {
                 jetdtrs.clear();
                 meas_jetdtrs.clear();
-                
+
                 Tree.GetEntry(ev);
 
                 if (ev%10000 == 0) {
@@ -274,6 +275,9 @@ void MakeVarTreeMC(int NumEvts_user = -1)
                                   Tree.MCJet_truth_K_PY / 1000.,
                                   Tree.MCJet_truth_K_PZ / 1000.,
                                   Tree.MCJet_truth_K_PE / 1000.);
+
+                if (!apply_kaon_cuts(Kmeson.Pt()))
+                        continue;
 
                 HFjet.SetPxPyPzE(Tree.MCJet_PX / 1000.,
                                  Tree.MCJet_PY / 1000.,
@@ -412,7 +416,7 @@ void MakeVarTreeMC(int NumEvts_user = -1)
                                                             Tree.MCJet_Dtr_PY[dtrs0] / 1000.,
                                                             Tree.MCJet_Dtr_PZ[dtrs0] / 1000.,
                                                             Tree.MCJet_Dtr_E[dtrs0]  / 1000.));
-                                
+
                                 jetdtrs.back().set_user_info(new MyInfo(Tree.MCJet_Dtr_ID[dtrs0]));
                         }
 
@@ -428,10 +432,6 @@ void MakeVarTreeMC(int NumEvts_user = -1)
                         continue;
 
                 // Check WTA Truth
-                // ClusterSequence WTA_true_jets(jetdtrs, WTA);
-
-                // PseudoJet WTA_true_jet = sorted_by_pt(WTA_true_jets.inclusive_jets())[0];
-
                 WTA_true_jets = ClusterSequence(jetdtrs, WTA);
 
                 WTA_true_jet = sorted_by_pt(WTA_true_jets.inclusive_jets())[0];
@@ -512,9 +512,9 @@ void MakeVarTreeMC(int NumEvts_user = -1)
                                                          Tree.MCJet_recojet_Dtr_PY[dtrs0] / 1000.,
                                                          Tree.MCJet_recojet_Dtr_PZ[dtrs0] / 1000.,
                                                          Tree.MCJet_recojet_Dtr_E[dtrs0]  / 1000.));
-                        
-                        meas_jetdtrs.back().set_user_info(new MyInfo(Tree.MCJet_recojet_Dtr_ID[dtrs0]));
 
+                        meas_jetdtrs.back().set_user_info(new MyInfo(Tree.MCJet_recojet_Dtr_ID[dtrs0]));
+                        
                         if (abs(Tree.MCJet_recojet_Dtr_ID[dtrs0]) == HF_pdgcode) {
                                 meas_HFmeson.SetPxPyPzE(dtr0.Px(), dtr0.Py(), dtr0.Pz(), dtr0.E());
                                 
@@ -539,16 +539,16 @@ void MakeVarTreeMC(int NumEvts_user = -1)
                         NumRecoHF++;
 
                 // Check WTA reco
-                // ClusterSequence WTA_reco_jets(meas_jetdtrs, WTA);
+                if (meas_jetdtrs.size() > 0) {
+                        WTA_reco_jets = ClusterSequence(meas_jetdtrs, WTA);
 
-                // PseudoJet WTA_reco_jet = sorted_by_pt(WTA_reco_jets.inclusive_jets())[0];
-
-                WTA_reco_jets = ClusterSequence(meas_jetdtrs, WTA);
-
-                WTA_reco_jet = sorted_by_pt(WTA_reco_jets.inclusive_jets())[0];
-                
-                WTA_reco_axis.SetPxPyPzE(WTA_reco_jet.px(), WTA_reco_jet.py(), WTA_reco_jet.pz(), WTA_reco_jet.e());
-                WTA_reco_dist = meas_HFmeson.DeltaR(WTA_reco_axis, true);
+                        WTA_reco_jet = sorted_by_pt(WTA_reco_jets.inclusive_jets())[0];
+                        
+                        WTA_reco_axis.SetPxPyPzE(WTA_reco_jet.px(), WTA_reco_jet.py(), WTA_reco_jet.pz(), WTA_reco_jet.e());
+                        WTA_reco_dist = meas_HFmeson.DeltaR(WTA_reco_axis, true);
+                } else {
+                        WTA_reco_dist = -999;
+                }
 
                 for (int dtrs0 = 0; dtrs0 < Tree.MCJet_recojet_nrecodtrs; dtrs0++) {
                         if (std::abs(Tree.MCJet_recojet_Dtr_ID[dtrs0]) < 100)

@@ -9,8 +9,16 @@
 #include "TCanvas.h"
 #include "TAxis.h"
 #include "TH1.h"
+
 #include "../Bjets/Settings.h"
-#include "../Helpers.h"
+#include "../Helpers_IC.h"
+
+#include "../include/analysis-constants.h"
+#include "../include/analysis-binning.h"
+#include "../include/analysis-cuts.cpp"
+#include "../include/analysis-cuts.h"
+#include "../include/directories.h"
+
 
 using namespace RooFit;
 
@@ -19,138 +27,28 @@ void MassFit(int NumEvts = -1, int dataset = 91599, bool isData = false,
              float ptmin_user = pTLow,
              float ptmax_user = 250)
 {
-    bool MCflag = !isData;
-    followHardest = false;
-    truthLevel = false;
-    chargedJetCut = false;
     ptMin = ptmin_user;
     ptMax = ptmax_user;
-    if (truthLevel)
-    {
-        ghostCut = false;
-    }
-    int year = (dataset / 10000) % 10;
-    int JetMeth = (dataset / 1000) % 10;
-    int flavor = (dataset / 100) % 10;
-    int ptRange = (dataset / 10) % 10;
-    int Mag = (dataset / 1) % 10;
-    int HF_pdgcode = -99;
-    if (flavor == 5)
-    {
-        mass_num = 4.2;
-        HF_pdgcode = 521;
-    }
-    else if (flavor == 4)
-    {
-        mass_num = 1.25;
-        HF_pdgcode = 421;
-    }
-    else if (flavor == 1)
-    {
-        mass_num = 0.001;
-        followHardest = true;
-    }
-    TString str_Mag = "";
-    TString str_pT = "";
-    TString str_level = "";
-    TString str_followHard = "";
-    TString str_flavor = "";
-    TString str_ghost = "";
-    TString str_charged = "";
-    TString str_DTF = "";
-    TString str_PID = "";
-    TString str_year = "";
 
-    if (year == 6)
-        str_year = "2016";
-    else if (year == 7)
-        str_year = "2017";
-    else if (year == 8)
-        str_year = "2018";
-    if (DTF_cut)
-        str_DTF = "_DTF";
-    if (PID_cut)
-        str_PID = "_PID";
+    int HF_pdgcode = 521;
+    
+    mass_num = 4.2;
 
-    if (Mag == 0)
-        str_Mag = "_MD";
-    else if (Mag == 1)
-        str_Mag = "_MU";
-    if (flavor == 1)
-        str_flavor = "_udsg";
-    else if (flavor == 4)
-        str_flavor = "_c";
-    else if (flavor == 5)
-        str_flavor = "_b";
-    if (isData)
-        str_level = "data";
-    else
-    {
-        if (truthLevel)
-            str_level = "truth";
-        else
-            str_level = "reco";
-    }
-    if (flavor == 1)
-        str_followHard = "_hard";
-    else
-    {
-        if (followHardest)
-            str_followHard = "_hard";
-        else
-            str_followHard = "_HF";
-    }
-
-    if (ghostCut)
-        str_ghost = Form("_ghost_%.1f", ghostProb);
-
-    if (chargedJetCut)
-        str_charged = "_charge";
-
-    TString extension, extension_reco, extension_RootFiles, extension_plots;
-    extension_RootFiles = "../../root_files/BjetsMC/";
-    extension_reco = TString("massfit_") + "reco" + Form("_ev_%d", NumEvts) + Form("_ptj_%d%d", int(ptMin), int(ptMax)) + Form("_eta_%.1f%.1f", etaMin, etaMax) + str_ghost + str_charged + str_Mag + str_flavor + str_DTF + str_PID + Form("_%d", dataset);
-    extension = TString("massfit_") + str_level + Form("_ev_%d", NumEvts) + Form("_ptj_%d%d", int(ptMin), int(ptMax)) + Form("_eta_%.1f%.1f", etaMin, etaMax) + str_ghost + str_charged + str_Mag + str_flavor + str_DTF + str_PID + Form("_%d", dataset);
-    // Setup Tree
-    TString extension_read;
-    //TString dir_deadcone("$LUND/BjetMisID/");
-    extension_read = TString("tree_") + str_level + Form("_ev_%d", NumEvts) + Form("_eta_%.1f%.1f", etaMin, etaMax) + str_followHard + str_ghost + str_charged + str_Mag + str_flavor + Form("_%d", dataset);
-
-    TFile fread(extension_RootFiles + "MisID/" + extension_read + ".root", "READ");
-    TFile f(extension_RootFiles + "MisID/" + extension + ".root", "RECREATE");
+    TFile fread((output_folder + "ntuple_bjets_misid.root").c_str(), "READ");
+    TFile f((output_folder + "massfit.root").c_str(), "RECREATE");
+    
     TChain *BTree = new TChain("BTree", "");
-    vector<int> vec_datasets;
-    if (Mag == 0)
-        vec_datasets = {61590, 71590, 81590};
-    else if (Mag == 1)
-        vec_datasets = {61591, 71591, 81591};
-    else
-        vec_datasets = {61590, 61591, 71590, 71591, 81590, 81591};
 
-    // if (year == 9 && JetMeth != 9)
-    // {
-    //     for (int i = 0; i < vec_datasets.size(); i++)
-    //     {
-    //         Mag = (vec_datasets[i] / 1) % 10;
-    //         if (Mag == 0)
-    //             str_Mag = "_MD";
-    //         else if (Mag == 1)
-    //             str_Mag = "_MU";
-    //         extension_read = TString("tree_") + str_level + Form("_ev_%d", NumEvts) + Form("_eta_%.1f%.1f", etaMin, etaMax) + str_followHard + str_ghost + str_charged + str_Mag + str_flavor + Form("_%d", vec_datasets[i]);
-
-    //         BTree->Add("hists/" + extension_read + ".root/BTree");
-    //     }
-    // }
-    // else
-    // {
-    extension_read = TString("tree_") + str_level + Form("_ev_%d", NumEvts) + Form("_eta_%.1f%.1f", etaMin, etaMax) + str_followHard + str_ghost + str_charged + str_Mag + str_flavor + Form("_%d", dataset);
-    BTree->Add(extension_RootFiles + "MisID/" + extension_read + ".root/BTree");
-    // }
+    BTree->Add((output_folder + "ntuple_bjets_misid.root/BTree").c_str());
+    
     if (NumEvts > BTree->GetEntries())
         NumEvts = BTree->GetEntries();
+    
     if (NumEvts == -1)
         NumEvts = BTree->GetEntries();
+    
     cout << BTree->GetEntries() << endl;
+    
     float mup_px, mup_py, mup_pz, mup_e;
     float mum_px, mum_py, mum_pz, mum_e;
     float pi_px, pi_py, pi_pz, pi_e, pi_PIDK;
@@ -161,6 +59,7 @@ void MassFit(int NumEvts = -1, int dataset = 91599, bool isData = false,
     float jet_eta;
     bool isTrueBjet, TOS;
     int nSV;
+    
     BTree->SetBranchAddress("HF_px", &HF_px);
     BTree->SetBranchAddress("HF_py", &HF_py);
     BTree->SetBranchAddress("HF_pz", &HF_pz);
@@ -225,12 +124,18 @@ void MassFit(int NumEvts = -1, int dataset = 91599, bool isData = false,
 
     TH1D *h1_mass = new TH1D("h1_mass", "", nBins, mass_low, mass_high);
     TH1D *h1_mass_all = new TH1D("h1_mass_all", "", nBins + 17, 4.8, mass_high);
+    
+    TLorentzVector HFmeson, HFjet, mum, mup, pion, jpsi, tr_HFmeson;
+
     for (int ev = 0; ev < NumEvts; ev++)
     {
         BTree->GetEntry(ev);
 
-        if (ev % 10000 == 0)
-            cout << "Executing event " << ev << endl;
+        if (ev%10000 == 0) {
+            double percentage = 100.*ev/NumEvts;
+            std::cout<<"\r"<<percentage<<"\% jets processed."<< std::flush;
+        }
+        
         if (jet_eta < etaMin || jet_eta > etaMax)
             continue;
         if (jet_pt > ptMax)
@@ -239,8 +144,6 @@ void MassFit(int NumEvts = -1, int dataset = 91599, bool isData = false,
             continue;
         // if (!TOS)
         //     continue;
-
-        TLorentzVector HFmeson, HFjet, mum, mup, pion, jpsi, tr_HFmeson;
 
         tr_HFmeson.SetPxPyPzE(tr_HF_px, tr_HF_py, tr_HF_pz, tr_HF_e);
         HFmeson.SetPxPyPzE(HF_px, HF_py, HF_pz, HF_e);
@@ -347,8 +250,9 @@ void MassFit(int NumEvts = -1, int dataset = 91599, bool isData = false,
     TString plotfileO;
     TString plotfileC;
     // TString OutputFileBase	= outbase+outinfo;
-    extension_plots = "../../plots/BjetsMC/MisID/";
-    rootfile = extension_RootFiles + "MisID/" +  extension + TString(".root");
+    TString extension_plots = "./plots/";
+    TString extension       = "testing_massfits";
+    rootfile = output_folder +  extension + TString(".root");
     plotfile = extension_plots + extension + TString(".ps");
     plotfilePDF = extension_plots + extension + TString(".pdf");
     plotfileO = plotfilePDF + TString("(");
@@ -379,6 +283,8 @@ void MassFit(int NumEvts = -1, int dataset = 91599, bool isData = false,
     // ---------------------------------------
 
     // Declare observable x
+    RooWorkspace *w_read;
+
     for (int i = 0; i < ptHFbinsize; i++)
     {
         if (i >= ptHFbinsize - 3)
@@ -387,8 +293,10 @@ void MassFit(int NumEvts = -1, int dataset = 91599, bool isData = false,
             nBins = 80;
         binsize = (mass_high - mass_low) / (float)nBins;
 
-        TFile *file_workspace = new TFile(extension_RootFiles + "MisID/" + Form("workspace%d_", i) + extension_reco + ".root", "READ");
-        RooWorkspace *w_read = (RooWorkspace *)file_workspace->Get(Form("w%d", i));
+        // TFile *file_workspace = new TFile(output_folder + Form("workspace%d_", i) + extension_reco + ".root", "READ");
+        // RooWorkspace *w_read = (RooWorkspace *)file_workspace->Get(Form("w%d", i));
+
+        w_read = new RooWorkspace(Form("w%d", i));
         RooRealVar *sigma_ratio, *mean, *sigma1, *sigma2;
         RooRealVar *mu_sig, *alpha1_sig, *alpha2_sig, *p1_sig, *p2_sig;
         RooRealVar *mu, *width, *alpha1, *alpha2, *p1, *p2;
@@ -644,7 +552,7 @@ void MassFit(int NumEvts = -1, int dataset = 91599, bool isData = false,
         w->import(*model);
         w->import(B_mass);
         w->Print();
-        w->writeToFile(extension_RootFiles + "MisID/" + Form("workspace%d_", i) + extension + ".root");
+        w->writeToFile(output_folder + Form("workspace%d_", i) + extension + ".root");
 
         cout << "Chi2/dof = " << chi2 << endl;
         // cout << sigma_arg->getVal() << endl;

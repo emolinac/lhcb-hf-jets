@@ -1176,48 +1176,48 @@ void SetAbsHist(TH2 *h2)
   }
 }
 
-int SampleTH1(TH1D *hist, TRandom3 *randomGenerator)
-{
-  int numBins = hist->GetNbinsX();
-  double cumulativeProbabilities[numBins + 1];
+// int SampleTH1(TH1D *hist, TRandom3 *randomGenerator)
+// {
+//   int numBins = hist->GetNbinsX();
+//   double cumulativeProbabilities[numBins + 1];
 
-  // Fill the array with cumulative probabilities
-  cumulativeProbabilities[0] = 0.0;
-  for (int i = 1; i <= numBins; ++i)
-  {
-    cumulativeProbabilities[i] = cumulativeProbabilities[i - 1] + hist->GetBinContent(i);
-  }
+//   // Fill the array with cumulative probabilities
+//   cumulativeProbabilities[0] = 0.0;
+//   for (int i = 1; i <= numBins; ++i)
+//   {
+//     cumulativeProbabilities[i] = cumulativeProbabilities[i - 1] + hist->GetBinContent(i);
+//   }
 
-  // Generate a random number between 0 and 1
-  // TRandom3 randomGenerator;
+//   // Generate a random number between 0 and 1
+//   // TRandom3 randomGenerator;
 
-  double randomValue = randomGenerator->Uniform();
+//   double randomValue = randomGenerator->Uniform();
 
-  // Find the bin corresponding to the generated random number
-  int selectedBin = 0;
-  for (int i = 1; i <= numBins; ++i)
-  {
-    if (randomValue <= cumulativeProbabilities[i])
-    {
-      selectedBin = i;
-      break;
-    }
-  }
+//   // Find the bin corresponding to the generated random number
+//   int selectedBin = 0;
+//   for (int i = 1; i <= numBins; ++i)
+//   {
+//     if (randomValue <= cumulativeProbabilities[i])
+//     {
+//       selectedBin = i;
+//       break;
+//     }
+//   }
 
-  // Get the interval corresponding to the selected bin
-  double binLowEdge = hist->GetXaxis()->GetBinLowEdge(selectedBin);
-  double binWidth = hist->GetXaxis()->GetBinWidth(selectedBin);
+//   // Get the interval corresponding to the selected bin
+//   double binLowEdge = hist->GetXaxis()->GetBinLowEdge(selectedBin);
+//   double binWidth = hist->GetXaxis()->GetBinWidth(selectedBin);
 
-  double intervalStart = binLowEdge;
-  double intervalEnd = binLowEdge + binWidth;
+//   double intervalStart = binLowEdge;
+//   double intervalEnd = binLowEdge + binWidth;
 
-  // Output the result
-  // std::cout << "Generated random number: " << randomValue << std::endl;
-  // std::cout << "Selected bin: " << selectedBin << std::endl;
-  // std::cout << "Corresponding interval: [" << intervalStart << ", " << intervalEnd << "]" << std::endl;
+//   // Output the result
+//   // std::cout << "Generated random number: " << randomValue << std::endl;
+//   // std::cout << "Selected bin: " << selectedBin << std::endl;
+//   // std::cout << "Corresponding interval: [" << intervalStart << ", " << intervalEnd << "]" << std::endl;
 
-  return selectedBin;
-}
+//   return selectedBin;
+// }
 
 double CalculateChi2NDF(TH2 *h1, TH2 *h2)
 {

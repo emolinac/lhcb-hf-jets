@@ -409,6 +409,9 @@ void MakeVarTreeData(int NumEvts_user = -1,
                                   Tree.K_PZ / 1000., 
                                   Tree.K_PE / 1000.);
 
+                if (!apply_kaon_cuts(Kmeson.Pt()))
+                        continue;
+
                 Jpsi.SetPxPyPzE(Tree.Jpsi_PX / 1000., 
                                 Tree.Jpsi_PY / 1000., 
                                 Tree.Jpsi_PZ / 1000., 

@@ -9,7 +9,9 @@
 
 bool apply_jet_cuts(double jet_eta, double jet_pt);
 
-bool apply_muon_cuts(double deltaR_mu_jet, double mu_pt, double mu_eta);
+bool apply_muon_cuts(double mu_pt);
+
+bool apply_kaon_cuts(double kaon_pt);
 
 bool apply_chargedparticle_cuts(double charge, double p, double pt, double chi2ndf, double probnnghost, double eta);
 
