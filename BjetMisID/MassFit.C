@@ -35,7 +35,7 @@ void MassFit(int NumEvts = -1, int dataset = 91599, bool isData = false,
     mass_num = 4.2;
 
     TFile fread((output_folder + "ntuple_bjets_misid.root").c_str(), "READ");
-    TFile f((output_folder + "massfit.root").c_str(), "RECREATE");
+    TFile f((output_folder + "mass-fits/massfit.root").c_str(), "RECREATE");
     
     TChain *BTree = new TChain("BTree", "");
 
@@ -556,7 +556,7 @@ void MassFit(int NumEvts = -1, int dataset = 91599, bool isData = false,
         w->import(*model);
         w->import(B_mass);
         w->Print();
-        w->writeToFile(output_folder + Form("workspace%d_", i) + extension + ".root");
+        w->writeToFile(output_folder + Form("mass-fits/workspace%d_", i) + extension + ".root");
 
         cout << "Chi2/dof = " << chi2 << endl;
         // cout << sigma_arg->getVal() << endl;

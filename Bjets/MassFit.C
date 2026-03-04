@@ -261,7 +261,7 @@ void MassFit(int NumEvts = -1, int dataset = 91599, bool isData = true,
     vector<float> vec_bkg_frac, vec_res_frac, vec_bkg_yield, vec_sig_yield;
 
     std::string type_of_event = (isData) ? "data" : "mcreco";
-    TFile f((output_folder + "results_mass_fit_" + type_of_event + ".root").c_str(), "RECREATE");
+    TFile f((output_folder + "mass-fits/results_mass_fit_" + type_of_event + ".root").c_str(), "RECREATE");
 
     int nBins = 80;
     float binsize;
@@ -453,7 +453,7 @@ void MassFit(int NumEvts = -1, int dataset = 91599, bool isData = true,
     
     // plotfilePDF = plotextension + extension + TString(".pdf");
 
-    plotfilePDF = Form("./massfit_%s.pdf",(isData)?"data":"mcreco");
+    plotfilePDF = Form("./plots/massfit_%s.pdf",(isData)?"data":"mcreco");
 
     plotfileO = plotfilePDF + TString("(");
     plotfileC = plotfilePDF + TString("]");
@@ -513,8 +513,8 @@ void MassFit(int NumEvts = -1, int dataset = 91599, bool isData = true,
 
         // file_workspace works when the mass fits are executed for the MCReco first!
 
-        file_workspace       = new TFile((output_folder + Form("workspace%d_", i) + "testing_massfitsmcreco.root").c_str(), "READ");
-        file_workspace_misid = new TFile((output_folder + Form("workspace%d_", i) + "testing_massfits.root").c_str(), "READ");
+        file_workspace       = new TFile((output_folder + Form("mass-fits/workspace%d_", i) + "testing_massfitsmcreco.root").c_str(), "READ");
+        file_workspace_misid = new TFile((output_folder + Form("mass-fits/workspace%d_", i) + "testing_massfits.root").c_str(), "READ");
         
         // std::cout << extension_RootFilesMC << Form("workspace%d_", i) << extension_reco << ".root" << std::endl;
         // std::cout << extension_RootFilesMC << TString("MisID/") << extension_misid << TString(".root");
@@ -804,9 +804,9 @@ void MassFit(int NumEvts = -1, int dataset = 91599, bool isData = true,
         w->Print();
 
         if (isData)
-            w->writeToFile((output_folder + Form("workspace%d_", i) + "testing_massfitsdata.root").c_str());
+            w->writeToFile((output_folder + Form("mass-fits/workspace%d_", i) + "testing_massfitsdata.root").c_str());
         else
-            w->writeToFile((output_folder + Form("workspace%d_", i) + "testing_massfitsmcreco.root").c_str());
+            w->writeToFile((output_folder + Form("mass-fits/workspace%d_", i) + "testing_massfitsmcreco.root").c_str());
 
         cout << "Chi2/dof = " << chi2 << endl;
         cout << "a1 = " << a1->getVal() << endl;
@@ -1114,7 +1114,7 @@ void MassFit(int NumEvts = -1, int dataset = 91599, bool isData = true,
             sideline2high->Draw("SAME");
             leg_pub->Draw("SAME");
 
-            c0->SaveAs("BMass.pdf");
+            c0->SaveAs("./plots/BMass.pdf");
         }
 
         }
