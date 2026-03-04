@@ -166,8 +166,8 @@ void SimpleUnfold(int NumEvts = -1,
     extension = extension_prefix + extension;
     
     
-    TFile *file_eff = new TFile(extension_RootFilesMC + extension_eff + TString(".root"), "READ");
-    TFile *file_decay = new TFile(extension_RootFilesMC + "HFeff_truth_ev_-1" + str_Mag + str_flavor + str_PID + Form("_%d.root", dataset), "READ");
+    TFile *file_eff = new TFile((output_folder + "ntuple_bjets_mc.root").c_str(), "READ");
+    // TFile *file_decay = new TFile(extension_RootFilesMC + "HFeff_truth_ev_-1" + str_Mag + str_flavor + str_PID + Form("_%d.root", dataset), "READ");
 //    TFile *file_decay = new TFile("HFeff_truth_ev_-1_b_PID_91599.root" , "READ");
     
     TChain *BTree = new TChain("BTree", "");
@@ -208,6 +208,7 @@ void SimpleUnfold(int NumEvts = -1,
         cout << extension_read << endl;
         BTree->Add(extension_RootFilesMC  + extension_read + ".root/BTree");
     }
+
     if (NumEvts > BTree->GetEntries())
         NumEvts = BTree->GetEntries();
     if (NumEvts == -1)
@@ -243,15 +244,15 @@ void SimpleUnfold(int NumEvts = -1,
     TH2D *h2_SVTag_eff_denom_z = (TH2D *)file_eff->Get("h2_SVTag_eff_denom_z");
     TH2D *h2_SVTag_eff_denom = (TH2D *)file_eff->Get("h2_SVTag_eff_denom");
     
-    TH1D *h1_recoHF_HFpt = (TH1D *)file_decay->Get("num_efficiency_HFpt");
-    TH1D *h1_recoHF_jetpt = (TH1D *)file_decay->Get("num_efficiency_jetpt");
-    TH2D *h2_recoHF_HFpteta = (TH2D *)file_decay->Get("num_efficiency_HFpteta");
-    TH3D *h3_recoHF_HFptetajetpt = (TH3D *)file_decay->Get("num_efficiency_HFptetajetpt");
+    TH1D *h1_recoHF_HFpt = (TH1D *)file_eff->Get("num_efficiency_HFpt");
+    TH1D *h1_recoHF_jetpt = (TH1D *)file_eff->Get("num_efficiency_jetpt");
+    TH2D *h2_recoHF_HFpteta = (TH2D *)file_eff->Get("num_efficiency_HFpteta");
+    TH3D *h3_recoHF_HFptetajetpt = (TH3D *)file_eff->Get("num_efficiency_HFptetajetpt");
     
-    TH1D *h1_HFeff_HFpt = (TH1D *)file_decay->Get("efficiency_HFpt");
-    TH1D *h1_HFeff_jetpt = (TH1D *)file_decay->Get("efficiency_jetpt");
-    TH2D *h2_HFeff_HFpteta = (TH2D *)file_decay->Get("efficiency_HFpteta");
-    TH3D *h3_HFeff_HFptetajetpt = (TH3D *)file_decay->Get("efficiency_HFptetajetpt");
+    TH1D *h1_HFeff_HFpt = (TH1D *)file_eff->Get("efficiency_HFpt");
+    TH1D *h1_HFeff_jetpt = (TH1D *)file_eff->Get("efficiency_jetpt");
+    TH2D *h2_HFeff_HFpteta = (TH2D *)file_eff->Get("efficiency_HFpteta");
+    TH3D *h3_HFeff_HFptetajetpt = (TH3D *)file_eff->Get("efficiency_HFptetajetpt");
     
 //    /////////////////// Mass Fit Parameters /////////////////////////////////
     TString extension_mass("");
