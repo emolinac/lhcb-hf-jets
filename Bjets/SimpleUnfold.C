@@ -11,10 +11,15 @@
 #include <TLegend.h>
 #include <TEfficiency.h>
 #include "Settings.h"
-#include "../Helpers.h"
 
+#include "../Helpers_IC.h"
+#include "../include/analysis-constants.h"
+#include "../include/analysis-binning.h"
+#include "../include/analysis-cuts.cpp"
+#include "../include/analysis-cuts.h"
+#include "../include/directories.h"
 
- using namespace std;
+using namespace std;
 
 void SimpleUnfold(int NumEvts = -1,
                   int dataset = 91599,
@@ -166,48 +171,49 @@ void SimpleUnfold(int NumEvts = -1,
     extension = extension_prefix + extension;
     
     
-    TFile *file_eff = new TFile((output_folder + "ntuple_bjets_mc.root").c_str(), "READ");
+    TFile *file_eff = new TFile((output_folder + "bjets_efficiencies.root").c_str(), "READ");
     // TFile *file_decay = new TFile(extension_RootFilesMC + "HFeff_truth_ev_-1" + str_Mag + str_flavor + str_PID + Form("_%d.root", dataset), "READ");
 //    TFile *file_decay = new TFile("HFeff_truth_ev_-1_b_PID_91599.root" , "READ");
     
     TChain *BTree = new TChain("BTree", "");
-    vector<int> vec_datasets;
-    if (Mag == 0)
-        vec_datasets = {61590, 71590, 81590};
-    else if (Mag == 1)
-        vec_datasets = {61591, 71591, 81591};
-    else
-        vec_datasets = {61590, 61591, 71590, 71591, 81590, 81591};
+    BTree->Add((output_folder + "ntuple_bjets_mcreco.root/BTree").c_str());
+    // vector<int> vec_datasets;
+    // if (Mag == 0)
+    //     vec_datasets = {61590, 71590, 81590};
+    // else if (Mag == 1)
+    //     vec_datasets = {61591, 71591, 81591};
+    // else
+    //     vec_datasets = {61590, 61591, 71590, 71591, 81590, 81591};
     
-    cout << "Loading dataset(s): " << endl;
-    if (year == 9 && JetMeth != 9)
-    {
-        for (int i = 0; i < vec_datasets.size(); i++)
-        {
-            Mag = (vec_datasets[i] / 1) % 10;
-            if (Mag == 0)
-                str_Mag = "_MD";
-            else if (Mag == 1)
-                str_Mag = "_MU";
-            extension_read = TString("tree_") + str_level + Form("_ev_%d", NumEvts) + Form("_eta_%.1f%.1f", etaMin, etaMax) + str_followHard + str_ghost + str_Mag + str_flavor + str_L0 + str_simversion + Form("_%d", vec_datasets[i]);
-            if (!(DoRecSelEff || DoSignalSys || DoUnfoldPrior))        
-            {
-              extension_read = extension_prefix + extension_read;
-            }
-            cout << extension_read << endl;
-            BTree->Add(extension_RootFilesMC  + extension_read + ".root/BTree");
-        }
-    }
-    else
-    {
-        extension_read = TString("tree_") + str_level + Form("_ev_%d", NumEvts) + Form("_eta_%.1f%.1f", etaMin, etaMax) + str_followHard + str_ghost + str_Mag + str_flavor + str_L0 + str_simversion + Form("_%d", dataset);
-        if (!(DoRecSelEff || DoSignalSys || DoUnfoldPrior))        
-        {
-          extension_read = extension_prefix + extension_read;
-        }
-        cout << extension_read << endl;
-        BTree->Add(extension_RootFilesMC  + extension_read + ".root/BTree");
-    }
+    // cout << "Loading dataset(s): " << endl;
+    // if (year == 9 && JetMeth != 9)
+    // {
+    //     for (int i = 0; i < vec_datasets.size(); i++)
+    //     {
+    //         Mag = (vec_datasets[i] / 1) % 10;
+    //         if (Mag == 0)
+    //             str_Mag = "_MD";
+    //         else if (Mag == 1)
+    //             str_Mag = "_MU";
+    //         extension_read = TString("tree_") + str_level + Form("_ev_%d", NumEvts) + Form("_eta_%.1f%.1f", etaMin, etaMax) + str_followHard + str_ghost + str_Mag + str_flavor + str_L0 + str_simversion + Form("_%d", vec_datasets[i]);
+    //         if (!(DoRecSelEff || DoSignalSys || DoUnfoldPrior))        
+    //         {
+    //           extension_read = extension_prefix + extension_read;
+    //         }
+    //         cout << extension_read << endl;
+    //         BTree->Add(extension_RootFilesMC  + extension_read + ".root/BTree");
+    //     }
+    // }
+    // else
+    // {
+    //     extension_read = TString("tree_") + str_level + Form("_ev_%d", NumEvts) + Form("_eta_%.1f%.1f", etaMin, etaMax) + str_followHard + str_ghost + str_Mag + str_flavor + str_L0 + str_simversion + Form("_%d", dataset);
+    //     if (!(DoRecSelEff || DoSignalSys || DoUnfoldPrior))        
+    //     {
+    //       extension_read = extension_prefix + extension_read;
+    //     }
+    //     cout << extension_read << endl;
+    //     BTree->Add(extension_RootFilesMC  + extension_read + ".root/BTree");
+    // }
 
     if (NumEvts > BTree->GetEntries())
         NumEvts = BTree->GetEntries();
@@ -268,8 +274,11 @@ void SimpleUnfold(int NumEvts = -1,
       extension_mass = "recselsys_" + extension_mass;
     if (DoSignalSys)
       extension_mass = "sys_" + extension_mass;
+
     extension_mass = extension_RootFilesData + extension_mass;
-    TFile f_massfit( extension_mass, "READ");
+    
+    TFile f_massfit((output_folder + "mass-fits/results_mass_fit_mcreco.root").c_str(), "READ");
+    
     TH1D *h1_MassMin = (TH1D *)f_massfit.Get("h1_MassMin");
     TH1D *h1_MassMax = (TH1D *)f_massfit.Get("h1_MassMax");
     TH1D *h1_BkgScale = (TH1D *)f_massfit.Get("h1_BkgScale");
@@ -282,15 +291,16 @@ void SimpleUnfold(int NumEvts = -1,
     if (h1_BkgScaleFar == NULL)
       cout << "NULL FAR!" << endl;
 
-    //if (DoUnfoldPrior)
-   // {
-      TFile file_reco_weights("../../root_files/Bjets/MC_DATA_WEIGHTS.root", "READ");
-    
-      TH3D *h3_ptzjt_ratio = (TH3D *)file_reco_weights.Get("ptzjt_ratio");
-      // h3_HFptjetptrap_ratio = (TH3D *)file_reco_weights.Get("h3_HFptjetptrap_ratio");
-   // }
-    
-    TFile *f = TFile::Open(extension_RootFilesMC + extension + ".root", "RECREATE");
+    TFile* file_reco_weights;
+    TH3D*  h3_ptzjt_ratio;
+
+    if (DoUnfoldPrior) {
+      file_reco_weights = new TFile("../../root_files/Bjets/MC_DATA_WEIGHTS.root", "READ"); 
+
+      h3_ptzjt_ratio = (TH3D *)file_reco_weights->Get("ptzjt_ratio");
+    }
+      
+    TFile *f = TFile::Open((output_folder + "bjets_corrections.root").c_str(), "RECREATE");
     
     //Reco 1D Observables
     TH1D *h1_z = new TH1D("z", "", zbinsize, z_binedges);
