@@ -1077,286 +1077,286 @@ void SimpleUnfold(int NumEvts = -1,
         
     ////////////////////////////////////////////////////
         
-/*
-        int ican = -1, iframe = -1, itext = -1;
-        TCanvas *ccan[1000];
-        TH1F *frame[1000];
-        TLatex *text[1000];
-        for (int i = 0; i < 1000; i++)
-        {
-            text[i] = new TLatex();
-            text[i]->SetNDC(kTRUE);
-            text[i]->SetTextSize(0.06);
-        }
-        TLatex Tl;
-        Tl.SetNDC(kTRUE);
-        Tl.SetTextSize(0.04);
-        //
-        Int_t lhcbFont = 132; // Old LHCb style: 62;
-        // Line thickness
-        float_t lhcbWidth = 2.00; // Old LHCb style: 3.00;
-        // Text size
-        float_t lhcbTSize = 0.06;
+
+//         int ican = -1, iframe = -1, itext = -1;
+//         TCanvas *ccan[1000];
+//         TH1F *frame[1000];
+//         TLatex *text[1000];
+//         for (int i = 0; i < 1000; i++)
+//         {
+//             text[i] = new TLatex();
+//             text[i]->SetNDC(kTRUE);
+//             text[i]->SetTextSize(0.06);
+//         }
+//         TLatex Tl;
+//         Tl.SetNDC(kTRUE);
+//         Tl.SetTextSize(0.04);
+//         //
+//         Int_t lhcbFont = 132; // Old LHCb style: 62;
+//         // Line thickness
+//         float_t lhcbWidth = 2.00; // Old LHCb style: 3.00;
+//         // Text size
+//         float_t lhcbTSize = 0.06;
         
-        // gROOT->SetStyle("Plain");
-        gStyle->SetCanvasDefH(1414);
-        gStyle->SetCanvasDefW(1000);
-        gStyle->SetPadBottomMargin(0.08);
-        gStyle->SetPadTopMargin(0.08);
-        gStyle->SetPadLeftMargin(0.12);
-        gStyle->SetPadRightMargin(0.12);
-        gStyle->SetTitleStyle(0);
-        gStyle->SetStatStyle(0);
-        // gStyle->SetLineWidth(3);
-        gStyle->SetOptStat(0);
-        //---- paint...
-        char buf[100];
-        char bufb[100];
+//         // gROOT->SetStyle("Plain");
+//         gStyle->SetCanvasDefH(1414);
+//         gStyle->SetCanvasDefW(1000);
+//         gStyle->SetPadBottomMargin(0.08);
+//         gStyle->SetPadTopMargin(0.08);
+//         gStyle->SetPadLeftMargin(0.12);
+//         gStyle->SetPadRightMargin(0.12);
+//         gStyle->SetTitleStyle(0);
+//         gStyle->SetStatStyle(0);
+//         // gStyle->SetLineWidth(3);
+//         gStyle->SetOptStat(0);
+//         //---- paint...
+//         char buf[100];
+//         char bufb[100];
         
-        TString rootfile;
-        TString plotfile;
-        TString plotfilePDF;
-        TString plotfileO;
-        TString plotfileC;
-        // TString OutputFileBase    = outbase+outinfo;
-        TString plotextension = TString("../../plots/BjetsMC/");
-        rootfile = extension_RootFilesMC + extension + TString(".root");
-        plotfile = plotextension + extension + TString(".ps");
+//         TString rootfile;
+//         TString plotfile;
+//         TString plotfilePDF;
+//         TString plotfileO;
+//         TString plotfileC;
+//         // TString OutputFileBase    = outbase+outinfo;
+//         TString plotextension = TString("../../plots/BjetsMC/");
+//         rootfile = extension_RootFilesMC + extension + TString(".root");
+//         plotfile = plotextension + extension + TString(".ps");
         
-        plotfilePDF = plotextension + extension + TString(".pdf");
-        plotfileO = plotfilePDF + TString("(");
-        plotfileC = plotfilePDF + TString("]");
+//         plotfilePDF = "./plots/testing_simpleunfoldout.pdf";
+//         plotfileO = plotfilePDF + TString("(");
+//         plotfileC = plotfilePDF + TString("]");
         
-        // c->SaveAs("plots/"+extension+".pdf");
+//         // c->SaveAs("plots/"+extension+".pdf");
         
-        // c1->SaveAs(Form("plots_misc/Misc_%s"+extension+".pdf", file_name.c_str()));
-        // cout<<"...outbase   = "<<outbase.Data()<<endl;
-        // cout<<"...rootfile  = "<<rootfile.Data()<<endl;
-        // cout<<"...plotfile  = "<<plotfile.Data()<<endl;
+//         // c1->SaveAs(Form("plots_misc/Misc_%s"+extension+".pdf", file_name.c_str()));
+//         // cout<<"...outbase   = "<<outbase.Data()<<endl;
+//         // cout<<"...rootfile  = "<<rootfile.Data()<<endl;
+//         // cout<<"...plotfile  = "<<plotfile.Data()<<endl;
         
-        // //
-        //
-          ++ican;
-          sprintf(buf, "ccan%d", ican);
-          ccan[ican] = new TCanvas(buf, buf, 1);
-          ccan[ican]->SetFillColor(10);
-          gPad->SetLeftMargin(0.16);
-          gPad->SetBottomMargin(0.06);
-          gPad->SetRightMargin(0.15);
-          ccan[ican]->cd();
-          ccan[ican]->Divide(2, 3);
-          ccan[ican]->cd(1);
+//         // //
+//         //
+//           ++ican;
+//           sprintf(buf, "ccan%d", ican);
+//           ccan[ican] = new TCanvas(buf, buf, 1);
+//           ccan[ican]->SetFillColor(10);
+//           gPad->SetLeftMargin(0.16);
+//           gPad->SetBottomMargin(0.06);
+//           gPad->SetRightMargin(0.15);
+//           ccan[ican]->cd();
+//           ccan[ican]->Divide(2, 3);
+//           ccan[ican]->cd(1);
     
-          h2_response_ptz->SetStats(0);
-          gPad->SetLogz();
-          h2_response_ptz->Draw("COLZ");
-          h2_response_ptz->SetYTitle("Truth z / p_{T}^{Jet}");
-          h2_response_ptz->SetXTitle("Reco z / p_{T}^{Jet}");
-    
-    
-          // Tl.drawLatex(0.7, 0.8, "No cuts");
-          ccan[ican]->cd(2);
-          h2_response_ptjt->SetStats(0);
-          gPad->SetLogz();
-          h2_response_ptjt->Draw("COLZ");
-          h2_response_ptjt->SetYTitle("Truth j_{T} / p_{T}^{Jet}");
-          h2_response_ptjt->SetXTitle("Reco j_{T} / p_{T}^{Jet}");
+//           h2_response_ptz->SetStats(0);
+//           gPad->SetLogz();
+//           h2_response_ptz->Draw("COLZ");
+//           h2_response_ptz->SetYTitle("Truth z / p_{T}^{Jet}");
+//           h2_response_ptz->SetXTitle("Reco z / p_{T}^{Jet}");
     
     
-          // Tl.drawLatex(0.7, 0.8, "No cuts");
-          ccan[ican]->cd(3);
-         h2_response_ptr->SetStats(0);
-         gPad->SetLogz();
-         h2_response_ptr->Draw("COLZ");
-         h2_response_ptr->SetYTitle("Truth r / p_{T}^{Jet}");
-         h2_response_ptr->SetXTitle("Reco r / p_{T}^{Jet}");
+//           // Tl.drawLatex(0.7, 0.8, "No cuts");
+//           ccan[ican]->cd(2);
+//           h2_response_ptjt->SetStats(0);
+//           gPad->SetLogz();
+//           h2_response_ptjt->Draw("COLZ");
+//           h2_response_ptjt->SetYTitle("Truth j_{T} / p_{T}^{Jet}");
+//           h2_response_ptjt->SetXTitle("Reco j_{T} / p_{T}^{Jet}");
     
-        ccan[ican]->cd(4);
-        gPad->SetLogy();
-        TRandom3 *randomGenerator = new TRandom3();
-        for (int i = 0; i < ptbinsize; i++)
-        {
-            TH1D *h1_temp = (TH1D *)h2_response_jetpt->ProjectionX(Form("htemp_%djetpt", i), i + 1, i + 1);
-            h1_temp->Scale(1. / h1_temp->Integral());
-            h1_temp->SetMarkerStyle(i + 23);
-            h1_temp->SetMarkerColor(i + 4);
-            h1_temp->SetLineColor(i + 4);
-            h1_temp->Draw("P E SAME");
-            int selectbin = SampleTH1(h1_temp, randomGenerator);
-            // h1_temp->SetMinimum(0.);
-            // h1_temp->SetMaximum(1.05);
-        }
-        
-        ccan[ican]->cd(5);
-        gPad->SetLogz();
-        
-        h2_response_jetpt->SetStats(0);
-        h2_response_jetpt->Draw("COLZ");
-        
+    
+//           // Tl.drawLatex(0.7, 0.8, "No cuts");
+//           ccan[ican]->cd(3);
+//          h2_response_ptr->SetStats(0);
+//          gPad->SetLogz();
+//          h2_response_ptr->Draw("COLZ");
+//          h2_response_ptr->SetYTitle("Truth r / p_{T}^{Jet}");
+//          h2_response_ptr->SetXTitle("Reco r / p_{T}^{Jet}");
+    
 //         ccan[ican]->cd(4);
-//         NormalizeHist(h1_jetpt);
-//         h1_jetpt->Draw("same");
-//        
-//         NormalizeHist(h1_jetpt_truth);
-//         h1_jetpt_truth->SetLineColor(kGreen);
-//         h1_jetpt_truth->Draw("same");
+//         gPad->SetLogy();
+//         TRandom3 *randomGenerator = new TRandom3();
+//         for (int i = 0; i < ptbinsize; i++)
+//         {
+//             TH1D *h1_temp = (TH1D *)h2_response_jetpt->ProjectionX(Form("htemp_%djetpt", i), i + 1, i + 1);
+//             h1_temp->Scale(1. / h1_temp->Integral());
+//             h1_temp->SetMarkerStyle(i + 23);
+//             h1_temp->SetMarkerColor(i + 4);
+//             h1_temp->SetLineColor(i + 4);
+//             h1_temp->Draw("P E SAME");
+//             // int selectbin = SampleTH1(h1_temp, randomGenerator);
+//             // h1_temp->SetMinimum(0.);
+//             // h1_temp->SetMaximum(1.05);
+//         }
         
-        ccan[ican]->cd(6);
-        // h2_response_ptktdR->GetZaxis()->SetRange(2,5);
-        gPad->SetLogy();
-        // h2_response_ptktdR->Draw("COLZ");
-        h1_denom_efficiency_jetpt->SetXTitle("p_{T}^{jet}");
-        h1_denom_efficiency_jetpt->Draw("SAME");
-        h1_denom_purity_jetpt->Draw("SAME");
+//         ccan[ican]->cd(5);
+//         gPad->SetLogz();
         
-//        ccan[ican]->cd(6);
-//        gPad->SetLogy();
-//        //  stack_theta_resolution->Draw("nostack");
-//        //  for (int i = 0; i < MaxEmissions; i++)
-//        //  {
-//        //    h1_theta_resolution_vec[i]->SetLineColor(1 + i);
-//        //    // h1_theta_resolution_vec[i]->Fit()
-//        //  }
-//        
-        ccan[ican]->cd();
-        ccan[ican]->Update();
-        if (ican == 0)
-        {
-            ccan[ican]->Print(plotfileO.Data());
-        }
-        else
-        {
-            ccan[ican]->Print(plotfilePDF.Data());
-        }
-//        //
-//        //
-        ++ican;
-        sprintf(buf, "ccan%d", ican);
-        ccan[ican] = new TCanvas(buf, buf, 1);
-        ccan[ican]->SetFillColor(10);
-        gPad->SetLeftMargin(0.16);
-        gPad->SetBottomMargin(0.06);
-        gPad->SetRightMargin(0.15);
+//         h2_response_jetpt->SetStats(0);
+//         h2_response_jetpt->Draw("COLZ");
         
-          ccan[ican]->cd();
-          ccan[ican]->Divide(2, 3);
-          ccan[ican]->cd(1);
-          gPad->SetLogz();
-          h2_truthreco_z->SetStats(0);
-          h2_truthreco_z->SetXTitle("MCTrue z");
-          h2_truthreco_z->SetYTitle("MCReco z");
-          // h2_lundplane->Sethflocimum(.01);
-          // h2_lundplane->SetMinimum(0.00001);
-          h2_truthreco_z->Draw("COLZ");
-          Tl.DrawLatex(.5, 0.75, Form("%.1f<p_{T,jet}<%.1f GeV", ptMin, ptMax));
-          // Tl.drawLatex(0.7, 0.8, "No cuts");
-//        //
-          ccan[ican]->cd(2);
-          gPad->SetLogz();
-          h2_truthreco_jt->SetStats(0);
-          h2_truthreco_jt->SetXTitle("MCTrue jt");
-          h2_truthreco_jt->SetYTitle("MCReco jt");
-//        //  // h2_lundplane->Sethflocimum(.01);
-//        //  // h2_lundplane->SetMinimum(0.00001);
-          h2_truthreco_jt->Draw("COLZ");
-          ccan[ican]->cd(3);
-          gPad->SetLogz();
-          h2_truthreco_r->SetStats(0);
-          h2_truthreco_r->SetXTitle("MCTrue r");
-          h2_truthreco_r->SetYTitle("MCReco r");
-          h2_truthreco_r->Draw("COLZ");
+// //         ccan[ican]->cd(4);
+// //         NormalizeHist(h1_jetpt);
+// //         h1_jetpt->Draw("same");
+// //        
+// //         NormalizeHist(h1_jetpt_truth);
+// //         h1_jetpt_truth->SetLineColor(kGreen);
+// //         h1_jetpt_truth->Draw("same");
+        
+//         ccan[ican]->cd(6);
+//         // h2_response_ptktdR->GetZaxis()->SetRange(2,5);
+//         gPad->SetLogy();
+//         // h2_response_ptktdR->Draw("COLZ");
+//         h1_denom_efficiency_jetpt->SetXTitle("p_{T}^{jet}");
+//         h1_denom_efficiency_jetpt->Draw("SAME");
+//         h1_denom_purity_jetpt->Draw("SAME");
+        
+// //        ccan[ican]->cd(6);
+// //        gPad->SetLogy();
+// //        //  stack_theta_resolution->Draw("nostack");
+// //        //  for (int i = 0; i < MaxEmissions; i++)
+// //        //  {
+// //        //    h1_theta_resolution_vec[i]->SetLineColor(1 + i);
+// //        //    // h1_theta_resolution_vec[i]->Fit()
+// //        //  }
+// //        
+//         ccan[ican]->cd();
+//         ccan[ican]->Update();
+//         if (ican == 0)
+//         {
+//             ccan[ican]->Print(plotfileO.Data());
+//         }
+//         else
+//         {
+//             ccan[ican]->Print(plotfilePDF.Data());
+//         }
+// //        //
+// //        //
+//         ++ican;
+//         sprintf(buf, "ccan%d", ican);
+//         ccan[ican] = new TCanvas(buf, buf, 1);
+//         ccan[ican]->SetFillColor(10);
+//         gPad->SetLeftMargin(0.16);
+//         gPad->SetBottomMargin(0.06);
+//         gPad->SetRightMargin(0.15);
+        
+//           ccan[ican]->cd();
+//           ccan[ican]->Divide(2, 3);
+//           ccan[ican]->cd(1);
+//           gPad->SetLogz();
+//           h2_truthreco_z->SetStats(0);
+//           h2_truthreco_z->SetXTitle("MCTrue z");
+//           h2_truthreco_z->SetYTitle("MCReco z");
+//           // h2_lundplane->Sethflocimum(.01);
+//           // h2_lundplane->SetMinimum(0.00001);
+//           h2_truthreco_z->Draw("COLZ");
+//           Tl.DrawLatex(.5, 0.75, Form("%.1f<p_{T,jet}<%.1f GeV", ptMin, ptMax));
+//           // Tl.drawLatex(0.7, 0.8, "No cuts");
+// //        //
+//           ccan[ican]->cd(2);
+//           gPad->SetLogz();
+//           h2_truthreco_jt->SetStats(0);
+//           h2_truthreco_jt->SetXTitle("MCTrue jt");
+//           h2_truthreco_jt->SetYTitle("MCReco jt");
+// //        //  // h2_lundplane->Sethflocimum(.01);
+// //        //  // h2_lundplane->SetMinimum(0.00001);
+//           h2_truthreco_jt->Draw("COLZ");
+//           ccan[ican]->cd(3);
+//           gPad->SetLogz();
+//           h2_truthreco_r->SetStats(0);
+//           h2_truthreco_r->SetXTitle("MCTrue r");
+//           h2_truthreco_r->SetYTitle("MCReco r");
+//           h2_truthreco_r->Draw("COLZ");
 
 
         
-          ccan[ican]->cd();
-          ccan[ican]->Update();
-          if (ican == 0)
-          {
-            ccan[ican]->Print(plotfileO.Data());
-          }
-          else
-          {
-            ccan[ican]->Print(plotfilePDF.Data());
-          }
+//           ccan[ican]->cd();
+//           ccan[ican]->Update();
+//           if (ican == 0)
+//           {
+//             ccan[ican]->Print(plotfileO.Data());
+//           }
+//           else
+//           {
+//             ccan[ican]->Print(plotfilePDF.Data());
+//           }
 
-          ++ican;
+//           ++ican;
  
     
 
-        ccan[ican]->cd();
-        ccan[ican]->Update();
-        if (ican == 0)
-        {
-            ccan[ican]->Print(plotfileO.Data());
-        }
-        else
-        {
-            ccan[ican]->Print(plotfilePDF.Data());
-        }
+//         ccan[ican]->cd();
+//         ccan[ican]->Update();
+//         if (ican == 0)
+//         {
+//             ccan[ican]->Print(plotfileO.Data());
+//         }
+//         else
+//         {
+//             ccan[ican]->Print(plotfilePDF.Data());
+//         }
         
-        //
-        //
-        ++ican;
-        sprintf(buf, "ccan%d", ican);
-        ccan[ican] = new TCanvas(buf, buf, 1);
-        ccan[ican]->SetFillColor(10);
-        gPad->SetLeftMargin(0.16);
-        gPad->SetBottomMargin(0.06);
-        gPad->SetRightMargin(0.15);
-        ccan[ican]->cd();
-        ccan[ican]->Divide(2, 3);
-        ccan[ican]->cd(1);
+//         //
+//         //
+//         ++ican;
+//         sprintf(buf, "ccan%d", ican);
+//         ccan[ican] = new TCanvas(buf, buf, 1);
+//         ccan[ican]->SetFillColor(10);
+//         gPad->SetLeftMargin(0.16);
+//         gPad->SetBottomMargin(0.06);
+//         gPad->SetRightMargin(0.15);
+//         ccan[ican]->cd();
+//         ccan[ican]->Divide(2, 3);
+//         ccan[ican]->cd(1);
         
-        h1_purity_jetpt->SetMarkerColor(kRed);
-        h1_purity_jetpt->SetMarkerStyle(21);
-        h1_purity_jetpt->SetMinimum(0.);
-        h1_purity_jetpt->SetMaximum(1.05);
-        h1_purity_jetpt->Draw("P E same");
-        h1_purity_jetpt->SetTitle("; p_{T}^{Jet};  Purity or Efficiency");
+//         h1_purity_jetpt->SetMarkerColor(kRed);
+//         h1_purity_jetpt->SetMarkerStyle(21);
+//         h1_purity_jetpt->SetMinimum(0.);
+//         h1_purity_jetpt->SetMaximum(1.05);
+//         h1_purity_jetpt->Draw("P E same");
+//         h1_purity_jetpt->SetTitle("; p_{T}^{Jet};  Purity or Efficiency");
  
-        h1_efficiency_jetpt->SetMarkerColor(kBlue);
-        h1_efficiency_jetpt->SetMarkerStyle(22);
-        h1_efficiency_jetpt->SetMinimum(0.);
-        h1_efficiency_jetpt->SetMaximum(1.05);
-        h1_efficiency_jetpt->Draw("P E same");
+//         h1_efficiency_jetpt->SetMarkerColor(kBlue);
+//         h1_efficiency_jetpt->SetMarkerStyle(22);
+//         h1_efficiency_jetpt->SetMinimum(0.);
+//         h1_efficiency_jetpt->SetMaximum(1.05);
+//         h1_efficiency_jetpt->Draw("P E same");
     
-    auto legendeff_jetpt = new TLegend(0.5, 0.4, 0.7, 0.7);
-    legendeff_jetpt->SetTextSize(0.03);
-    legendeff_jetpt->SetBorderSize(0);
-    legendeff_jetpt->SetFillStyle(0);
-    legendeff_jetpt->SetFillColor(3);
-    legendeff_jetpt->AddEntry(h1_efficiency_jetpt, "HF Reco. Efficiency");
-    legendeff_jetpt->AddEntry(h1_purity_jetpt, "HF Reco. Purity");
-    legendeff_jetpt->Draw("SAME");
+//     auto legendeff_jetpt = new TLegend(0.5, 0.4, 0.7, 0.7);
+//     legendeff_jetpt->SetTextSize(0.03);
+//     legendeff_jetpt->SetBorderSize(0);
+//     legendeff_jetpt->SetFillStyle(0);
+//     legendeff_jetpt->SetFillColor(3);
+//     legendeff_jetpt->AddEntry(h1_efficiency_jetpt, "HF Reco. Efficiency");
+//     legendeff_jetpt->AddEntry(h1_purity_jetpt, "HF Reco. Purity");
+//     legendeff_jetpt->Draw("SAME");
 
 
-        if (ican == 0)
-        {
-            ccan[ican]->Print(plotfileO.Data());
-        }
-        else
-        {
-            ccan[ican]->Print(plotfilePDF.Data());
-        }
+//         if (ican == 0)
+//         {
+//             ccan[ican]->Print(plotfileO.Data());
+//         }
+//         else
+//         {
+//             ccan[ican]->Print(plotfilePDF.Data());
+//         }
         
-          ++ican;
-          sprintf(buf, "ccan%d", ican);
-          ccan[ican] = new TCanvas(buf, buf, 1);
-          ccan[ican]->SetFillColor(10);
-          gPad->SetLeftMargin(0.16);
-          gPad->SetBottomMargin(0.06);
-          gPad->SetRightMargin(0.15);
-          ccan[ican]->cd();
-          ccan[ican]->Divide(2, 3);
-          ccan[ican]->cd(1);
-*/
+//           ++ican;
+//           sprintf(buf, "ccan%d", ican);
+//           ccan[ican] = new TCanvas(buf, buf, 1);
+//           ccan[ican]->SetFillColor(10);
+//           gPad->SetLeftMargin(0.16);
+//           gPad->SetBottomMargin(0.06);
+//           gPad->SetRightMargin(0.15);
+//           ccan[ican]->cd();
+//           ccan[ican]->Divide(2, 3);
+//           ccan[ican]->cd(1);
+           
+//         if (ican > -1)
+//         {
+//             cout << " You plotted " << ican + 1 << " canvasses......." << endl;
+//             ccan[ican]->Print(plotfileC.Data());
+//         }
+
         //f->Write();
         f->Close();     
-        /*   
-        if (ican > -1)
-        {
-            cout << " You plotted " << ican + 1 << " canvasses......." << endl;
-            ccan[ican]->Print(plotfileC.Data());
-        }
-        */
+        
 }

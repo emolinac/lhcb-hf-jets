@@ -7,10 +7,16 @@
 #include <TChain.h>
 #include <TStyle.h>
 #include "Settings.h"
-#include "../Helpers.h"
 
+#include "../Helpers_IC.h"
+#include "../include/analysis-constants.h"
+#include "../include/analysis-binning.h"
+#include "../include/analysis-cuts.cpp"
+#include "../include/analysis-cuts.h"
+#include "../include/directories.h"
 
 using namespace std;
+
 void SimpleObservables(int NumEvts = -1, int dataset = 91599,
                 bool isData = true,
                 int DoTrackEff = 2,
@@ -133,8 +139,7 @@ void SimpleObservables(int NumEvts = -1, int dataset = 91599,
   TString str_tree;
   TString extension_RootFilesMC, extension_RootFiles;
   TString extension_read, extension_eff;
-  TString eff_path;
-
+  
   TString extension_prefix, extension_trackeff;
   TString extension;
 
@@ -142,8 +147,6 @@ void SimpleObservables(int NumEvts = -1, int dataset = 91599,
     
   extension_RootFilesMC = TString("../../root_files/BjetsMC/");
   extension_RootFiles = isData ?  TString("../../root_files/Bjets/") : extension_RootFilesMC;
-    
-  eff_path = TString( "./efficiencies/");
     
   float minimum_dR = 0.1;
 
@@ -185,27 +188,30 @@ void SimpleObservables(int NumEvts = -1, int dataset = 91599,
   extension_trackeff = "trackEff_" + str_year + "_Ratio_Full_Long_method";
 
   /////////////////// Mass Fit Parameters /////////////////////////////////
-  TString massfit("");
-  if (sPlotFit)
-  {
-    massfit = TString("splotfit_data_ev_-1") + Form("_ptj_%d%d", int(pTLow), int(250.)) + "_eta_2.54.0_ghost_0.4_b" + str_PID + str_L0 + "_91599.root"; 
-  }
-  else
-  {
-    massfit = TString("massfit_data_ev_-1") + Form("_ptj_%d%d", int(pTLow), int(250.)) + "_eta_2.54.0_ghost_0.4_b" + str_PID + str_L0 + "_91599.root"; 
-  }
+  // TString massfit("");
+  // if (sPlotFit)
+  // {
+  //   massfit = TString("splotfit_data_ev_-1") + Form("_ptj_%d%d", int(pTLow), int(250.)) + "_eta_2.54.0_ghost_0.4_b" + str_PID + str_L0 + "_91599.root"; 
+  // }
+  // else
+  // {
+  //   massfit = TString("massfit_data_ev_-1") + Form("_ptj_%d%d", int(pTLow), int(250.)) + "_eta_2.54.0_ghost_0.4_b" + str_PID + str_L0 + "_91599.root"; 
+  // }
 
     
-  if (DoRecSelEff)
-    massfit = "recselsys_" + massfit;
-  if (DoSignalSys)
-  {
-    massfit = "sys_" + massfit;
-  }
+  // if (DoRecSelEff)
+  //   massfit = "recselsys_" + massfit;
+  // if (DoSignalSys)
+  // {
+  //   massfit = "sys_" + massfit;
+  // }
   
-  TString extension_mass = "../../root_files/Bjets/" + massfit;  
-  std::cout << "extension_mass : " << extension_mass << std::endl;   
-  TFile f_massfit( extension_mass, "READ");
+  // TString extension_mass = "../../root_files/Bjets/" + massfit;  
+
+  // std::cout << "extension_mass : " << extension_mass << std::endl;   
+  
+  TFile f_massfit((output_folder + "mass-fits/results_mass_fit_data.root").c_str(), "READ"); // it seems it is only data (?)
+  
   TH1D *h1_MassMin = (TH1D *)f_massfit.Get("h1_MassMin");
   TH1D *h1_MassMax = (TH1D *)f_massfit.Get("h1_MassMax");
   TH1D *h1_Sideband1Min = (TH1D *)f_massfit.Get("h1_Sideband1Min");
@@ -232,13 +238,13 @@ void SimpleObservables(int NumEvts = -1, int dataset = 91599,
   TH2D *h2_trigeff_Data;
   TH2D *h2_trigeff_MC;
 
-  //extension_trig_MC = "PhotonHadronElectronTIS_jpsieff_reco_ev_-1_b_PID_91599";
-  //extension_trig_Data = "PhotonHadronElectronTIS_jpsieff_data_ev_-1_b_PID_91599";
-  extension_trig_MC = "jpsieff_reco_ev_-1_b_PID" + str_L0 + "_91599.root";
-  extension_trig_Data = "jpsieff_data_ev_-1_b_PID" + str_L0 + "_91599.root";
+  extension_trig_MC = "PhotonHadronElectronTIS_jpsieff_reco_ev_-1_b_PID_91599.root";
+  extension_trig_Data = "PhotonHadronElectronTIS_jpsieff_data_ev_-1_b_PID_91599.root";
+  // extension_trig_MC = "jpsieff_reco_ev_-1_b_PID" + str_L0 + "_91599.root";
+  // extension_trig_Data = "jpsieff_data_ev_-1_b_PID" + str_L0 + "_91599.root";
 
-  TFile file_trigeffMC("./efficiencies/TrigEff/MC/" + extension_trig_MC, "READ");
-  TFile file_trigeffData("./efficiencies/TrigEff/data/" + extension_trig_Data, "READ");
+  TFile file_trigeffMC("./efficiencies/TrigEff/" + extension_trig_MC, "READ");
+  TFile file_trigeffData("./efficiencies/TrigEff/" + extension_trig_Data, "READ");
 
   h2_trigeff_Data = (TH2D *)file_trigeffData.Get("efficiency_Jpsiptrap");
   h2_trigeff_MC = (TH2D *)file_trigeffMC.Get("efficiency_Jpsiptrap");
@@ -248,53 +254,19 @@ void SimpleObservables(int NumEvts = -1, int dataset = 91599,
   TH2D *h2_trig_ratio = (TH2D *)file_trigeffMC.Get("h2_eff_ratio");
 
   TChain *BTree = new TChain("BTree", "B-jets Tree Variables");
-  vector<int> vec_datasets;
-  if (Mag == 0)
-    vec_datasets = {61590, 71590, 81590};
-  else if (Mag == 1)
-    vec_datasets = {61591, 71591, 81591};
-  else
-    vec_datasets = {61590, 61591, 71590, 71591, 81590, 81591};
-
-  if (year == 9 && JetMeth != 9)
-  {
-    for (int i = 0; i < vec_datasets.size(); i++)
-    {
-      Mag = (vec_datasets[i] / 1) % 10;
-      if (Mag == 0)
-        str_Mag = "_MD";
-      else if (Mag == 1)
-        str_Mag = "_MU";
-      extension_read = TString("tree_") + str_level + Form("_ev_%d", NumEvts) + Form("_eta_%.1f%.1f", etaMin, etaMax) + str_followHard + str_ghost  + str_Mag + str_flavor + str_L0 + Form("_%d", vec_datasets[i]);
-      if (!DoRecSelEff && DoMassFit == 0 && DoSignalSys == 0)
-      {
-        extension_read = extension_prefix + extension_read;
-        cout << "Loading Dataset(s) " << extension_read << endl;        
-      }
-
-     BTree->Add(extension_RootFiles + extension_read + ".root/BTree");
-    }
-  }
-  else
-  {
-    extension_read = TString("tree_") + str_level + Form("_ev_%d", NumEvts) + Form("_eta_%.1f%.1f", etaMin, etaMax) + str_followHard + str_ghost + str_Mag + str_flavor + str_L0 + Form("_%d", dataset);
-    if (!DoRecSelEff && DoMassFit == 0 && DoSignalSys == 0)
-    {   
-      extension_read = extension_prefix + extension_read;
-      cout << "Loading Dataset(s) " << extension_read << endl;       
-    }
-      BTree->Add(extension_RootFiles + extension_read + ".root/BTree");
-  }
+  BTree->Add((output_folder + Form("ntuple_bjets_%s.root/BTree",(isData)?"data":"mcreco")).c_str());
 
   cout << BTree->GetTreeNumber() << endl;
+
   if (NumEvts > BTree->GetEntries())
     NumEvts = BTree->GetEntries();
-  if (NumEvts == -1)
+
+    if (NumEvts == -1)
     NumEvts = BTree->GetEntries();
-  cout << BTree->GetEntries() << endl;
 
+    cout << BTree->GetEntries() << endl;
 
-  TFile f(extension_RootFiles  + extension + ".root", "RECREATE");
+  TFile f((output_folder + Form("bjets_simpleobservable_%s.root",(isData)?"data":"mcreco")).c_str(), "RECREATE");
 
   TH2D *h2_zjt = new TH2D("zjt", ";z; j_{T} [GeV/c]", zbinsize, z_binedges, jtbinsize, jt_binedges);
   TH2D *h2_zr = new TH2D("zr", ";z; r", zbinsize, z_binedges, rbinsize, r_binedges);

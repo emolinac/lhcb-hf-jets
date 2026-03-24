@@ -4,7 +4,13 @@
 #include <vector>
 #include <iostream>
 #include "Settings.h"
-#include "../Helpers.h"
+
+#include "../Helpers_IC.h"
+#include "../include/analysis-constants.h"
+#include "../include/analysis-binning.h"
+#include "../include/analysis-cuts.cpp"
+#include "../include/analysis-cuts.h"
+#include "../include/directories.h"
 
 
 using namespace std;
@@ -130,7 +136,7 @@ void HFRecoEff(int NumEvts_user = 10000, int dataset = 1510,
 
   cout << extension_eff << endl;
 
-  TFile *file_eff = new TFile( extension_RootFilesMC + extension_eff + TString(".root"), "READ");
+  TFile *file_eff = new TFile((output_folder + "bjets_efficiencies.root").c_str(), "READ");
 
   TH1D *h1_denom_efficiency_HFpt = (TH1D *)file_eff->Get("h1_denom_efficiency_HFpt");
   TH1D *h1_denom_efficiency_jetpt = (TH1D *)file_eff->Get("h1_denom_efficiency_jetpt");
@@ -149,7 +155,8 @@ void HFRecoEff(int NumEvts_user = 10000, int dataset = 1510,
     extension_mass = "recselsys_" + extension_mass;
   if (DoSignalSys)
     extension_mass = "sys_" + extension_mass;
-  TFile f_massfit( extension_mass, "READ");
+
+  TFile f_massfit((output_folder + "mass-fits/results_mass_fit_data.root").c_str(), "READ");
   TH1D *h1_MassMin = (TH1D *)f_massfit.Get("h1_MassMin");
   TH1D *h1_MassMax = (TH1D *)f_massfit.Get("h1_MassMax");
   TH1D *h1_BkgScale = (TH1D *)f_massfit.Get("h1_BkgScale");
@@ -205,7 +212,7 @@ void HFRecoEff(int NumEvts_user = 10000, int dataset = 1510,
 
 //  cout << "Executing CAJetAlgo" << endl;
 
-  TFile f(extension_RootFilesMC + extension + ".root", "RECREATE");
+  TFile f((output_folder + "HF_efficiencies.root").c_str(), "RECREATE");
 
   TH1D *h1_HF_pt_reco = new TH1D("h1_HF_pt_reco", "", ptHFbinsize, ptHF_binedges);
   TH1D *h1_HF_eta_reco = new TH1D("h1_HF_eta_reco", "", 20, 2, 5);
