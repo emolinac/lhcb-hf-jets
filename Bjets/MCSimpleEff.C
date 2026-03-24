@@ -899,8 +899,6 @@ void MCSimpleEff(int NumEvts = -1, int dataset = 91599, int flavor = 5,
         //    ccan[ican]->cd(7);
         ccan[ican]->cd();
         ccan[ican]->Update();
-        
-
 
         if (ican == 0) {
                 ccan[ican]->Print(plotfileO.Data());
