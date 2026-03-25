@@ -18,10 +18,9 @@ void MCSimpleEff(int NumEvts = -1, int dataset = 91599, int flavor = 5,
                  bool onlysim9 = false) 
 {    
         // This should be the file from MCMakeVarTree
+        std::string extension = "efficiency_";
         
-        extension = TString("efficiency_");
-        
-        extension_RootFilesMC = output_folder + TString("bjets-mc/");
+        std::string extension_RootFilesMC = output_folder + "bjets-mc/";
 
         TFile fread((output_folder + "ntuple_bjets_mc.root").c_str(), "READ");
         TTree *BTree = (TTree *)fread.Get("BTree");
@@ -128,8 +127,6 @@ void MCSimpleEff(int NumEvts = -1, int dataset = 91599, int flavor = 5,
         
         TH2D *h2_num_efficiency_jtr   = new TH2D("num_efficiency_jtr", "",  jtbinsize, jt_binedges, rbinsize, r_binedges);
         TH2D *h2_denom_efficiency_jtr = new TH2D("denom_efficiency_jtr", "",  jtbinsize, jt_binedges, rbinsize, r_binedges);
-        
-        
         
         // 2D and 4D Observables response Matrices (286 - 292)
         RooUnfoldResponse *response_zjt = new RooUnfoldResponse( h2_zjt, h2_zjt_truth, "response_zjt" );
@@ -373,8 +370,9 @@ void MCSimpleEff(int NumEvts = -1, int dataset = 91599, int flavor = 5,
         int NumBjets = 0;
         int NumRecoBjets = 0;
 
-        cout << "Requested # of events " << NumEvts << endl;
+        TLorentzVector HFmeson, meas_HFmeson, mup, mum;
 
+        cout << "Requested # of events " << NumEvts << endl;
         for (int ev = 0; ev < NumEvts; ev++) 
         {
                 BTree->GetEntry(ev);
@@ -384,10 +382,10 @@ void MCSimpleEff(int NumEvts = -1, int dataset = 91599, int flavor = 5,
                         std::cout<<"\r"<<percentage<<"\% jets processed."<< std::flush;
                 }
 
-                TLorentzVector HFmeson(HF_px, HF_py, HF_pz, HF_e);
-                TLorentzVector meas_HFmeson(meas_HF_px, meas_HF_py, meas_HF_pz, meas_HF_e);
-                TLorentzVector mup(mup_px, mup_py, mup_pz, mup_e);
-                TLorentzVector mum(mum_px, mum_py, mum_pz, mum_e);
+                HFmeson.SetPxPyPzE(HF_px, HF_py, HF_pz, HF_e);
+                meas_HFmeson.SetPxPyPzE(meas_HF_px, meas_HF_py, meas_HF_pz, meas_HF_e);
+                mup.SetPxPyPzE(mup_px, mup_py, mup_pz, mup_e);
+                mum.SetPxPyPzE(mum_px, mum_py, mum_pz, mum_e);
 
                 // new
                 //    if(NumDtrRecoHF > 1) continue;
@@ -749,7 +747,7 @@ void MCSimpleEff(int NumEvts = -1, int dataset = 91599, int flavor = 5,
         TString plotfileO;
         TString plotfileC;
         // TString OutputFileBase	= outbase+outinfo;
-        TString plotextension = TString("../plots/");
+        TString plotextension = TString("./plots/");
         rootfile = extension_RootFilesMC + extension + TString(".root");
         plotfile = plotextension + extension + TString(".ps");
 
