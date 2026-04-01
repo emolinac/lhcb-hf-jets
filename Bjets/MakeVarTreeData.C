@@ -180,7 +180,7 @@ void MakeVarTreeData(int NumEvts_user = -1,
         float trkeff_ratio_K_errlo(1.0), trkeff_ratio_mup_errlo(1.0), trkeff_ratio_mum_errlo(1.0);
         float trigeff_Data(1.0), trigeff_MC(1.0), trigeff_ratio(1.0);
         
-        vector<float> dtr_pt, dtr_rap, dtr_id, dtr_3charge;
+        vector<float> dtr_pt, dtr_px, dtr_py, dtr_pz, dtr_e, dtr_rap, dtr_id, dtr_3charge;
         
         float sv_mass, sv_chi2, sv_cosine, sv_ntrks;
         
@@ -193,6 +193,10 @@ void MakeVarTreeData(int NumEvts_user = -1,
         BTree->Branch("eventNumber", &eventNumber);
 
         BTree->Branch("dtr_pt", &dtr_pt);
+        BTree->Branch("dtr_px", &dtr_px);
+        BTree->Branch("dtr_py", &dtr_py);
+        BTree->Branch("dtr_pz", &dtr_pz);
+        BTree->Branch("dtr_e" , &dtr_e);
         BTree->Branch("dtr_rap", &dtr_rap);
         BTree->Branch("dtr_id", &dtr_id);
         BTree->Branch("dtr_3charge", &dtr_3charge);
@@ -329,6 +333,10 @@ void MakeVarTreeData(int NumEvts_user = -1,
                 
         for (int ev = ev_min; ev < NumEvts + ev_min; ev++) {
                 dtr_pt.clear();
+                dtr_px.clear();
+                dtr_py.clear();
+                dtr_pz.clear();
+                dtr_e.clear();
                 dtr_id.clear();
                 dtr_rap.clear();
                 dtr_3charge.clear();
@@ -363,15 +371,15 @@ void MakeVarTreeData(int NumEvts_user = -1,
                         continue;
 
                 // Ibrahim trigger lines
-                mup_L0 = -999; //Tree.mup_L0MuonDecision_TOS || Tree.mup_L0DiMuonDecision_TOS;
-                mum_L0 = -999; //Tree.mum_L0MuonDecision_TOS || Tree.mum_L0DiMuonDecision_TOS;
+                mup_L0 = Tree.mup_L0MuonDecision_TOS || Tree.mup_L0DiMuonDecision_TOS;
+                mum_L0 = Tree.mum_L0MuonDecision_TOS || Tree.mum_L0DiMuonDecision_TOS;
         
-                jpsi_L0 = Tree.Jpsi_L0MuonDecision_TOS || Tree.Jpsi_L0DiMuonDecision_TOS;
-                jpsi_L0Muon = Tree.Jpsi_L0MuonDecision_TOS;
+                jpsi_L0       = Tree.Jpsi_L0MuonDecision_TOS || Tree.Jpsi_L0DiMuonDecision_TOS;
+                jpsi_L0Muon   = Tree.Jpsi_L0MuonDecision_TOS;
                 jpsi_L0DiMuon = Tree.Jpsi_L0DiMuonDecision_TOS;
 
-                jpsi_Hlt1 = Tree.Jpsi_Hlt1DiMuonHighMassDecision_TOS;
-                jpsi_Hlt2 = Tree.Jpsi_Hlt2DiMuonJPsiHighPTDecision_TOS;
+                jpsi_Hlt1          = Tree.Jpsi_Hlt1DiMuonHighMassDecision_TOS;
+                jpsi_Hlt2          = Tree.Jpsi_Hlt2DiMuonJPsiHighPTDecision_TOS;
                 jpsi_Hlt2_Detached = Tree.Jpsi_Hlt2DiMuonDetachedJPsiDecision_TOS;
         
                 TIS = (Tree.Jpsi_L0Global_TIS && Tree.Jpsi_Hlt1Global_TIS && Tree.Jpsi_Hlt2Global_TIS);
@@ -513,6 +521,10 @@ void MakeVarTreeData(int NumEvts_user = -1,
 
                         dtr_id.push_back(Tree.Jet_Dtr_ID[dtrs0]);
                         dtr_pt.push_back(dtr.Pt());
+                        dtr_px.push_back(dtr.Px());
+                        dtr_py.push_back(dtr.Py());
+                        dtr_pz.push_back(dtr.Pz());
+                        dtr_e.push_back(dtr.E());
                         dtr_rap.push_back(dtr.Rapidity());
                         dtr_3charge.push_back(Tree.Jet_Dtr_ThreeCharge[dtrs0]);
                 }
