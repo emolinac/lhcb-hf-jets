@@ -729,6 +729,19 @@ void SubtractUnity(TH2D *h2)
     }
   }
 }
+
+void SubtractUnity(TH1D *h1)
+{
+  for (int i = 1; i < h1->GetNbinsX() + 1; i++)
+  {
+    // double err = hvals->GetBinError(i, j);
+    if (h1->GetBinContent(i) != 0.)
+    {
+      h1->SetBinContent(i, h1->GetBinContent(i) - 1.);
+    }
+  }
+}
+
 double GetWeightedAverage(TH2D *h2)
 {
   double sumWeights = 0.;
@@ -1064,6 +1077,86 @@ void SmearLJP(TH1 *h1, TH1 *h1_data, TRandom3 *myRNG)
     }
   }
 }
+
+void SmearObservables(TH3 *h3, TH3 *h3_data, TRandom3 *myRNG)
+{
+  cout << "Smearing Observables" << endl;
+  for (int i = 1; i < h3->GetNbinsX() + 1; i++)
+  {
+    for (int j = 1; j < h3->GetNbinsY() + 1; j++)
+    {
+      for (int k = 1; k < h3->GetNbinsZ() + 1; k++)
+      {
+        double sigma = h3_data->GetBinError(i, j, k);
+        double data_val = h3_data->GetBinContent(i, j, k);
+        double rand;
+        if (sigma == data_val)
+        {
+          sigma = sqrt(data_val);
+        }
+        rand = myRNG->Gaus(1, sigma / data_val);
+        rand = (rand < 0) ? 1. : rand;
+        double val = h3->GetBinContent(i, j, k);
+        if (data_val > 0)
+        {
+          // cout << sigma << ", " << data_val << ", " << rand << endl;
+          h3->SetBinContent(i, j, k, val * rand);
+        }
+      }
+    }
+  }
+}
+
+void SmearObservables(TH2 *h2, TH2 *h2_data, TRandom3 *myRNG)
+{
+  cout << "Smearing Observables" << endl;
+  for (int i = 1; i < h2->GetNbinsX() + 1; i++)
+  {
+    for (int j = 1; j < h2->GetNbinsY() + 1; j++)
+    {
+      double sigma = h2_data->GetBinError(i, j);
+      double data_val = h2_data->GetBinContent(i, j);
+      double rand;
+      if (sigma == data_val)
+      {
+        sigma = sqrt(data_val);
+      }
+      rand = myRNG->Gaus(1, sigma / data_val);
+      rand = (rand < 0) ? 1. : rand;
+      double val = h2->GetBinContent(i, j);
+      if (data_val > 0)
+      {
+        // cout << sigma << ", " << data_val << ", " << rand << endl;
+        h2->SetBinContent(i, j, val * rand);
+      }
+    }
+  }
+}
+
+void SmearObservables(TH1 *h1, TH1 *h1_data, TRandom3 *myRNG)
+{
+  cout << "Smearing Observables" << endl;
+  for (int i = 1; i < h1->GetNbinsX() + 1; i++)
+  {
+
+    double sigma = h1_data->GetBinError(i);
+    double data_val = h1_data->GetBinContent(i);
+    double rand;
+    if (sigma == data_val)
+    {
+      sigma = sqrt(data_val);
+    }
+    rand = myRNG->Gaus(1, sigma / data_val);
+    rand = (rand < 0) ? 1. : rand;
+    double val = h1->GetBinContent(i);
+    if (data_val > 0)
+    {
+      // cout << sigma << ", " << data_val << ", " << rand << endl;
+      h1->SetBinContent(i, val * rand);
+    }
+  }
+}
+
 void SmearDtrPt(TLorentzVector &dtr, double charge, double id, TRandom3 *myRNG)
 {
   if (fabs(charge) > 0)
