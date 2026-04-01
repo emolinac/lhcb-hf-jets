@@ -129,14 +129,10 @@ void MakeVarTreeData(int NumEvts_user = -1,
         TLorentzVector WTA_reco_axis;
                 
         TBJetsData Tree;
-
-        cout << "Total number of events = " << Tree.fChain->GetEntries() << endl;
         
         if (NumEvts == -1)
                 NumEvts = Tree.fChain->GetEntries();
         
-        cout << "Executing CAJetAlgo" << endl;
-
         TFile f((output_folder + "ntuple_bjets_data.root").c_str(), "RECREATE");
         
         TH1F *h1_TIS    = new TH1F("h1_TIS"   , "", ptJpsibinsize, ptJpsi_binedges);
@@ -164,10 +160,6 @@ void MakeVarTreeData(int NumEvts_user = -1,
         float jpsi_ipchi2, k_ipchi2;
         float K_PIDK;
 
-        double z, jt, r;
-        double tr_z, tr_jt, tr_r;
-        double zg, jtg, rg;
-
         int nSV;
         bool Hasbbbar;
         float bmass_dtf, chi2ndf_dtf, tau_dtf;
@@ -180,7 +172,7 @@ void MakeVarTreeData(int NumEvts_user = -1,
         float trkeff_ratio_K_errlo(1.0), trkeff_ratio_mup_errlo(1.0), trkeff_ratio_mum_errlo(1.0);
         float trigeff_Data(1.0), trigeff_MC(1.0), trigeff_ratio(1.0);
         
-        vector<float> dtr_pt, dtr_px, dtr_py, dtr_pz, dtr_e, dtr_rap, dtr_id, dtr_3charge;
+        vector<float> pair_rl, pair_weight, pair_chargeprod;
         
         float sv_mass, sv_chi2, sv_cosine, sv_ntrks;
         
@@ -192,14 +184,9 @@ void MakeVarTreeData(int NumEvts_user = -1,
 
         BTree->Branch("eventNumber", &eventNumber);
 
-        BTree->Branch("dtr_pt", &dtr_pt);
-        BTree->Branch("dtr_px", &dtr_px);
-        BTree->Branch("dtr_py", &dtr_py);
-        BTree->Branch("dtr_pz", &dtr_pz);
-        BTree->Branch("dtr_e" , &dtr_e);
-        BTree->Branch("dtr_rap", &dtr_rap);
-        BTree->Branch("dtr_id", &dtr_id);
-        BTree->Branch("dtr_3charge", &dtr_3charge);
+        BTree->Branch("pair_rl"        , &pair_rl);
+        BTree->Branch("pair_weight"    , &pair_weight);
+        BTree->Branch("pair_chargeprod", &pair_chargeprod);
         
         BTree->Branch("jet_pt", &jet_pt);
         BTree->Branch("jet_eta", &jet_eta);
@@ -307,13 +294,6 @@ void MakeVarTreeData(int NumEvts_user = -1,
         BTree->Branch("Trig", &Trig);
         BTree->Branch("TIS", &TIS);
         BTree->Branch("TOS", &TOS);
-
-        BTree->Branch("z", &z);
-        BTree->Branch("jt", &jt);
-        BTree->Branch("r", &r);
-        BTree->Branch("zg", &zg);
-        BTree->Branch("jtg", &jtg);
-        BTree->Branch("rg", &rg);
         
         BTree->Branch("WTA_reco_dist", &WTA_reco_dist);
 
@@ -325,21 +305,16 @@ void MakeVarTreeData(int NumEvts_user = -1,
         TRandom3 *myRNG = new TRandom3();
 
         TLorentzVector HFjet, recojet, tr_truthjet, HFmeson, mup, mum, Jpsi, Kmeson;
-        TLorentzVector dtr;
-        TLorentzVector dtr_matchtruthjet;
+        TLorentzVector h1, h2;
                 
         ClusterSequence WTA_reco_jets;
         PseudoJet WTA_reco_jet;
                 
         for (int ev = ev_min; ev < NumEvts + ev_min; ev++) {
-                dtr_pt.clear();
-                dtr_px.clear();
-                dtr_py.clear();
-                dtr_pz.clear();
-                dtr_e.clear();
-                dtr_id.clear();
-                dtr_rap.clear();
-                dtr_3charge.clear();
+                pair_rl.clear();
+                pair_weight.clear();
+                pair_chargeprod.clear();
+                
                 jetdtrs.clear();
                 
                 Tree.GetEntry(ev);
@@ -358,21 +333,22 @@ void MakeVarTreeData(int NumEvts_user = -1,
                 
                 bool WrongB = false;
                 
-                for (int dtrs0 = 0; dtrs0 < Tree.Jet_Dtr_nrecodtr; dtrs0++) {
-                        if (abs(Tree.Jet_Dtr_ID[dtrs0]) == HF_pdgcode) {
-                                if (fabs(Tree.Jet_Dtr_E[dtrs0] - Tree.Bu_PE) / (Tree.Bu_PE) > 0.001)
+                for (int h1_index = 0; h1_index < Tree.Jet_Dtr_nrecodtr; h1_index++) {
+                        if (std::abs(Tree.Jet_Dtr_ID[h1_index]) == HF_pdgcode) {
+                                if (std::abs(Tree.Jet_Dtr_E[h1_index] - Tree.Bu_PE) / (Tree.Bu_PE) > 0.001)
                                         WrongB = true;
                         
                                 break;
                         }
                 }
                 
+                // EFMC: B meson in the jet daughters has to be the same as the one reconstructed by DaVinci (possible exp.)
                 if (WrongB)
                         continue;
 
                 // Ibrahim trigger lines
-                mup_L0 = Tree.mup_L0MuonDecision_TOS || Tree.mup_L0DiMuonDecision_TOS;
-                mum_L0 = Tree.mum_L0MuonDecision_TOS || Tree.mum_L0DiMuonDecision_TOS;
+                mup_L0 = -999; // Tree.mup_L0MuonDecision_TOS || Tree.mup_L0DiMuonDecision_TOS;
+                mum_L0 = -999; // Tree.mum_L0MuonDecision_TOS || Tree.mum_L0DiMuonDecision_TOS;
         
                 jpsi_L0       = Tree.Jpsi_L0MuonDecision_TOS || Tree.Jpsi_L0DiMuonDecision_TOS;
                 jpsi_L0Muon   = Tree.Jpsi_L0MuonDecision_TOS;
@@ -455,8 +431,8 @@ void MakeVarTreeData(int NumEvts_user = -1,
                         int num_neut = 0;
                         int num_part = 0;
                         
-                        for (int dtrs0 = 0; dtrs0 < Tree.Jet_Dtr_nrecodtr; dtrs0++) {
-                                if (fabs(Tree.Jet_Dtr_ThreeCharge[dtrs0]) == 0)
+                        for (int h1_index = 0; h1_index < Tree.Jet_Dtr_nrecodtr; h1_index++) {
+                                if (std::abs(Tree.Jet_Dtr_ThreeCharge[h1_index]) == 0)
                                         num_neut++;
                                 else
                                         num_trk++;
@@ -486,47 +462,68 @@ void MakeVarTreeData(int NumEvts_user = -1,
 
                 int NumBHads = 0;
 
-                for (int dtrs0 = 0; dtrs0 < Tree.Jet_Dtr_nrecodtr; dtrs0++) {
-                        float trchi2ndf  = Tree.Jet_Dtr_TrackChi2[dtrs0] / Tree.Jet_Dtr_TrackNDF[dtrs0];
-                        float dtr_charge = Tree.Jet_Dtr_ThreeCharge[dtrs0] / 3.;
+                for (int h1_index = 0; h1_index < Tree.Jet_Dtr_nrecodtr; h1_index++) {
+                        if (std::abs(Tree.Jet_Dtr_ID[h1_index]) < 100)
+                                continue;
 
-                        dtr.SetPxPyPzE(Tree.Jet_Dtr_PX[dtrs0] / 1000.,
-                                       Tree.Jet_Dtr_PY[dtrs0] / 1000.,
-                                       Tree.Jet_Dtr_PZ[dtrs0] / 1000.,
-                                       Tree.Jet_Dtr_E[dtrs0] / 1000.);
+                        float h1_chi2ndf = Tree.Jet_Dtr_TrackChi2[h1_index] / Tree.Jet_Dtr_TrackNDF[h1_index];
+                        float h1_charge  = Tree.Jet_Dtr_ThreeCharge[h1_index] / 3.;
+
+                        h1.SetPxPyPzE(Tree.Jet_Dtr_PX[h1_index] / 1000.,
+                                      Tree.Jet_Dtr_PY[h1_index] / 1000.,
+                                      Tree.Jet_Dtr_PZ[h1_index] / 1000.,
+                                      Tree.Jet_Dtr_E[h1_index] / 1000.);
                         
-                        if (abs(Tree.Jet_Dtr_ID[dtrs0]) != HF_pdgcode && 
-                            !apply_particle_cuts(dtr.P(), 
-                                                 dtr.Pt(), 
-                                                 trchi2ndf, 
-                                                 Tree.Jet_Dtr_ProbNNghost[dtrs0], 
-                                                 dtr.Rapidity()))
+                        if (std::abs(Tree.Jet_Dtr_ID[h1_index]) != HF_pdgcode && 
+                            !apply_chargedparticle_cuts(h1_charge,
+                                                        h1.P(), 
+                                                        h1.Pt(), 
+                                                        h1_chi2ndf, 
+                                                        Tree.Jet_Dtr_ProbNNghost[h1_index], 
+                                                        h1.Rapidity()))
                                 continue;
 
                         // EFMC: in contrast to MCMakeVar, here we know the B meson decays into a JPsi
                         // due to the trigger lines used.
-                        jetdtrs.push_back(PseudoJet(Tree.Jet_Dtr_PX[dtrs0] / 1000.,
-                                                    Tree.Jet_Dtr_PY[dtrs0] / 1000.,
-                                                    Tree.Jet_Dtr_PZ[dtrs0] / 1000.,
-                                                    Tree.Jet_Dtr_E[dtrs0] / 1000.));
+                        jetdtrs.push_back(PseudoJet(Tree.Jet_Dtr_PX[h1_index] / 1000.,
+                                                    Tree.Jet_Dtr_PY[h1_index] / 1000.,
+                                                    Tree.Jet_Dtr_PZ[h1_index] / 1000.,
+                                                    Tree.Jet_Dtr_E[h1_index] / 1000.));
                         
-                        jetdtrs.back().set_user_info(new MyInfo(Tree.Jet_Dtr_ID[dtrs0]));
+                        jetdtrs.back().set_user_info(new MyInfo(Tree.Jet_Dtr_ID[h1_index]));
                         
-                        if (abs(Tree.Jet_Dtr_ID[dtrs0]) == HF_pdgcode) {
-                                HFmeson.SetPxPyPzE(dtr.Px(), dtr.Py(), dtr.Pz(), dtr.E());
+                        if (std::abs(Tree.Jet_Dtr_ID[h1_index]) == HF_pdgcode) {
+                                HFmeson.SetPxPyPzE(h1.Px(), h1.Py(), h1.Pz(), h1.E());
 
                                 hasHFhadron = true;
                                 NumBHads++;
                         }
 
-                        dtr_id.push_back(Tree.Jet_Dtr_ID[dtrs0]);
-                        dtr_pt.push_back(dtr.Pt());
-                        dtr_px.push_back(dtr.Px());
-                        dtr_py.push_back(dtr.Py());
-                        dtr_pz.push_back(dtr.Pz());
-                        dtr_e.push_back(dtr.E());
-                        dtr_rap.push_back(dtr.Rapidity());
-                        dtr_3charge.push_back(Tree.Jet_Dtr_ThreeCharge[dtrs0]);
+                        for (int h2_index = h1_index + 1; h2_index < Tree.Jet_Dtr_nrecodtr; h2_index++) {
+                                if (std::abs(Tree.Jet_Dtr_ID[h2_index]) < 100)
+                                        continue;
+
+                                float h2_chi2ndf = Tree.Jet_Dtr_TrackChi2[h2_index] / Tree.Jet_Dtr_TrackNDF[h2_index];
+                                float h2_charge  = Tree.Jet_Dtr_ThreeCharge[h2_index] / 3.;
+
+                                h2.SetPxPyPzE(Tree.Jet_Dtr_PX[h2_index] / 1000.,
+                                              Tree.Jet_Dtr_PY[h2_index] / 1000.,
+                                              Tree.Jet_Dtr_PZ[h2_index] / 1000.,
+                                              Tree.Jet_Dtr_E[h2_index] / 1000.);
+                                
+                                if (std::abs(Tree.Jet_Dtr_ID[h2_index]) != HF_pdgcode && 
+                                    !apply_chargedparticle_cuts(h2_charge,
+                                                                h2.P(), 
+                                                                h2.Pt(), 
+                                                                h2_chi2ndf, 
+                                                                Tree.Jet_Dtr_ProbNNghost[h2_index], 
+                                                                h2.Rapidity()))
+                                        continue;
+
+                                pair_rl.push_back(h2.DeltaR(h1, true));
+                                pair_weight.push_back(h1.Pt() * h2.Pt() / (HFjet.Pt() * HFjet.Pt()));
+                                pair_chargeprod.push_back(h1_charge * h2_charge);
+                        }
                 }
 
                 if (!hasHFhadron)
@@ -535,10 +532,6 @@ void MakeVarTreeData(int NumEvts_user = -1,
                 TVector3 HF_meson = HFmeson.Vect();
                 TVector3 HF_jet   = HFjet.Vect();
 
-                jt = (HF_jet.Cross(HF_meson).Mag()) / (HF_jet.Mag());
-                z  = (HF_meson.Dot(HF_jet) ) / (HF_jet.Mag2() );
-                r  = static_cast < TLorentzVector > (HFmeson).DeltaR(HFjet, kTRUE);
-                
                 // Check WTA Reco
                 WTA_reco_jets = ClusterSequence(jetdtrs, WTA);
 
