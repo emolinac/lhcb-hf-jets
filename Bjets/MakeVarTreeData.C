@@ -462,6 +462,43 @@ void MakeVarTreeData(int NumEvts_user = -1,
 
                 int NumBHads = 0;
 
+                // Loop to determine the reclustering particles
+                for (int h1_index = 0; h1_index < Tree.Jet_Dtr_nrecodtr; h1_index++) {
+                        float h1_chi2ndf = Tree.Jet_Dtr_TrackChi2[h1_index] / Tree.Jet_Dtr_TrackNDF[h1_index];
+                        float h1_charge  = Tree.Jet_Dtr_ThreeCharge[h1_index] / 3.;
+
+                        h1.SetPxPyPzE(Tree.Jet_Dtr_PX[h1_index] / 1000.,
+                                      Tree.Jet_Dtr_PY[h1_index] / 1000.,
+                                      Tree.Jet_Dtr_PZ[h1_index] / 1000.,
+                                      Tree.Jet_Dtr_E[h1_index] / 1000.);
+                        
+                        if (std::abs(Tree.Jet_Dtr_ID[h1_index]) != HF_pdgcode && 
+                            !apply_particle_cuts(h1.P(), 
+                                                 h1.Pt(), 
+                                                 h1_chi2ndf, 
+                                                 Tree.Jet_Dtr_ProbNNghost[h1_index], 
+                                                 h1.Rapidity()))
+                                continue;
+
+                        jetdtrs.push_back(PseudoJet(Tree.Jet_Dtr_PX[h1_index] / 1000.,
+                                                    Tree.Jet_Dtr_PY[h1_index] / 1000.,
+                                                    Tree.Jet_Dtr_PZ[h1_index] / 1000.,
+                                                    Tree.Jet_Dtr_E[h1_index] / 1000.));
+                        
+                        jetdtrs.back().set_user_info(new MyInfo(Tree.Jet_Dtr_ID[h1_index]));
+                        
+                        if (std::abs(Tree.Jet_Dtr_ID[h1_index]) == HF_pdgcode) {
+                                HFmeson.SetPxPyPzE(h1.Px(), h1.Py(), h1.Pz(), h1.E());
+
+                                hasHFhadron = true;
+                                NumBHads++;
+                        }
+                }
+
+                if (!hasHFhadron)
+                        continue;
+
+                // Loop to determine the hadronic pairs
                 for (int h1_index = 0; h1_index < Tree.Jet_Dtr_nrecodtr; h1_index++) {
                         if (std::abs(Tree.Jet_Dtr_ID[h1_index]) < 100)
                                 continue;
@@ -482,22 +519,6 @@ void MakeVarTreeData(int NumEvts_user = -1,
                                                         Tree.Jet_Dtr_ProbNNghost[h1_index], 
                                                         h1.Rapidity()))
                                 continue;
-
-                        // EFMC: in contrast to MCMakeVar, here we know the B meson decays into a JPsi
-                        // due to the trigger lines used.
-                        jetdtrs.push_back(PseudoJet(Tree.Jet_Dtr_PX[h1_index] / 1000.,
-                                                    Tree.Jet_Dtr_PY[h1_index] / 1000.,
-                                                    Tree.Jet_Dtr_PZ[h1_index] / 1000.,
-                                                    Tree.Jet_Dtr_E[h1_index] / 1000.));
-                        
-                        jetdtrs.back().set_user_info(new MyInfo(Tree.Jet_Dtr_ID[h1_index]));
-                        
-                        if (std::abs(Tree.Jet_Dtr_ID[h1_index]) == HF_pdgcode) {
-                                HFmeson.SetPxPyPzE(h1.Px(), h1.Py(), h1.Pz(), h1.E());
-
-                                hasHFhadron = true;
-                                NumBHads++;
-                        }
 
                         for (int h2_index = h1_index + 1; h2_index < Tree.Jet_Dtr_nrecodtr; h2_index++) {
                                 if (std::abs(Tree.Jet_Dtr_ID[h2_index]) < 100)
@@ -525,9 +546,6 @@ void MakeVarTreeData(int NumEvts_user = -1,
                                 pair_chargeprod.push_back(h1_charge * h2_charge);
                         }
                 }
-
-                if (!hasHFhadron)
-                        continue;
 
                 TVector3 HF_meson = HFmeson.Vect();
                 TVector3 HF_jet   = HFjet.Vect();

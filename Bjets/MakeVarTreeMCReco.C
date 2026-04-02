@@ -189,6 +189,8 @@ void MakeVarTreeMCReco(int NumEvts_user = -1,
         float trigeff_Data(1.0), trigeff_MC(1.0), trigeff_ratio(1.0);
         
         vector<float> pair_rl, pair_weight, pair_chargeprod;
+        vector<float> truthmatched_pair_rl, truthmatched_pair_weight;
+        vector<float> true_pair_rl, true_pair_weight, true_pair_chargeprod;
                 
         float sv_mass, sv_chi2, sv_cosine, sv_ntrks;
         int SVTag;
@@ -201,12 +203,15 @@ void MakeVarTreeMCReco(int NumEvts_user = -1,
 
         BTree->Branch("eventNumber", &eventNumber);
 
-        BTree->Branch("dtr_px", &dtr_px);
-        BTree->Branch("dtr_py", &dtr_py);
-        BTree->Branch("dtr_pz", &dtr_pz);
-        BTree->Branch("dtr_e" , &dtr_e);
-        BTree->Branch("dtr_id", &dtr_id);
-        BTree->Branch("dtr_3charge", &dtr_3charge);
+        BTree->Branch("pair_rl"             , &pair_rl);
+        BTree->Branch("pair_weight"         , &pair_weight);
+        BTree->Branch("pair_chargeprod"     , &pair_chargeprod);
+        
+        BTree->Branch("truthmatched_pair_rl"     , &truthmatched_pair_rl);
+        BTree->Branch("truthmatched_pair_weight" , &truthmatched_pair_weight);
+        
+        BTree->Branch("true_pair_rl"     , &true_pair_rl);
+        BTree->Branch("true_pair_weight" , &true_pair_weight);
         
         BTree->Branch("jet_pt", &jet_pt);
         BTree->Branch("jet_eta", &jet_eta);
@@ -371,10 +376,13 @@ void MakeVarTreeMCReco(int NumEvts_user = -1,
         TRandom3 *myRNG = new TRandom3();
 
         TLorentzVector HFjet, recojet, tr_truthjet, HFmeson, mup, mum, Jpsi, Kmeson;
+        TLorentzVector h1, h2;
+        TLorentzVector true_h1, true_h2;
+
         TLorentzVector tr_HFjet, tr_Kmeson, tr_mum, tr_mup, tr_HFmeson, tr_HFmeson_injet;
         TLorentzVector dtr, tr_dtr;
         TLorentzVector HFmatch;
-        TLorentzVector dtr_matchtruthjet;
+        TLorentzVector h1_matchtruthjet, h2_matchtruthjet;
                 
         ClusterSequence WTA_true_jets;
         ClusterSequence WTA_reco_jets;
@@ -382,12 +390,12 @@ void MakeVarTreeMCReco(int NumEvts_user = -1,
         PseudoJet WTA_reco_jet;
                 
         for (int ev = ev_min; ev < NumEvts + ev_min; ev++) {
-                dtr_px.clear();
-                dtr_py.clear();
-                dtr_pz.clear();
-                dtr_e.clear();
-                dtr_id.clear();
-                dtr_3charge.clear();
+                pair_rl.clear();
+                pair_weight.clear();
+                pair_chargeprod.clear();
+
+                truthmatched_pair_rl.clear();
+                truthmatched_pair_weight.clear();
                 
                 jetdtrs.clear();
                 true_jetdtrs.clear();
@@ -421,8 +429,8 @@ void MakeVarTreeMCReco(int NumEvts_user = -1,
                         continue;
 
                 // Ibrahim trigger lines
-                mup_L0 = Tree.mup_L0MuonDecision_TOS || Tree.mup_L0DiMuonDecision_TOS;
-                mum_L0 = Tree.mum_L0MuonDecision_TOS || Tree.mum_L0DiMuonDecision_TOS;
+                mup_L0 = -999; // Tree.mup_L0MuonDecision_TOS || Tree.mup_L0DiMuonDecision_TOS;
+                mum_L0 = -999; // Tree.mum_L0MuonDecision_TOS || Tree.mum_L0DiMuonDecision_TOS;
         
                 jpsi_L0       = Tree.Jpsi_L0MuonDecision_TOS || Tree.Jpsi_L0DiMuonDecision_TOS;
                 jpsi_L0Muon   = Tree.Jpsi_L0MuonDecision_TOS;
@@ -482,8 +490,10 @@ void MakeVarTreeMCReco(int NumEvts_user = -1,
                                     Tree.Jet_mcjet_PZ / 1000.,
                                     Tree.Jet_mcjet_PE / 1000.);
 
-                if (!apply_jet_cuts(tr_HFjet.Rapidity(), tr_HFjet.Pt()))
-                        continue;
+                // bool truth_jet_passed = false;
+
+                // if (apply_jet_cuts(tr_HFjet.Rapidity(), tr_HFjet.Pt()))
+                //         truth_jet_passed = true;
 
                 tr_mup.SetPxPyPzE(Tree.mup_TRUEP_X / 1000., 
                                   Tree.mup_TRUEP_Y / 1000.,
@@ -541,7 +551,6 @@ void MakeVarTreeMCReco(int NumEvts_user = -1,
                                 continue;
                 }
 
-
                 bmass_dtf   = Tree.Bu_ConsBu_M[0] / 1000.;
                 chi2ndf_dtf = Tree.Bu_ConsBu_chi2[0] / Tree.Bu_ConsBu_nDOF[0];
                 tau_dtf     = Tree.Bu_ConsBu_ctau[0];
@@ -561,108 +570,255 @@ void MakeVarTreeMCReco(int NumEvts_user = -1,
 
                 int NumBHads = 0;
 
-                for (int dtrs0 = 0; dtrs0 < Tree.Jet_Dtr_nrecodtr; dtrs0++) {
-                        float trchi2ndf  = Tree.Jet_Dtr_TrackChi2[dtrs0] / Tree.Jet_Dtr_TrackNDF[dtrs0];
-                        float dtr_charge = Tree.Jet_Dtr_ThreeCharge[dtrs0] / 3.;
+                // Loop to determine the MCReco jet reclustering
+                for (int h1_index = 0; h1_index < Tree.Jet_Dtr_nrecodtr; h1_index++) {
+                        float h1_chi2ndf = Tree.Jet_Dtr_TrackChi2[h1_index] / Tree.Jet_Dtr_TrackNDF[h1_index];
+                        float h1_charge  = Tree.Jet_Dtr_ThreeCharge[h1_index] / 3.;
 
-                        dtr.SetPxPyPzE(Tree.Jet_Dtr_PX[dtrs0] / 1000.,
-                                       Tree.Jet_Dtr_PY[dtrs0] / 1000.,
-                                       Tree.Jet_Dtr_PZ[dtrs0] / 1000.,
-                                       Tree.Jet_Dtr_E[dtrs0] / 1000.);
-                        
-                        // EFMC: I might want to check this for the PURITIES
-                        tr_dtr.SetPxPyPzE(Tree.Jet_Dtr_TRUE_PX[dtrs0] / 1000.,
-                                          Tree.Jet_Dtr_TRUE_PY[dtrs0] / 1000.,
-                                          Tree.Jet_Dtr_TRUE_PZ[dtrs0] / 1000.,
-                                          Tree.Jet_Dtr_TRUE_E[dtrs0] / 1000.);
+                        h1.SetPxPyPzE(Tree.Jet_Dtr_PX[h1_index] / 1000.,
+                                      Tree.Jet_Dtr_PY[h1_index] / 1000.,
+                                      Tree.Jet_Dtr_PZ[h1_index] / 1000.,
+                                      Tree.Jet_Dtr_E[h1_index] / 1000.);
 
-                        if (abs(Tree.Jet_Dtr_ID[dtrs0]) != HF_pdgcode && 
-                            !apply_particle_cuts(dtr.P(), 
-                                                 dtr.Pt(), 
-                                                 trchi2ndf, 
-                                                 Tree.Jet_Dtr_ProbNNghost[dtrs0], 
-                                                 dtr.Rapidity()))
+                        if (std::abs(Tree.Jet_Dtr_ID[h1_index]) != HF_pdgcode && 
+                            !apply_particle_cuts(h1.P(), 
+                                                 h1.Pt(), 
+                                                 h1_chi2ndf, 
+                                                 Tree.Jet_Dtr_ProbNNghost[h1_index], 
+                                                 h1.Rapidity()))
                                 continue;
 
-                        // EFMC: in contrast to MCMakeVar, here we know the B meson decays into a JPsi
-                        // due to the trigger lines used.
-                        jetdtrs.push_back(PseudoJet(Tree.Jet_Dtr_PX[dtrs0] / 1000.,
-                                                    Tree.Jet_Dtr_PY[dtrs0] / 1000.,
-                                                    Tree.Jet_Dtr_PZ[dtrs0] / 1000.,
-                                                    Tree.Jet_Dtr_E[dtrs0] / 1000.));
+                        jetdtrs.push_back(PseudoJet(Tree.Jet_Dtr_PX[h1_index] / 1000.,
+                                                    Tree.Jet_Dtr_PY[h1_index] / 1000.,
+                                                    Tree.Jet_Dtr_PZ[h1_index] / 1000.,
+                                                    Tree.Jet_Dtr_E[h1_index] / 1000.));
                         
-                        jetdtrs.back().set_user_info(new MyInfo(Tree.Jet_Dtr_ID[dtrs0]));
+                        jetdtrs.back().set_user_info(new MyInfo(Tree.Jet_Dtr_ID[h1_index]));
                         
-                        if (abs(Tree.Jet_Dtr_ID[dtrs0]) == HF_pdgcode) {
-                                HFmeson.SetPxPyPzE(dtr.Px(), dtr.Py(), dtr.Pz(), dtr.E());
+                        if (std::abs(Tree.Jet_Dtr_ID[h1_index]) == HF_pdgcode) {
+                                HFmeson.SetPxPyPzE(h1.Px(), h1.Py(), h1.Pz(), h1.E());
 
                                 // EFMC: I might want to check this for the PURITIES
-                                HFmatch.SetPxPyPzE(Tree.Jet_Dtr_TRUE_PX[dtrs0] / 1000.,
-                                                   Tree.Jet_Dtr_TRUE_PY[dtrs0] / 1000.,
-                                                   Tree.Jet_Dtr_TRUE_PZ[dtrs0] / 1000.,
-                                                   Tree.Jet_Dtr_TRUE_E[dtrs0] / 1000.);
+                                HFmatch.SetPxPyPzE(Tree.Jet_Dtr_TRUE_PX[h1_index] / 1000.,
+                                                   Tree.Jet_Dtr_TRUE_PY[h1_index] / 1000.,
+                                                   Tree.Jet_Dtr_TRUE_PZ[h1_index] / 1000.,
+                                                   Tree.Jet_Dtr_TRUE_E[h1_index] / 1000.);
 
                                 hasHFhadron = true;
                                 NumBHads++;
-                        } // EFMC: jet must contain HF meson
-
-                        dtr_id.push_back(Tree.Jet_Dtr_ID[dtrs0]);
-                        dtr_px.push_back(dtr.Px());
-                        dtr_py.push_back(dtr.Py());
-                        dtr_pz.push_back(dtr.Pz());
-                        dtr_e.push_back(dtr.E());
-                        dtr_3charge.push_back(Tree.Jet_Dtr_ThreeCharge[dtrs0]);
-                }
+                        }
+                } // End of MCReco loop
 
                 if (!hasHFhadron)
                         continue;
 
                 NumBHads_tr = 0;
                 bool hasHFhadron_matched = false;
-                
-                for (int dtrs0 = 0; dtrs0 < Tree.Jet_mcjet_nmcdtrs; dtrs0++) {
-                        float trchi2ndf = 0;
 
-                        dtr_matchtruthjet.SetPxPyPzE(Tree.Jet_mcjet_dtrPX[dtrs0] / 1000.,
-                                                     Tree.Jet_mcjet_dtrPY[dtrs0] / 1000.,
-                                                     Tree.Jet_mcjet_dtrPZ[dtrs0] / 1000.,
-                                                     Tree.Jet_mcjet_dtrE[dtrs0] / 1000.);
-
-                        if (abs(Tree.Jet_mcjet_dtrID[dtrs0]) != HF_pdgcode && 
-                                !apply_particle_momentum_cuts(dtr_matchtruthjet.P(), 
-                                                              dtr_matchtruthjet.Pt(),
-                                                              dtr_matchtruthjet.Rapidity()))
+                // Loop to determine the hadronic pairs at reco level
+                for (int h1_index = 0; h1_index < Tree.Jet_Dtr_nrecodtr; h1_index++) {
+                        if (std::abs(Tree.Jet_Dtr_ID[h1_index]) < 100)
                                 continue;
 
-                        if (abs(Tree.Jet_mcjet_dtrID[dtrs0]) == HF_pdgcode) {
+                        float h1_chi2ndf = Tree.Jet_Dtr_TrackChi2[h1_index] / Tree.Jet_Dtr_TrackNDF[h1_index];
+                        float h1_charge  = Tree.Jet_Dtr_ThreeCharge[h1_index] / 3.;
+
+                        h1.SetPxPyPzE(Tree.Jet_Dtr_PX[h1_index] / 1000.,
+                                      Tree.Jet_Dtr_PY[h1_index] / 1000.,
+                                      Tree.Jet_Dtr_PZ[h1_index] / 1000.,
+                                      Tree.Jet_Dtr_E[h1_index] / 1000.);
+
+                        if (std::abs(Tree.Jet_Dtr_ID[h1_index]) != HF_pdgcode && 
+                            !apply_chargedparticle_cuts(h1_charge,
+                                                        h1.P(), 
+                                                        h1.Pt(), 
+                                                        h1_chi2ndf, 
+                                                        Tree.Jet_Dtr_ProbNNghost[h1_index], 
+                                                        h1.Rapidity()))
+                                continue;
+
+                        // Check if the truth-matched particle is inside the truth-matched jet
+                        int key1_match = 0;
+                        int key1_sim   = 0;
+                        if (Tree.Jet_Dtr_TRUE_ETA[h1_index] != -999 && std::abs(Tree.Jet_Dtr_TRUE_ID[h1_index]) > 100) {
+                                key1_match++;
+
+                                for(int i = 0 ; i < Tree.Jet_mcjet_nmcdtrs ; i++) {
+                                        if(Tree.Jet_Dtr_TRUE_KEY[h1_index] == Tree.Jet_mcjet_dtrKeys[i]) {
+                                                key1_sim++;
+                                                break;
+                                        }
+                                }
+
+                                // Verifies if the matched particle is in the matched jet
+                                if (key1_sim == 0) 
+                                        key1_match = 0;
+
+                                true_h1.SetPxPyPzE(Tree.Jet_Dtr_TRUE_PX[h1_index]/1000.,
+                                                   Tree.Jet_Dtr_TRUE_PY[h1_index]/1000.,
+                                                   Tree.Jet_Dtr_TRUE_PZ[h1_index]/1000.,
+                                                   Tree.Jet_Dtr_TRUE_E[h1_index]/1000.);
+                                
+                                if (!apply_chargedparticle_momentum_cuts(Tree.Jet_Dtr_TRUE_ThreeCharge[h1_index],
+                                                                         true_h1.P(),
+                                                                         true_h1.Pt(),
+                                                                         true_h1.Eta())) 
+                                        key1_match = 0;
+                        } 
+
+                        for (int h2_index = h1_index + 1; h2_index < Tree.Jet_Dtr_nrecodtr; h2_index++) {
+                                if (std::abs(Tree.Jet_Dtr_ID[h2_index]) < 100)
+                                        continue;
+
+                                float h2_chi2ndf = Tree.Jet_Dtr_TrackChi2[h2_index] / Tree.Jet_Dtr_TrackNDF[h2_index];
+                                float h2_charge  = Tree.Jet_Dtr_ThreeCharge[h2_index] / 3.;
+
+                                h2.SetPxPyPzE(Tree.Jet_Dtr_PX[h2_index] / 1000.,
+                                              Tree.Jet_Dtr_PY[h2_index] / 1000.,
+                                              Tree.Jet_Dtr_PZ[h2_index] / 1000.,
+                                              Tree.Jet_Dtr_E[h2_index] / 1000.);
+                                
+                                if (std::abs(Tree.Jet_Dtr_ID[h2_index]) != HF_pdgcode && 
+                                    !apply_chargedparticle_cuts(h2_charge,
+                                                                h2.P(), 
+                                                                h2.Pt(), 
+                                                                h2_chi2ndf, 
+                                                                Tree.Jet_Dtr_ProbNNghost[h2_index], 
+                                                                h2.Rapidity()))
+                                        continue;
+
+                                // Check if the truth-matched particle is inside the truth-matched jet
+                                int key2_match = 0;
+                                int key2_sim   = 0;
+                                if (Tree.Jet_Dtr_TRUE_ETA[h2_index] != -999 && std::abs(Tree.Jet_Dtr_TRUE_ID[h2_index]) > 100) {
+                                        key2_match++;
+
+                                        for(int i = 0 ; i < Tree.Jet_mcjet_nmcdtrs ; i++) {
+                                                if(Tree.Jet_Dtr_TRUE_KEY[h2_index] == Tree.Jet_mcjet_dtrKeys[i]) {
+                                                        key2_sim++;
+                                                        break;
+                                                }
+                                        }
+
+                                        // Verifies if the matched particle is in the matched jet
+                                        if (key2_sim == 0) 
+                                                key2_match = 0;
+
+                                        true_h2.SetPxPyPzE(Tree.Jet_Dtr_TRUE_PX[h2_index] / 1000.,
+                                                            Tree.Jet_Dtr_TRUE_PY[h2_index] / 1000.,
+                                                            Tree.Jet_Dtr_TRUE_PZ[h2_index] / 1000.,
+                                                            Tree.Jet_Dtr_TRUE_E[h2_index] / 1000.);
+                                        
+                                        if (!apply_chargedparticle_momentum_cuts(Tree.Jet_Dtr_TRUE_ThreeCharge[h2_index],
+                                                                              true_h2.P(),
+                                                                              true_h2.Pt(),
+                                                                              true_h2.Eta())) 
+                                                key2_match = 0;
+                                } 
+
+                                pair_rl.push_back(h2.DeltaR(h1, true));
+                                pair_weight.push_back(h1.Pt() * h2.Pt() / (HFjet.Pt() * HFjet.Pt()));
+                                pair_chargeprod.push_back(h1_charge * h2_charge);
+
+                                // EFMC: for purities it will be required that the following quantities are different than -999
+                                if (key1_match == 0 || key2_match == 0) {
+                                        truthmatched_pair_rl.push_back(-999);
+                                        truthmatched_pair_weight.push_back(-999);
+                                } else {
+                                        truthmatched_pair_rl.push_back(true_h2.DeltaR(true_h1, true));
+                                        truthmatched_pair_weight.push_back(true_h1.Pt() * true_h2.Pt() / (tr_HFjet.Pt() * tr_HFjet.Pt()));
+                                }
+
+                        }
+                } // End of MCreco loop
+                
+                // Loop to determine reclustering of the truth-matched jet
+                for (int h1_index = 0; h1_index < Tree.Jet_mcjet_nmcdtrs; h1_index++) {
+                        float trchi2ndf = 0;
+
+                        h1_matchtruthjet.SetPxPyPzE(Tree.Jet_mcjet_dtrPX[h1_index] / 1000.,
+                                                    Tree.Jet_mcjet_dtrPY[h1_index] / 1000.,
+                                                    Tree.Jet_mcjet_dtrPZ[h1_index] / 1000.,
+                                                    Tree.Jet_mcjet_dtrE[h1_index] / 1000.);
+
+                        if (abs(Tree.Jet_mcjet_dtrID[h1_index]) != HF_pdgcode && 
+                                !apply_particle_momentum_cuts(h1_matchtruthjet.P(), 
+                                                              h1_matchtruthjet.Pt(),
+                                                              h1_matchtruthjet.Rapidity()))
+                                continue;
+
+                        if (abs(Tree.Jet_mcjet_dtrID[h1_index]) == HF_pdgcode) {
                                 NumBHads_tr++;
 
-                                if (fabs(dtr_matchtruthjet.Pt() - Tree.Bu_TRUEPT / 1000.) < 0.01) {
-                                        tr_HFmeson_injet.SetPxPyPzE(dtr_matchtruthjet.Px(), 
-                                                                    dtr_matchtruthjet.Py(), 
-                                                                    dtr_matchtruthjet.Pz(), 
-                                                                    dtr_matchtruthjet.E());
+                                if (fabs(h1_matchtruthjet.Pt() - Tree.Bu_TRUEPT / 1000.) < 0.01) {
+                                        tr_HFmeson_injet.SetPxPyPzE(h1_matchtruthjet.Px(), 
+                                                                    h1_matchtruthjet.Py(), 
+                                                                    h1_matchtruthjet.Pz(), 
+                                                                    h1_matchtruthjet.E());
 
                                         h2_HFpt_RM->Fill(dtr.Pt(), HFmeson.Pt());
 
                                         hasHFhadron_matched = true;
                                 } else {
-                                        true_jetdtrs.push_back(PseudoJet(Tree.Jet_mcjet_dtrPX[dtrs0] / 1000.,
-                                                                         Tree.Jet_mcjet_dtrPY[dtrs0] / 1000.,
-                                                                         Tree.Jet_mcjet_dtrPZ[dtrs0] / 1000.,
-                                                                         Tree.Jet_mcjet_dtrE[dtrs0] / 1000.));
+                                        true_jetdtrs.push_back(PseudoJet(Tree.Jet_mcjet_dtrPX[h1_index] / 1000.,
+                                                                         Tree.Jet_mcjet_dtrPY[h1_index] / 1000.,
+                                                                         Tree.Jet_mcjet_dtrPZ[h1_index] / 1000.,
+                                                                         Tree.Jet_mcjet_dtrE[h1_index] / 1000.));
                                         
                                         true_jetdtrs.back().set_user_info(new MyInfo(-999));
                                 }
                         } else {
-                                true_jetdtrs.push_back(PseudoJet(Tree.Jet_mcjet_dtrPX[dtrs0] / 1000.,
-                                                                 Tree.Jet_mcjet_dtrPY[dtrs0] / 1000.,
-                                                                 Tree.Jet_mcjet_dtrPZ[dtrs0] / 1000.,
-                                                                 Tree.Jet_mcjet_dtrE[dtrs0] / 1000.));
+                                true_jetdtrs.push_back(PseudoJet(Tree.Jet_mcjet_dtrPX[h1_index] / 1000.,
+                                                                 Tree.Jet_mcjet_dtrPY[h1_index] / 1000.,
+                                                                 Tree.Jet_mcjet_dtrPZ[h1_index] / 1000.,
+                                                                 Tree.Jet_mcjet_dtrE[h1_index] / 1000.));
                 
-                                true_jetdtrs.back().set_user_info(new MyInfo(Tree.Jet_mcjet_dtrID[dtrs0]));
+                                true_jetdtrs.back().set_user_info(new MyInfo(Tree.Jet_mcjet_dtrID[h1_index]));
                         }
-                }
+                } // End of MC loop
+
+                // Loop to determine hadronic pairs of the truth-matched jets
+                for (int h1_index = 0; h1_index < Tree.Jet_mcjet_nmcdtrs; h1_index++) {
+                        if (std::abs(Tree.Jet_mcjet_dtrID[h1_index]) < 100)
+                                continue;
+
+                        float h1_charge  = Tree.Jet_mcjet_dtrThreeCharge[h1_index] / 3.;
+
+                        h1_matchtruthjet.SetPxPyPzE(Tree.Jet_mcjet_dtrPX[h1_index] / 1000.,
+                                                    Tree.Jet_mcjet_dtrPY[h1_index] / 1000.,
+                                                    Tree.Jet_mcjet_dtrPZ[h1_index] / 1000.,
+                                                    Tree.Jet_mcjet_dtrE[h1_index] / 1000.);
+
+                        if (abs(Tree.Jet_mcjet_dtrID[h1_index]) != HF_pdgcode && 
+                            !apply_chargedparticle_momentum_cuts(h1_charge,
+                                                                 h1_matchtruthjet.P(), 
+                                                                 h1_matchtruthjet.Pt(),
+                                                                 h1_matchtruthjet.Rapidity()))
+                                continue;
+
+                        for (int h2_index = h1_index + 1; h2_index < Tree.Jet_mcjet_nmcdtrs; h2_index++) {
+                                if (std::abs(Tree.Jet_mcjet_dtrID[h2_index]) < 100)
+                                        continue;
+                                
+                                float h2_charge  = Tree.Jet_mcjet_dtrThreeCharge[h2_index] / 3.;
+
+                                h2_matchtruthjet.SetPxPyPzE(Tree.Jet_mcjet_dtrPX[h2_index] / 1000.,
+                                                            Tree.Jet_mcjet_dtrPY[h2_index] / 1000.,
+                                                            Tree.Jet_mcjet_dtrPZ[h2_index] / 1000.,
+                                                            Tree.Jet_mcjet_dtrE[h2_index] / 1000.);
+
+                                if (abs(Tree.Jet_mcjet_dtrID[h2_index]) != HF_pdgcode && 
+                                    !apply_chargedparticle_momentum_cuts(h2_charge,
+                                                                         h2_matchtruthjet.P(), 
+                                                                         h2_matchtruthjet.Pt(),
+                                                                         h2_matchtruthjet.Rapidity()))
+                                        continue;
+
+                                true_pair_rl.push_back(h2_matchtruthjet.DeltaR(h1_matchtruthjet, true));
+                                true_pair_weight.push_back(h1_matchtruthjet.Pt() * h2_matchtruthjet.Pt() / (tr_HFjet.Pt() * tr_HFjet.Pt()));
+                                true_pair_chargeprod.push_back(h1_charge * h2_charge);
+                        }
+                } // End of MC loop
 
                 if (hasHFhadron_matched) {
                         true_jetdtrs.push_back(PseudoJet(tr_HFmeson_injet.Px(),
@@ -692,30 +848,6 @@ void MakeVarTreeMCReco(int NumEvts_user = -1,
                 TVector3 tr_HF_meson = tr_HFmeson.Vect();
                 TVector3 tr_HF_jet   = tr_HFjet.Vect();
 
-                jt = (HF_jet.Cross(HF_meson).Mag()) / (HF_jet.Mag());
-                z  = (HF_meson.Dot(HF_jet) ) / (HF_jet.Mag2() );
-                r  = static_cast < TLorentzVector > (HFmeson).DeltaR(HFjet, kTRUE);
-                
-                if(hasHFhadron_matched ) {
-                        tr_jt = (tr_HF_jet.Cross(tr_HF_meson).Mag()) / (tr_HF_jet.Mag());
-                        tr_z  = (tr_HF_meson.Dot(tr_HF_jet) ) / (tr_HF_jet.Mag2() );
-                        tr_r  =  static_cast < TLorentzVector > (tr_HFmeson).DeltaR(tr_HFjet, kTRUE);
-
-                        if(Hasbbbar) {
-                                jtg = (tr_HF_jet.Cross(tr_HF_meson).Mag()) / (tr_HF_jet.Mag());
-                                zg  = (tr_HF_meson.Dot(tr_HF_jet) ) / (tr_HF_jet.Mag2() );
-                                rg  = static_cast < TLorentzVector > (tr_HFmeson).DeltaR(tr_HFjet, kTRUE);
-                        } else {
-                                jtg = -999.;
-                                zg  = -999.;
-                                rg  = -999.;
-                        }
-                } else {
-                        tr_jt = -999.;
-                        tr_z  = -999.;
-                        tr_r  = -999.;
-                }
-
                 // Check WTA Truth
                 if (true_jetdtrs.size() > 0){
                         WTA_true_jets = ClusterSequence(true_jetdtrs, WTA);
@@ -727,6 +859,7 @@ void MakeVarTreeMCReco(int NumEvts_user = -1,
                 } else {
                         WTA_true_dist = -999;
                 }
+
                 // Check WTA Reco
                 WTA_reco_jets = ClusterSequence(jetdtrs, WTA);
 
