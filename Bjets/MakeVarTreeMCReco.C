@@ -203,15 +203,16 @@ void MakeVarTreeMCReco(int NumEvts_user = -1,
 
         BTree->Branch("eventNumber", &eventNumber);
 
-        BTree->Branch("pair_rl"             , &pair_rl);
-        BTree->Branch("pair_weight"         , &pair_weight);
-        BTree->Branch("pair_chargeprod"     , &pair_chargeprod);
+        BTree->Branch("pair_rl"        , &pair_rl);
+        BTree->Branch("pair_weight"    , &pair_weight);
+        BTree->Branch("pair_chargeprod", &pair_chargeprod);
         
-        BTree->Branch("truthmatched_pair_rl"     , &truthmatched_pair_rl);
-        BTree->Branch("truthmatched_pair_weight" , &truthmatched_pair_weight);
+        BTree->Branch("truthmatched_pair_rl"    , &truthmatched_pair_rl);
+        BTree->Branch("truthmatched_pair_weight", &truthmatched_pair_weight);
         
-        BTree->Branch("true_pair_rl"     , &true_pair_rl);
-        BTree->Branch("true_pair_weight" , &true_pair_weight);
+        BTree->Branch("true_pair_rl"        , &true_pair_rl);
+        BTree->Branch("true_pair_weight"    , &true_pair_weight);
+        BTree->Branch("true_pair_chargeprod", &true_pair_chargeprod);
         
         BTree->Branch("jet_pt", &jet_pt);
         BTree->Branch("jet_eta", &jet_eta);
@@ -397,6 +398,10 @@ void MakeVarTreeMCReco(int NumEvts_user = -1,
                 truthmatched_pair_rl.clear();
                 truthmatched_pair_weight.clear();
                 
+                true_pair_rl.clear();
+                true_pair_weight.clear();
+                true_pair_chargeprod.clear();
+
                 jetdtrs.clear();
                 true_jetdtrs.clear();
 
