@@ -110,12 +110,7 @@ void MakeVarTreeMC(int NumEvts_user = -1)
 
         // TLorentzVector
         TTree *BTree = new TTree("BTree", "B-jets Tree Variables");
-        TNtuple* ntuple_true_jet  = new TNtuple("ntuple_true_jet" ,"","jet_pt:wta_distance");
-        TNtuple* ntuple_true_pair = new TNtuple("ntuple_true_pair","","jet_pt:R_L:weight_pt:wta_distance");
-
-        TNtuple* ntuple_reco_jet  = new TNtuple("ntuple_reco_jet" ,"","jet_pt:wta_distance");
-        TNtuple* ntuple_reco_pair = new TNtuple("ntuple_reco_pair","","jet_pt:R_L:weight_pt:wta_distance");
-
+        
         BTree->Branch("eventNumber", &eventNumber);
 
         BTree->Branch("pair_rl"        , &pair_rl);
@@ -456,8 +451,6 @@ void MakeVarTreeMC(int NumEvts_user = -1)
                                                                          h2.Rapidity()))
                                         continue;
 
-                                ntuple_true_pair->Fill(HFjet.Pt(), h1.DeltaR(h2, true), (h1.Pt() * h2.Pt()) / std::pow(HFjet.Pt(), 2),WTA_true_dist);
-
                                 double h1_charge = Tree.MCJet_Dtr_ThreeCharge[h1_index] / 3.;
                                 double h2_charge = Tree.MCJet_Dtr_ThreeCharge[h2_index] / 3.;
 
@@ -649,9 +642,6 @@ void MakeVarTreeMC(int NumEvts_user = -1)
 
                 last_eventNum = Tree.eventNumber;
                 eventNumber   = Tree.eventNumber;
-
-                ntuple_reco_jet->Fill(meas_HFjet.Pt(),WTA_reco_dist);
-                ntuple_true_jet->Fill(HFjet.Pt(),WTA_true_dist);
 
                 BTree->Fill();
         }

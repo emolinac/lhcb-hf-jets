@@ -45,11 +45,9 @@ void MCSimpleObservables(int NumEvts = -1)
         TFile f((output_folder + "bjets_simpleobservable_mc.root").c_str(), "RECREATE");
 
         // 2D Truth-Reco Correspondence (219 - 224)
-        TH1D *h1_jet_flav = new TH1D("Jet_Flav", "", 7, -0.5, 6.5);
         TH1D *h1_jet_pt   = new TH1D("Jet_pT", "", ptbinsize, pt_binedges);
         TH1D *h1_jet_eta  = new TH1D("Jet_eta", "", 12, etaMin, etaMax);
         TH1D *h1_jet_rap  = new TH1D("Jet_rap", "", 12, etaMin, etaMax);
-        TH1D *h1_jet_phi  = new TH1D("Jet_phi", "", 20, -3.14, 3.14);
         
         TH1D *h1_jet_ptbalance0 = new TH1D("jet_ptbalance0", "", 20, 0, 2);
         TH1D *h1_jet_ptbalance1 = new TH1D("jet_ptbalance1", "", 20, 0, 2);
@@ -65,49 +63,15 @@ void MCSimpleObservables(int NumEvts = -1)
         TH1D *h1_meas_jet_pt  = new TH1D("meas_Jet_pT", "", ptbinsize, pt_binedges);
         TH1D *h1_meas_jet_eta = new TH1D("meas_Jet_eta", "", 12, etaMin, etaMax);
         TH1D *h1_meas_jet_rap = new TH1D("meas_Jet_rap", "", 12, etaMin, etaMax);
-        TH1D *h1_meas_jet_phi = new TH1D("meas_Jet_phi", "", 20, -3.14, 3.14);
-
-        TH1D *h1_jet_pt_noghost  = new TH1D("Jet_pT_noghost", "", 50, ptMin, ptMax);
-        TH1D *h1_jet_eta_noghost = new TH1D("Jet_eta_noghost", "", 12, etaMin, etaMax);
-        TH1D *h1_jet_phi_noghost = new TH1D("Jet_phi_noghost", "", 20, -3.14, 3.14);
 
         TH1D *h1_Jpsi_rap  = new TH1D("Jpsi_rap", "", 12, etaMin - jetradius, etaMax + jetradius);
         TH1D *h1_Jpsi_pt   = new TH1D("Jpsi_pT", "", 50, 0, 100);
-        TH1D *h1_Jpsi_phi  = new TH1D("Jpsi_phi", "", 20, -3.14, 3.14);
         TH1D *h1_Jpsi_mass = new TH1D("Jpsi_mass", "", 30, 3.1 - 0.1, 3.1 + 0.1);
-
-        TH1D *h1_meas_Jpsi_rap  = new TH1D("meas_Jpsi_rap", "", 12, etaMin - jetradius, etaMax + jetradius);
-        TH1D *h1_meas_Jpsi_pt   = new TH1D("meas_Jpsi_pT", "", 50, 0, 100);
-        TH1D *h1_meas_Jpsi_phi  = new TH1D("meas_Jpsi_phi", "", 20, -3.14, 3.14);
-        TH1D *h1_meas_Jpsi_mass = new TH1D("meas_Jpsi_mass", "", 30, 3.1 - 0.1, 3.1 + 0.1);
-
-        TH1D *h1_mup_eta = new TH1D("mup_eta", "", 12, etaMin - jetradius, etaMax + jetradius);
-        TH1D *h1_mup_pt  = new TH1D("mup_pt", "", 40, 0, 20);
-        TH1D *h1_mum_eta = new TH1D("mum_eta", "", 12, etaMin - jetradius, etaMax + jetradius);
-        TH1D *h1_mum_pt  = new TH1D("mum_pt", "", 40, 0, 20);
-        TH1D *h1_K_eta   = new TH1D("K_eta", "", 12, etaMin - jetradius, etaMax + jetradius);
-        TH1D *h1_K_pt    = new TH1D("K_pt", "", 40, 0, 20);
-
-        TH1D *h1_meas_mup_eta = new TH1D("meas_mup_eta", "", 12, etaMin - jetradius, etaMax + jetradius);
-        TH1D *h1_meas_mup_pt  = new TH1D("meas_mup_pt", "", 40, 0, 20);
-        TH1D *h1_meas_mum_eta = new TH1D("meas_mum_eta", "", 12, etaMin - jetradius, etaMax + jetradius);
-        TH1D *h1_meas_mum_pt  = new TH1D("meas_mum_pt", "", 40, 0, 20);
-        TH1D *h1_meas_K_eta   = new TH1D("meas_K_eta", "", 12, etaMin - jetradius, etaMax + jetradius);
-        TH1D *h1_meas_K_pt    = new TH1D("meas_K_pt", "", 40, 0, 20);
 
         TH1D *h1_HF_rap          = new TH1D("HF_rap", "", 12, etaMin - jetradius, etaMax + jetradius);
         TH1D *h1_HF_pt           = new TH1D("HF_pT", "", 50, 0, 100);
-        TH1D *h1_HF_phi          = new TH1D("HF_phi", "", 20, -3.14, 3.14);
         TH1D *h1_HF_mass         = new TH1D("HF_mass", "", 30, 5.279 - 0.3, 5.279 + 0.3);
         TH1D *h1_HFjet_ptbalance = new TH1D("HFjet_ptbalance", "", 20, 0, 2);
-
-        TH1D *h1_HFpt_GS    = new TH1D("HFpt_GS", "", ptHFbinsize, ptHF_binedges);
-        TH1D *h1_HFpt_FC    = new TH1D("HFpt_FC", "", ptHFbinsize, ptHF_binedges);
-        TH1D *h1_HFpt_Total = new TH1D("HFpt_Total", "", ptHFbinsize, ptHF_binedges);
-
-        TH1D *h1_jetpt_GS    = new TH1D("jetpt_GS", "", ptbinsize, pt_binedges);
-        TH1D *h1_jetpt_FC    = new TH1D("jetpt_FC", "", ptbinsize, pt_binedges);
-        TH1D *h1_jetpt_Total = new TH1D("jetpt_Total", "", ptbinsize, pt_binedges);
 
         TH1D *h1_HFpt      = new TH1D("h1_HFpt", "", ptHFbinsize, ptHF_binedges);
         TH2D *h2_HFptjetpt = new TH2D("h2_HFptjetpt", "", ptHFbinsize, ptHF_binedges, customptbinsize, custompt_binedges);
@@ -292,6 +256,9 @@ void MCSimpleObservables(int NumEvts = -1)
                 if (!pt_cond)
                         continue;
 
+                if (WTA_true_dist > 0.005)
+                        continue;
+                
                 NumBJets++;
 
                 h1_jet_pt->Fill(jet_pt);
@@ -339,8 +306,6 @@ void MCSimpleObservables(int NumEvts = -1)
                         }
                 }
 
-                
-                
                 bool hasEmission_ktdR = false;
                 bool hasEmission_zdR = false;
         } // End of BTree entry loop
@@ -354,8 +319,6 @@ void MCSimpleObservables(int NumEvts = -1)
         TH2D* h_npair_mc_rl_jetpt = (TH2D*) h_npair_mc->Project3D("yx");
 
         for (int bin = 0 ; bin < ptbinsize ; bin++) {
-                int nominal_jet_pt_bin = bin + 3;
-
                 // Pseudodata operations
                 hmc_eec[bin]      = new TH1F(Form("hmc_eec%i",bin)     , "", nbin_rl_nominal_unfolding,unfolding_rl_nominal_binning);
                 hmc_eqcheec[bin]  = new TH1F(Form("hmc_eqcheec%i",bin) , "", nbin_rl_nominal_unfolding, unfolding_rl_nominal_binning);

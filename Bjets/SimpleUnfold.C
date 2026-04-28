@@ -137,19 +137,6 @@ void SimpleUnfold(int NumEvts = -1,
         TH3D *h3_denom_efficiency_ptzr  = (TH3D*) file_eff->Get("denom_efficiency_ptzr");
         TH3D *h3_denom_efficiency_ptjtr = (TH3D*) file_eff->Get("denom_efficiency_ptjtr");  
         
-        TH2D *h2_SVTag_eff_denom_z = (TH2D*) file_eff->Get("h2_SVTag_eff_denom_z");
-        TH2D *h2_SVTag_eff_denom   = (TH2D*) file_eff->Get("h2_SVTag_eff_denom");
-        
-        TH1D *h1_recoHF_HFpt         = (TH1D*) file_eff->Get("num_efficiency_HFpt");
-        TH1D *h1_recoHF_jetpt        = (TH1D*) file_eff->Get("num_efficiency_jetpt");
-        TH2D *h2_recoHF_HFpteta      = (TH2D*) file_eff->Get("num_efficiency_HFpteta");
-        TH3D *h3_recoHF_HFptetajetpt = (TH3D*) file_eff->Get("num_efficiency_HFptetajetpt");
-        
-        TH1D *h1_HFeff_HFpt         = (TH1D*) file_eff->Get("efficiency_HFpt");
-        TH1D *h1_HFeff_jetpt        = (TH1D*) file_eff->Get("efficiency_jetpt");
-        TH2D *h2_HFeff_HFpteta      = (TH2D*) file_eff->Get("efficiency_HFpteta");
-        TH3D *h3_HFeff_HFptetajetpt = (TH3D*) file_eff->Get("efficiency_HFptetajetpt");
-        
         //    /////////////////// Mass Fit Parameters /////////////////////////////////
         TString extension_mass("");
         if (sPlotFit)
