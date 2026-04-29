@@ -40,23 +40,20 @@ void MCSimpleEff(int NumEvts = -1, int dataset = 91599, int flavor = 5,
         TH1D *h1_denom_efficiency_jetpt = new TH1D("denom_efficiency_jetpt", "", ptbinsize, pt_binedges); //stay 
         TH1D *h1_denom_efficiency_HFpt  = new TH1D("denom_efficiency_HFpt", "", ptHFbinsize, ptHF_binedges);
         
-        TH2D *h2_denom_efficiency_jetpteta = new TH2D("denom_efficiency_jetpteta", "", ptbinsize, pt_binedges, etabinsize, eta_binedges);
-        
-        TH2D *h2_denom_efficiency_HFpteta      = new TH2D("denom_efficiency_HFpteta"     , "", ptHFbinsize, ptHF_binedges, HFetabinsize, HFeta_binedges); 
-        TH3D *h3_denom_efficiency_HFptetajetpt = new TH3D("denom_efficiency_HFptetajetpt", "", ptHFbinsize, ptHF_binedges, HFetabinsize, HFeta_binedges, customptbinsize, custompt_binedges);
-
+        TH2D *h2_denom_efficiency_jetpteta    = new TH2D("denom_efficiency_jetpteta", "", ptbinsize, pt_binedges, etabinsize, eta_binedges);
+        TH2D *h2_denom_efficiency_HFpteta     = new TH2D("denom_efficiency_HFpteta"     , "", ptHFbinsize, ptHF_binedges, HFetabinsize, HFeta_binedges); 
         TH2D *h2_denom_efficiency_HFptjetpt   = new TH2D("denom_efficiency_HFptjetpt", "", ptHFbinsize, ptHF_binedges, customptbinsize, custompt_binedges);
         TH2D *h2_denom_efficiency_HFptnTracks = new TH2D("denom_efficiency_HFptnTracks","",ptHFbinsize, ptHF_binedges, nTracksbinsize, nTrack_binedges);
         
+        TH3D *h3_denom_efficiency_HFptetajetpt = new TH3D("denom_efficiency_HFptetajetpt", "", ptHFbinsize, ptHF_binedges, HFetabinsize, HFeta_binedges, customptbinsize, custompt_binedges);
+
+        // EEC-related 
+        TH3D *h3_denom_efficiency_rl_jetpt_weight       = new TH3D("denom_efficiency_rl_jetpt_weight", "", nbin_rl_nominal_unfolding, unfolding_rl_nominal_binning, ptbinsize, pt_binedges, nbin_weight, weight_binning);
+        TH3D *h3_denom_efficiency_rl_jetpt_weight_eqch  = new TH3D("denom_efficiency_rl_jetpt_weight_eqch", "", nbin_rl_nominal_unfolding, unfolding_rl_nominal_binning, ptbinsize, pt_binedges, nbin_weight, weight_binning);
+        TH3D *h3_denom_efficiency_rl_jetpt_weight_neqch = new TH3D("denom_efficiency_rl_jetpt_weight_neqch", "", nbin_rl_nominal_unfolding, unfolding_rl_nominal_binning, ptbinsize, pt_binedges, nbin_weight, weight_binning);
+        
         TH2D *h2_SVTag_eff_denom   = new TH2D("h2_SVTag_eff_denom","", ptHFbinsize, ptHF_binedges, customptbinsize, custompt_binedges);
         TH2D *h2_SVTag_eff_denom_z = new TH2D("h2_SVTag_eff_denom_z","", zbinsize, z_binedges, customptbinsize, custompt_binedges); 
-        
-        // EEC-related 
-        TH3D *hmc_rl_jetpt_weight = new TH3D("hmc_rl_jetpt_weight"  , "", nbin_rl_nominal_unfolding, unfolding_rl_nominal_binning, ptbinsize, pt_binedges, nbin_weight, weight_binning);
-        
-        TH3D *h3_denom_efficiency_rl_jetpt_weight       = new TH3D("h3_denom_efficiency_rl_jetpt_weight", "", nbin_rl_nominal_unfolding, unfolding_rl_nominal_binning, ptbinsize, pt_binedges, nbin_weight, weight_binning);
-        TH3D *h3_denom_efficiency_rl_jetpt_weight_eqch  = new TH3D("h3_denom_efficiency_rl_jetpt_weight_eqch", "", nbin_rl_nominal_unfolding, unfolding_rl_nominal_binning, ptbinsize, pt_binedges, nbin_weight, weight_binning);
-        TH3D *h3_denom_efficiency_rl_jetpt_weight_neqch = new TH3D("h3_denom_efficiency_rl_jetpt_weight_neqch", "", nbin_rl_nominal_unfolding, unfolding_rl_nominal_binning, ptbinsize, pt_binedges, nbin_weight, weight_binning);
         
         // Event loop
         unsigned long long last_eventNum = 0;
@@ -229,10 +226,6 @@ void MCSimpleEff(int NumEvts = -1, int dataset = 91599, int flavor = 5,
 
                 event_counter++;
         }
-
-        h1_denom_efficiency_HFpt->Write("h1_denom_efficiency_HFpt");
-        h1_denom_efficiency_jetpt->Write("h1_denom_efficiency_jetpt");
-        h2_denom_efficiency_HFptjetpt->Write("h2_denom_efficiency_HFptjetpt");
         
         cout << event_counter << " events processed" << endl;
 
