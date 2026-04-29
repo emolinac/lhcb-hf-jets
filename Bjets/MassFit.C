@@ -39,61 +39,6 @@ void MassFit(int NumEvts = -1, int dataset = 91599, bool isData = true,
         
         int flavor = 5;
         
-        TString str_Mag = "";
-        TString str_pT = "";
-        TString str_level = "";
-        TString str_followHard = "";
-        TString str_flavor = "";
-        TString str_ghost = "";
-        TString str_charged = "";
-        TString str_PID = "";
-        TString str_year = "";
-
-        if (PID_cut)
-                str_PID = "_PID";
-
-        if (flavor == 1)
-                str_flavor = "_udsg";
-        else if (flavor == 4)
-                str_flavor = "_c";
-        else if (flavor == 5)
-                str_flavor = "_b";
-        
-                if (isData) {
-                str_level = "data";
-        } else {
-                if (truthLevel)
-                        str_level = "truth";
-                else
-                        str_level = "reco";
-        }
-
-        if (flavor == 1) {
-                str_followHard = "_hard";
-        } else {
-                if (followHardest)
-                        str_followHard = "_hard";
-                else
-                        str_followHard = "_HF";
-        }
-
-        if (ghostCut)
-                str_ghost = Form("_ghost_%.1f", ghostProb);
-
-        if (chargedJetCut)
-                str_charged = "_charge";
-
-
-        TString extension = TString("massfit_") + str_level + Form("_ev_%d", NumEvts) + Form("_ptj_%d%d", int(ptMin), int(ptMax)) + Form("_eta_%.1f%.1f", etaMin, etaMax) + str_ghost + str_charged + str_Mag + str_flavor + str_PID + str_L0 + Form("_%d", dataset);
-        
-        if (DoRecSelEff)
-                extension = "recselsys_" + extension;
-        
-        if (DoSystematic)
-                extension = "sys_" + extension;
-        
-        cout << extension << endl;
-        
         // Setup Tree
         TChain *BTree = new TChain("BTree", "B-jets Tree Variables");
 
@@ -396,6 +341,8 @@ void MassFit(int NumEvts = -1, int dataset = 91599, bool isData = true,
         ccan[ican]->Divide(3, 5, 0.0001, 0.0001);
         // c->SaveAs("plots/"+extension+".pdf");
         // h1_mass->Scale(1./h1_mass->GetEntries());
+
+        TString extension = (isData) ? "data" : "mcreco";
 
         std::ofstream SigParams("csv/signal_" + extension + ".csv");
         std::ofstream BkgParams("csv/bkg_" + extension + ".csv");

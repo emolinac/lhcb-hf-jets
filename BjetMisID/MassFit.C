@@ -292,8 +292,11 @@ void MassFit(int NumEvts = -1, int dataset = 91599, bool isData = false,
         // S e t u p   c o m p o n e n t   p d f s
         // ---------------------------------------
 
+        std::cout<<"S e t u p   c o m p o n e n t   p d f s"<<std::endl;
+
         // Declare observable x
         RooWorkspace *w_read;
+        TFile *file_workspace;
 
         for (int i = 0; i < ptHFbinsize; i++) {
                 if (i >= ptHFbinsize - 3)
@@ -307,10 +310,15 @@ void MassFit(int NumEvts = -1, int dataset = 91599, bool isData = false,
                 // TFile *file_workspace = new TFile(output_folder + Form("workspace%d_", i) + extension_reco + ".root", "READ");
                 // RooWorkspace *w_read = (RooWorkspace *)file_workspace->Get(Form("w%d", i));
 
-                // EFMC: it seems that this piece of the code is not relevant
-                //       it is only worth reading when the file processed is data!
-                
-                w_read = new RooWorkspace(Form("w%d", i));
+                // If data then open already existing workspaces with stored parameters
+                if (isData) {
+                        file_workspace = new TFile(output_folder + Form("workspace%d_", i) + extension + ".root", "READ");
+                        
+                        w_read = (RooWorkspace *)file_workspace->Get(Form("w%d", i));
+                } else {
+                        w_read = new RooWorkspace(Form("w%d", i));
+                }
+
                 RooRealVar *sigma_ratio, *mean, *sigma1, *sigma2;
                 RooRealVar *mu_sig, *alpha1_sig, *alpha2_sig, *p1_sig, *p2_sig;
                 RooRealVar *mu, *width, *alpha1, *alpha2, *p1, *p2;
@@ -326,15 +334,15 @@ void MassFit(int NumEvts = -1, int dataset = 91599, bool isData = false,
                 ///////////////////////////////////////////////////
 
                 if (UseDTF) {
-                        sigma_ratio = new RooRealVar("sigma_ratio", "sigma_ratio", 1.52571 / 0.856549);
-                        mean = new RooRealVar("mean", "mean of gaussians", 5.27966, 5.27, 5.282);
-                        width = new RooRealVar("width", "width of gaussians", 0.002, 0.001, 0.3);
-                        sigma2 = new RooRealVar("sigma2", "width of gaussians", 0.003, 0.001, 0.3); // CHANGE
+                        sigma_ratio = new RooRealVar("sigma_ratio", "sigma_ratio"       , 1.52571 / 0.856549);
+                        mean        = new RooRealVar("mean"       , "mean of gaussians" , 5.27966, 5.27, 5.282);
+                        width       = new RooRealVar("width"      , "width of gaussians", 0.002, 0.001, 0.3);
+                        sigma2      = new RooRealVar("sigma2"     , "width of gaussians", 0.003, 0.001, 0.3); // CHANGE
                 } else {
-                        sigma_ratio = new RooRealVar("sigma_ratio", "sigma_ratio", 1.78528 / 3.15958);
-                        mean = new RooRealVar("mean", "mean of gaussians", 5.279, 5.27, 5.282);
-                        width = new RooRealVar("width", "width of gaussians", 0.002, 0.001, 0.05);
-                        sigma2 = new RooRealVar("sigma2", "width of gaussians", 0.003, 0.001, 0.05); // CHANGE
+                        sigma_ratio = new RooRealVar("sigma_ratio", "sigma_ratio"      , 1.78528 / 3.15958);
+                        mean        = new RooRealVar("mean"       ,"mean of gaussians" , 5.279, 5.27, 5.282);
+                        width       = new RooRealVar("width"      ,"width of gaussians", 0.002, 0.001, 0.05);
+                        sigma2      = new RooRealVar("sigma2"     ,"width of gaussians", 0.003, 0.001, 0.05); // CHANGE
                 }
 
                 // RooFormulaVar sigma2("sigma2", "width of gaussians", "width*sigma_ratio", RooArgList(width,sigma_ratio)); //CHANGE
@@ -356,7 +364,7 @@ void MassFit(int NumEvts = -1, int dataset = 91599, bool isData = false,
                 // Or, Create signal from two Crystal Ball functions
                 // These parameters have been derived from simulation
 
-                if (isData && w_read != NULL) {
+                if (isData) {
                         mu = (RooRealVar *)w_read->obj("mu");
                         alpha1 = (RooRealVar *)w_read->obj("alpha1");
                         alpha2 = (RooRealVar *)w_read->obj("alpha2");
@@ -441,7 +449,7 @@ void MassFit(int NumEvts = -1, int dataset = 91599, bool isData = false,
                 RooAddPdf *model, *model_nosec;
                 
                 if (isData)
-                        model = new RooAddPdf("model", "g1+g2+a", RooArgList(bkg, sig), RooArgList(*nbkg, *nsig))
+                        model = new RooAddPdf("model", "g1+g2+a", RooArgList(bkg, sig), RooArgList(*nbkg, *nsig));
                 else
                         model = new RooAddPdf("model", "g1+g2+a", RooArgList(sig), RooArgList(*nsig));
 
@@ -668,7 +676,7 @@ void MassFit(int NumEvts = -1, int dataset = 91599, bool isData = false,
 
         // cout<<exp_c->getVal()<<endl;
 
-        f.Write();
+        // f.Write();
         f.Close();
 }
 
