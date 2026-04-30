@@ -418,7 +418,6 @@ void MakeVarTreeMC(int NumEvts_user = -1)
                 WTA_true_axis.SetPxPyPzE(WTA_true_jet.px(), WTA_true_jet.py(), WTA_true_jet.pz(), WTA_true_jet.e());
                 WTA_true_dist = HFmeson.DeltaR(WTA_true_axis, true);
 
-
                 for (int h1_index = 0; h1_index < Tree.MCJet_Dtr_nmcdtrs; h1_index++) {
                         if (std::abs(Tree.MCJet_Dtr_ID[h1_index]) < 100)
                                 continue;

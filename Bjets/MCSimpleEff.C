@@ -88,7 +88,11 @@ void MCSimpleEff(int NumEvts = -1, int dataset = 91599, int flavor = 5,
         int NumDtrRecoHF;
         bool hasRecoHF, Hasbbbar;
 
+        double WTA_true_dist;
+
         vector<float> *pair_rl = 0, *pair_weight = 0, *pair_chargeprod = 0;
+
+        BTree->SetBranchAddress("WTA_true_dist", &WTA_true_dist);
 
         BTree->SetBranchAddress("pair_rl"        , &pair_rl);
         BTree->SetBranchAddress("pair_weight"    , &pair_weight);
@@ -169,6 +173,9 @@ void MCSimpleEff(int NumEvts = -1, int dataset = 91599, int flavor = 5,
                         std::cout<<"\r"<<percentage<<"\% jets processed."<< std::flush;
                 }
 
+                if (WTA_true_dist > 0.005)
+                        continue;
+                
                 HFmeson.SetPxPyPzE(HF_px, HF_py, HF_pz, HF_e);
                 meas_HFmeson.SetPxPyPzE(meas_HF_px, meas_HF_py, meas_HF_pz, meas_HF_e);
                 mup.SetPxPyPzE(mup_px, mup_py, mup_pz, mup_e);
