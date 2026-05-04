@@ -53,49 +53,61 @@ void ClosureTest(int NumEvts = -1,
 
         TH1D *h1_jetpt_reco = (TH1D *)file_reco->Get("Jet_pT");
         TH1D *h1_jetpt_data = (TH1D *)file_data->Get("Jet_pT");  
-        h1_jetpt_reco->Draw();
-        TH1D *h1_jetpt_final = (TH1D *)h1_jetpt_reco->Clone("jetpt_final");
+
+        std::cout<<"MCReco jet pt entries = "<<h1_jetpt_reco->Integral()<<std::endl;
+        std::cout<<"Data   jet pt entries = "<<h1_jetpt_data->Integral()<<std::endl;
+
+        // h1_jetpt_reco->Draw();
+        TH1D *h1_jetpt_pseudodata = (TH1D *)h1_jetpt_reco->Clone("jetpt_pseudodata");
 
         /////////////////////   Get Truth histograms /////////////////////////////////
         TH1D *h1_jetpt_truth = (TH1D *)file_truth->Get("Jet_pT");
 
         /////////////////////   Get Purity & Efficiency Hists /////////////////////////////////
-        TH1D *h1_purity_jetpt = (TH1D *)file_unfold->Get("purity_jetpt");
-        TH1D *h1_efficiency_jetpt = (TH1D *)file_unfold->Get("efficiency_jetpt");
+        TH1F *h1_purity_jetpt     = (TH1F *)file_unfold->Get("purity_jetpt");
+        TH1F *h1_efficiency_jetpt = (TH1F *)file_unfold->Get("efficiency_jetpt");
 
         /////////////////////   Get Response Matrices /////////////////////////////////
         RooUnfoldResponse *response_jetpt = (RooUnfoldResponse *)file_unfold->Get("Roo_response_jetpt");
 
         TH2 *h2_response_jetpt = (TH2 *)response_jetpt->Hresponse();
 
-        response_jetpt->UseOverflow();
+        // response_jetpt->UseOverflow();
+
+        h1_jetpt_pseudodata->Write("jetpt_uncorr");
 
         // Multiply by purity
-        h1_jetpt_final->Multiply(h1_purity_jetpt);
+        h1_jetpt_pseudodata->Multiply(h1_purity_jetpt);
 
+        h1_jetpt_pseudodata->Write("jetpt_pur");
+        
         // Unfold
-        RooUnfoldBayes unfold_jetpt(response_jetpt, h1_jetpt_final, NumIters);
+        RooUnfoldBayes unfold_jetpt(response_jetpt, h1_jetpt_pseudodata, NumIters);
         
-        h1_jetpt_final = (TH1D *)unfold_jetpt.Hreco();
-        
-        // Divide by efficiency
-        h1_jetpt_final->Divide(h1_efficiency_jetpt);
+        h1_jetpt_pseudodata = (TH1D *)unfold_jetpt.Hreco();
 
-        TH1D *h1_jetpt_final_ratio = (TH1D *)h1_jetpt_final->Clone("h1_jetpt_final_ratio");
+        h1_jetpt_pseudodata->Write("jetpt_pur_unf");
+
+        // Divide by efficiency
+        h1_jetpt_pseudodata->Divide(h1_efficiency_jetpt);
+
+        h1_jetpt_pseudodata->Write("jetpt_pur_unf_eff");
+
+        TH1D *h1_jetpt_pseudodata_ratio = (TH1D *)h1_jetpt_pseudodata->Clone("h1_jetpt_pseudodata_ratio");
         
-        h1_jetpt_final_ratio->Divide(h1_jetpt_truth);
+        h1_jetpt_pseudodata_ratio->Divide(h1_jetpt_truth);
 
         h1_jetpt_reco->Write("h1_jetpt_reco");
         h1_jetpt_truth->Write("h1_jetpt_truth");
-        h1_jetpt_final->Write("h1_jetpt_final");
-        h1_jetpt_final_ratio->Write("pseudodata_to_truth_jetpt");  
+        h1_jetpt_pseudodata->Write("h1_jetpt_pseudodata");
+        h1_jetpt_pseudodata_ratio->Write("pseudodata_to_truth_jetpt");  
+        h1_purity_jetpt->Write("purity_jetpt");
+        h1_efficiency_jetpt->Write("efficiency_jetpt");
+        h2_response_jetpt->Write("response_jetpt");
 
-        int binlow_jet  = h1_jetpt_truth->FindBin(ptMin);
-        int binhigh_jet = h1_jetpt_truth->FindBin(ptMax);
-
-        double Njets_reco  = h1_jetpt_reco->Integral(binlow_jet, binhigh_jet);
-        double Njets_truth = h1_jetpt_truth->Integral(binlow_jet, binhigh_jet);
-        double Njets_final = h1_jetpt_final->Integral(binlow_jet, binhigh_jet);
+        std::cout<<"Njets_reco       = "<<h1_jetpt_reco->Integral()<<std::endl;
+        std::cout<<"Njets_truth      = "<<h1_jetpt_truth->Integral()<<std::endl;
+        std::cout<<"Njets_pseudodata = "<<h1_jetpt_pseudodata->Integral()<<std::endl;
                 
         ////////////////////////////////////
         // Smearing the jet pt distribution
@@ -130,7 +142,7 @@ void ClosureTest(int NumEvts = -1,
         TH3D *h3_rl_jetpt_weight_truth = (TH3D*) file_truth->Get("h_npair_mc");
         TH3D *h3_rl_jetpt_weight       = (TH3D*) file_reco->Get("h3_rl_jetpt_weight");
         TH3D *h3_rl_jetpt_weight_data  = (TH3D*) file_data->Get("h3_rl_jetpt_weight");
-        TH3D *h3_rl_jetpt_weight_final = (TH3D*) h3_rl_jetpt_weight->Clone("h3_rl_jetpt_weight_final");
+        TH3D *h3_rl_jetpt_weight_pseudodata = (TH3D*) h3_rl_jetpt_weight->Clone("h3_rl_jetpt_weight_pseudodata");
         
         TH3D *h3_eff_rl_jetpt_weight    = (TH3D *)file_unfold->Get("efficiency_rl_jetpt_weight");
         TH3D *h3_purity_rl_jetpt_weight = (TH3D *)file_unfold->Get("purity_rl_jetpt_weight");
@@ -138,27 +150,35 @@ void ClosureTest(int NumEvts = -1,
         RooUnfoldResponse *response_rl_jetpt_weight = (RooUnfoldResponse *)file_unfold->Get("Roo_response_npair");
         
         // Correct the distributions
-        h3_rl_jetpt_weight_final->Multiply(h3_rl_jetpt_weight_final, h3_purity_rl_jetpt_weight);
+        h3_rl_jetpt_weight_pseudodata->Multiply(h3_purity_rl_jetpt_weight);
         
-        RooUnfoldBayes unfold_rl_jetpt_weight(response_rl_jetpt_weight, h3_rl_jetpt_weight_final, NumIters);
+        RooUnfoldBayes unfold_rl_jetpt_weight(response_rl_jetpt_weight, h3_rl_jetpt_weight_pseudodata, NumIters);
+
+        h3_rl_jetpt_weight_pseudodata = (TH3D *)unfold_rl_jetpt_weight.Hreco();
         
-        h3_rl_jetpt_weight_final = (TH3D *)unfold_rl_jetpt_weight.Hreco();
-        
-        h3_rl_jetpt_weight_final->Divide(h3_rl_jetpt_weight_final, h3_eff_rl_jetpt_weight);
+        h3_rl_jetpt_weight_pseudodata->Divide(h3_eff_rl_jetpt_weight);
 
         // Calculate EECs from the npair 3D distributions
-        TH2D *h2_eec_final = new TH2D("h2_eec_final", "", nbin_rl_nominal_unfolding, unfolding_rl_nominal_binning, ptbinsize, pt_binedges);
-        TH2D *h2_eec_truth = new TH2D("h2_eec_truth", "", nbin_rl_nominal_unfolding, unfolding_rl_nominal_binning, ptbinsize, pt_binedges);
-        TH2D *h2_eec       = new TH2D("h2_eec", "", nbin_rl_nominal_unfolding, unfolding_rl_nominal_binning, ptbinsize, pt_binedges);
+        TH2D *h2_eec_pseudodata = new TH2D("h2_eec_pseudodata", "", nbin_rl_nominal_unfolding, unfolding_rl_nominal_binning, ptbinsize, pt_binedges);
+        TH2D *h2_eec_truth      = new TH2D("h2_eec_truth"     , "", nbin_rl_nominal_unfolding, unfolding_rl_nominal_binning, ptbinsize, pt_binedges);
+        TH2D *h2_eec            = new TH2D("h2_eec"           , "", nbin_rl_nominal_unfolding, unfolding_rl_nominal_binning, ptbinsize, pt_binedges);
         
-        apply_unfolded_weights(h3_rl_jetpt_weight_final, h2_eec_final);
-        apply_unfolded_weights(h3_rl_jetpt_weight_truth, h2_eec_truth);
-        apply_unfolded_weights(h3_rl_jetpt_weight      , h2_eec);
+        // apply_unfolded_weights(h3_rl_jetpt_weight_pseudodata, h2_eec_pseudodata);
+        // apply_unfolded_weights(h3_rl_jetpt_weight_truth, h2_eec_truth);
+        // apply_unfolded_weights(h3_rl_jetpt_weight      , h2_eec);
+
+        h2_eec_pseudodata = (TH2D*) h3_rl_jetpt_weight_pseudodata->Project3D("yx");
+        h2_eec_truth      = (TH2D*) h3_rl_jetpt_weight_truth->Project3D("yx");
+        h2_eec            = (TH2D*) h3_rl_jetpt_weight->Project3D("yx");
 
         // Project EECs into 1D histograms
         TH1F* hmc_eec[ptbinsize]; 
         TH1F* hmcreco_eec[ptbinsize]; 
         TH1F* h_eec_mcreco_truth_ratio[ptbinsize]; 
+
+        TH2D *h2_eec_ratio = new TH2D("h2_eec_ratio", "", nbin_rl_nominal_unfolding, unfolding_rl_nominal_binning, ptbinsize, pt_binedges);
+        h2_eec_ratio->Divide(h2_eec_pseudodata, h2_eec_truth, 1, 1);
+        h2_eec_ratio->Write();
 
         for (int bin = 0 ; bin < ptbinsize ; bin++) {
                 if (h1_jetpt_truth->GetBinContent(bin + 1) == 0)
@@ -171,11 +191,11 @@ void ClosureTest(int NumEvts = -1,
                 set_histogram_style(hmc_eec[bin]    , corr_marker_color_jet_pt[bin], std_line_width-1, corr_marker_style_jet_pt[bin], std_marker_size+1);
                 set_histogram_style(hmcreco_eec[bin], corr_marker_color_jet_pt[bin], std_line_width, corr_marker_style_jet_pt[bin], std_marker_size+1);
 
-                project_nominal_phase_space(h2_eec_truth, hmc_eec[bin]    , bin + 1);
-                project_nominal_phase_space(h2_eec_final, hmcreco_eec[bin], bin + 1);
+                project_nominal_phase_space(h2_eec_truth     , hmc_eec[bin]    , bin + 1);
+                project_nominal_phase_space(h2_eec_pseudodata, hmcreco_eec[bin], bin + 1);
 
                 hmc_eec[bin]->Scale(1./h1_jetpt_truth->GetBinContent(bin + 1),"width");
-                hmcreco_eec[bin]->Scale(1./h1_jetpt_final->GetBinContent(bin + 1),"width");
+                hmcreco_eec[bin]->Scale(1./h1_jetpt_pseudodata->GetBinContent(bin + 1),"width");
 
                 h_eec_mcreco_truth_ratio[bin]->Divide(hmcreco_eec[bin], hmc_eec[bin]);
 
@@ -219,7 +239,7 @@ void ClosureTest(int NumEvts = -1,
 
         //                 project_nominal_phase_space(h2_eec_smeared[i], hmcreco_eec_smeared[bin][i], bin + 1);
 
-        //                 hmcreco_eec_smeared[bin][i]->Scale(1./h1_jetpt_final->GetBinContent(bin + 1),"width");
+        //                 hmcreco_eec_smeared[bin][i]->Scale(1./h1_jetpt_pseudodata->GetBinContent(bin + 1),"width");
 
         //                 h_eec_mcreco_truth_ratio_smeared[bin][i]->Divide(hmcreco_eec_smeared[bin][i], hmc_eec[bin]);
 

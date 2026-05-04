@@ -36,7 +36,7 @@ bool apply_jet_cuts(double jet_eta, double jet_pt)
         if (jet_eta < jet_eta_min || jet_eta > jet_eta_max) 
                 return false;
         
-        if (jet_pt < unfolding_jet_pt_binning[0])
+        if (jet_pt < pTLow)
                 return false;
 
         return true;    

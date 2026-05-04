@@ -31,6 +31,11 @@ void SimpleObservables(int NumEvts = -1,
                        bool L0MuonDiMuon = false,
                        bool DoTrackEff_SysCrossCheck = false)
 {
+        // Open correction files to apply jet reconstruction associated weights
+        TFile* f_corrections = new TFile((output_folder + "bjets_corrections.root").c_str());
+        TH1D* h1_jet_eff = (TH1D*) f_corrections->Get("efficiency_jetpt");
+        TH1D* h1_jet_pur = (TH1D*) f_corrections->Get("purity_jetpt");
+
         // Open mass fit results
         std::string mass_fit_extension = (isData) ? "mass-fits/results_mass_fit_data.root" : "mass-fits/results_mass_fit_mcreco.root";
 
@@ -213,9 +218,13 @@ void SimpleObservables(int NumEvts = -1,
         float trigeff_Data(1.0), trigeff_MC(1.0), trigeff_ratio(1.0);
         
         vector<float> *pair_rl = 0, *pair_weight = 0, *pair_chargeprod = 0;
+
+        double WTA_dist;
         
         BTree->SetBranchAddress("eventNumber", &eventNumber);
 
+        BTree->SetBranchAddress("WTA_reco_dist", &WTA_dist);
+        
         BTree->SetBranchAddress("pair_rl"        , &pair_rl);
         BTree->SetBranchAddress("pair_weight"    , &pair_weight);
         BTree->SetBranchAddress("pair_chargeprod", &pair_chargeprod);
@@ -405,6 +414,9 @@ void SimpleObservables(int NumEvts = -1,
                 if (!pt_cond || !rap_cond)
                         continue;
 
+                if (WTA_dist > WTA_dist_max)
+                        continue;
+
                 bool StrippingCuts = false; // EFMC: what?
 
                 if (StrippingCuts) {
@@ -424,9 +436,6 @@ void SimpleObservables(int NumEvts = -1,
                                 continue;
                 }
 
-                //std:cout << "sweight : " << sweight << std::endl;
-
-
                 tr_HFjet.SetPxPyPzE(tr_jet_px, tr_jet_py, tr_jet_pz, tr_jet_e);
                 tr_mup.SetPxPyPzE(tr_mup_px, tr_mup_py, tr_mup_pz, tr_mup_e);
                 tr_mum.SetPxPyPzE(tr_mum_px, tr_mum_py, tr_mum_pz, tr_mum_e);
@@ -438,7 +447,8 @@ void SimpleObservables(int NumEvts = -1,
                 Jpsi = mup + mum;
                 float HF_eta = HFmeson.Eta();
 
-                float event_weight = 1.0;
+                double event_weight = 1.0;
+                double jet_weight   = 1.0;
 
                 float reweight = 1.0;
                 float bkg_weight = h1_BkgScale != NULL ? h1_BkgScale->GetBinContent(h1_BkgScale->FindBin(HFmeson.Pt())) : 1.0;
@@ -467,8 +477,6 @@ void SimpleObservables(int NumEvts = -1,
                         trigeff_ratio = 1.0;
                 }
                 
-
-                // cout << HFmeson.Pt() << ", " << MassLow << ", " << MassHigh << ", " << Sideband1Min << ", " << Sideband1Max << ", " << Sideband2Min << ", " << Sideband2Max << endl;
                 if (DoMassFit == 1) {
                         TH1D *h1_Sideband1Min_forSysNear = (TH1D *)f_massfit.Get("h1_Sideband1Min_forSysNear");
                         TH1D *h1_Sideband1Max_forSysNear = (TH1D *)f_massfit.Get("h1_Sideband1Max_forSysNear");
@@ -554,11 +562,11 @@ void SimpleObservables(int NumEvts = -1,
                         }
 
                         if (trkeff_ratio_K_errlo > 0.1 || trkeff_ratio_mup_errlo > 0.1 || trkeff_ratio_mum_errlo > 0.1) {
-                                cout << trkeff_ratio_K << endl;
-                                cout << trkeff_ratio_mum_errlo << ", " << trkeff_ratio_mup_errlo << ", " << trkeff_ratio_K_errlo << endl;
-                                cout << mup.Pt() << ", " << mup.Eta() << endl;
-                                cout << mum.Pt() << ", " << mum.Eta() << endl;
-                                cout << Kmeson.P() << ", " << Kmeson.Eta() << endl;
+                                // cout << trkeff_ratio_K << endl;
+                                // cout << trkeff_ratio_mum_errlo << ", " << trkeff_ratio_mup_errlo << ", " << trkeff_ratio_K_errlo << endl;
+                                // cout << mup.Pt() << ", " << mup.Eta() << endl;
+                                // cout << mum.Pt() << ", " << mum.Eta() << endl;
+                                // cout << Kmeson.P() << ", " << Kmeson.Eta() << endl;
                         }
                 }
 
@@ -601,25 +609,45 @@ void SimpleObservables(int NumEvts = -1,
                         trigeff_ratio = trigeff_ratio * (1 - trig_var);
                 }
 
-                event_weight = (1./ (trkeff_ratio_K * trkeff_ratio_mum * trkeff_ratio_mup * pideff_mum * pideff_mup * trigeff_ratio));       
-                
-                if (PID_cut)
-                        event_weight *= (1. / (pideff_K));
-                
-                if (std::isinf(event_weight) || std::isnan(event_weight)) {
-                        // This seems to happen less than .01% of the time, so it is negligible
-                        //std::cout << "trkeff_ratio_K : " << trkeff_ratio_K << " trkeff_ratio_mum : " << trkeff_ratio_mum << " trkeff_ratio_mup : " << trkeff_ratio_mup << " pideff_mum : " << pideff_mum << " pideff_mup : " << pideff_mup << " pideff_K : " << pideff_K << " trigeff_ratio : " << trigeff_ratio << std::endl; 
-                        //std::cout << "entry number : " << ev << " event number : " << eventNumber <<  std::endl;
-                        //std::cout << "event_weight : " << event_weight << " is_inf or is_nan -- setting to 1.0, need to investigate" << std::endl;
-                        //nan_counter++;
-                        event_weight = 1.0;
+                double jet_reconstruction_pur = h1_jet_pur->GetBinContent(h1_jet_pur->FindBin(jet_pt));
+                double jet_reconstruction_eff = h1_jet_eff->GetBinContent(h1_jet_eff->FindBin(jet_pt));
+
+                if (isData){
+                        event_weight = jet_reconstruction_pur / (jet_reconstruction_eff * trkeff_ratio_K * trkeff_ratio_mum * trkeff_ratio_mup * pideff_mum * pideff_mup * trigeff_ratio);
+                        jet_weight   = 1. / (trkeff_ratio_K * trkeff_ratio_mum * trkeff_ratio_mup * pideff_mum * pideff_mup * trigeff_ratio);
+                } else {
+                        event_weight = jet_reconstruction_pur / jet_reconstruction_eff;
+                        jet_weight   = 1.;
                 }
+
+                // std::cout<<"--------------------before--------------------------------"<<std::endl;
+                // std::cout<<"jet_weight = "<<1./(trkeff_ratio_K * trkeff_ratio_mum * trkeff_ratio_mup * pideff_mum * pideff_mup * trigeff_ratio)<<std::endl;
+                // std::cout<<"evt_weight = "<<(jet_reconstruction_pur/ (jet_reconstruction_eff * trkeff_ratio_K * trkeff_ratio_mum * trkeff_ratio_mup * pideff_mum * pideff_mup * trigeff_ratio))<<std::endl;
+
+                // std::cout<<"---------------------after--------------------------------"<<std::endl;
+                
+                if (std::isinf(event_weight) || std::isnan(event_weight))
+                        event_weight = jet_reconstruction_pur / jet_reconstruction_eff;
+
+                if (std::isinf(jet_weight) || std::isnan(jet_weight))
+                        jet_weight = 1.0;
+
+                if (PID_cut && isData) {
+                        event_weight *= (1. / (pideff_K));
+                        jet_weight   *= (1. / (pideff_K));
+                }
+
+                // std::cout<<"jet_weight = "<<jet_weight<<std::endl;
+                // std::cout<<"evt_weight = "<<event_weight<<std::endl;
+
+                // std::cout<<"----------------------------------------------------------"<<std::endl;
+                
 
                 float dphi_HF_jet = checkphi(checkphi(HFmeson.Phi()) - checkphi(HFjet.Phi()));
                 float dy_HF_jet = HFjet.Eta() - HFmeson.Rapidity();
 
                 if (bkg_cond) {
-                        h1_jet_pt_comb->Fill(jet_pt, event_weight * bkg_weight);
+                        h1_jet_pt_comb->Fill(jet_pt, jet_weight * bkg_weight);
                         
                         if (!pair_rl->empty()) {
                                 ULong_t vector_size = pair_rl->size();
@@ -662,9 +690,8 @@ void SimpleObservables(int NumEvts = -1,
                         h1_jet_rap->Fill(jet_rap);
                         h1_jet_phi->Fill(HFjet.Phi());
 
-
                         // HISTS FOR ANALYSIS //
-                        h1_jet_pt->Fill(jet_pt, event_weight);
+                        h1_jet_pt->Fill(jet_pt, jet_weight);
 
                         if (!pair_rl->empty()) {
                                 ULong_t vector_size = pair_rl->size();
@@ -674,6 +701,7 @@ void SimpleObservables(int NumEvts = -1,
                                 float *chargeprod_info = pair_chargeprod->data();
                                 
                                 for(int vector_index = 0 ; vector_index < vector_size ; vector_index++) {
+                                        std::cout<<"Event weight = "<<event_weight<<std::endl;
                                         h3_rl_jetpt_weight->Fill(rl_info[vector_index],jet_pt, weight_info[vector_index], event_weight);
                                         h3_rl_jetpt_weight_nobgsub->Fill(rl_info[vector_index],jet_pt, weight_info[vector_index], event_weight);
                                         h3_rl_jetpt_weight_uncorrected->Fill(rl_info[vector_index],jet_pt, weight_info[vector_index]);
@@ -748,349 +776,6 @@ void SimpleObservables(int NumEvts = -1,
         cout << "After sub: " << endl;
         cout << "Num Jet pt = " << h1_jet_pt->Integral() << endl;
         
-        // THStack *hs_ptz = new THStack("hs_ptz", ";z;#frac{1}{N_{jets}}#frac{dN}{dz}");
-        // THStack *hs_ptjt = new THStack("hs_ptjt", ";j_{T} [GeV/c];#frac{1}{N_{jets}}#frac{dN}{dj_{T}}");
-        // THStack *hs_ptr = new THStack("hs_ptr", ";r;#frac{1}{N_{jets}}#frac{dN}{dr}");    
-        // THStack *hs_ptz_sweight = new THStack("hs_ptz_sweight", ";z;#frac{1}{N_{jets}}#frac{dN}{dz}");
-        // THStack *hs_ptjt_sweight = new THStack("hs_ptjt_sweight", ";j_{T} [GeV/c];#frac{1}{N_{jets}}#frac{dN}{dj_{T}}");
-        // THStack *hs_ptr_sweight = new THStack("hs_ptr_sweight", ";r;#frac{1}{N_{jets}}#frac{dN}{dr}");        
-        // THStack *hs_ptz_uncorrected = new THStack("z_uncorrected_data_all", ";z;#frac{1}{N_{jets}}#frac{dN}{dz}");
-        // THStack *hs_ptjt_uncorrected = new THStack("jt_uncorrected_data_all", ";j_{T} [GeV/c];#frac{1}{N_{jets}}#frac{dN}{dj_{T}}");
-        // THStack *hs_ptr_uncorrected = new THStack("r_uncorrected_data_all", ";r;#frac{1}{N_{jets}}#frac{dN}{dr}");
-        // THStack *hs_ptz_nobgsub = new THStack("z_evtweights_nosbsub_data_all", ";z;#frac{1}{N_{jets}}#frac{dN}{dz}");
-        // THStack *hs_ptjt_nobgsub = new THStack("jt_evtweights_nosbsub_data_all", ";j_{T} [GeV/c];#frac{1}{N_{jets}}#frac{dN}{dj_{T}}");
-        // THStack *hs_ptr_nobgsub = new THStack("r_evtweights_nosbsub_data_all", ";r;#frac{1}{N_{jets}}#frac{dN}{dr}");  
-        // //vector<THStack> z_sbsub_inputs_pt;
-
-        // for (int j = 1; j < ptbinsize; j++) {
-        //         THStack *z_sbsub_inputs_temp = new THStack(Form("z_sbsub_inputs_pt%d", j),"");
-        //         TH1D *h1_temp_z_uncorr = (TH1D *)h2_ptz_uncorrected->ProjectionX(Form("z_uncorr_pt%d", j), j + 1, j + 1);
-        //         TH1D *h1_temp_z_comb = (TH1D *)h2_ptz_comb->ProjectionX(Form("z_comb_pt%d", j), j + 1, j + 1);
-        //         TH1D *h1_temp_z_comb_nobkgweight = (TH1D *)h2_ptz_comb_nobkgweight->ProjectionX(Form("z_comb_nobkgweight_pt%d", j), j + 1, j + 1);
-        //         h1_temp_z_uncorr->SetLineColor(kBlack);
-        //         h1_temp_z_uncorr->Sumw2();
-        //         h1_temp_z_uncorr->SetTitle("S+B");
-        //         h1_temp_z_comb->SetLineColor(kRed);
-        //         h1_temp_z_comb->SetTitle("B");
-        //         h1_temp_z_comb_nobkgweight->SetLineColor(kBlue);
-        //         h1_temp_z_comb_nobkgweight->SetTitle("sidebands");
-        //         z_sbsub_inputs_temp->Add(h1_temp_z_uncorr);
-        //         z_sbsub_inputs_temp->Add(h1_temp_z_comb);
-        //         z_sbsub_inputs_temp->Add(h1_temp_z_comb_nobkgweight);
-        //         z_sbsub_inputs_temp->Write();
-        // }
-        
-        // TH2D *h2_zjt_ptbinned_uncorrected[ptbinsize-1], *h2_zjt_ptbinned[ptbinsize-1];
-        // TH2D *h2_zr_ptbinned_uncorrected[ptbinsize-1], *h2_zr_ptbinned[ptbinsize-1];
-        // TH2D *h2_jtr_ptbinned_uncorrected[ptbinsize-1], *h2_jtr_ptbinned[ptbinsize-1];
-
-        // for (int j = 1; j < ptbinsize; j++) {
-        //         TH1D *h1_ptz_temp = (TH1D *)h2_ptz->ProjectionX(Form("z_pt%d", j), j + 1, j + 1); 
-        //         NormalizeHist(h1_ptz_temp);
-        //         h1_ptz_temp->SetStats(0);
-        //         h1_ptz_temp->SetMarkerStyle(j + 20);
-        
-        //         if (j!=5) {
-        //                 h1_ptz_temp->SetMarkerColor(j);
-        //                 h1_ptz_temp->SetLineColor(j);
-        //         } else {
-        //                 h1_ptz_temp->SetMarkerColor(j*j+3);
-        //                 h1_ptz_temp->SetLineColor(j*j+3);
-        //         }
-
-        //         h1_ptz_temp->SetTitle(Form("%.1f < p_{T, j} < %.1f GeV", pt_binedges[j], pt_binedges[j + 1]));
-        //         //h1_ptz_temp->SetOption("PE HIST");
-        //         hs_ptz->Add(h1_ptz_temp);
-
-        //         TH1D *h1_ptjt_temp = (TH1D *)h2_ptjt->ProjectionX(Form("jt_pt%d", j), j + 1, j + 1); 
-        //         NormalizeHist(h1_ptjt_temp);        
-        //         h1_ptjt_temp->SetStats(0);
-        //         h1_ptjt_temp->SetMarkerStyle(j + 20);
-                
-        //         if (j!=5) {
-        //                 h1_ptjt_temp->SetMarkerColor(j);
-        //                 h1_ptjt_temp->SetLineColor(j);
-        //         } else {
-        //                 h1_ptjt_temp->SetMarkerColor(j*j+3);
-        //                 h1_ptjt_temp->SetLineColor(j*j+3);
-        //         }
-
-        //         h1_ptjt_temp->SetTitle(Form("%.1f < p_{T, j} < %.1f GeV", pt_binedges[j], pt_binedges[j + 1]));        
-        //         hs_ptjt->Add(h1_ptjt_temp);
-                
-        //         TH1D *h1_ptr_temp = (TH1D *)h2_ptr->ProjectionX(Form("r_pt%d", j), j + 1, j + 1); 
-        //         NormalizeHist(h1_ptr_temp);        
-        //         h1_ptr_temp->SetStats(0);
-        //         h1_ptr_temp->SetMarkerStyle(j + 20);
-
-        //         if (j!=5) {
-        //                 h1_ptr_temp->SetMarkerColor(j);
-        //                 h1_ptr_temp->SetLineColor(j);
-        //         } else {
-        //                 h1_ptr_temp->SetMarkerColor(j*j+3);
-        //                 h1_ptr_temp->SetLineColor(j*j+3);
-        //         }
-
-        //         h1_ptr_temp->SetTitle(Form("%.1f < p_{T, j} < %.1f GeV", pt_binedges[j], pt_binedges[j + 1]));        
-        //         hs_ptr->Add(h1_ptr_temp);   
-                
-        //         // Sweighted distributions
-        //         h1_ptz_temp = (TH1D *)h2_ptz_sweight->ProjectionX(Form("z_sweight_pt%d", j), j + 1, j + 1); 
-        //         NormalizeHist(h1_ptz_temp);
-        //         h1_ptz_temp->SetStats(0);
-        //         h1_ptz_temp->SetMarkerStyle(j + 20);
-                
-        //         if (j!=5) {
-        //                 h1_ptz_temp->SetMarkerColor(j);
-        //                 h1_ptz_temp->SetLineColor(j);
-        //         } else {
-        //                 h1_ptz_temp->SetMarkerColor(j*j+3);
-        //                 h1_ptz_temp->SetLineColor(j*j+3);
-        //         }
-
-        //         h1_ptz_temp->SetTitle(Form("%.1f < p_{T, j} < %.1f GeV", pt_binedges[j], pt_binedges[j + 1]));
-        //         //h1_ptz_temp->SetOption("PE HIST");
-        //         hs_ptz_sweight->Add(h1_ptz_temp);
-
-        //         h1_ptjt_temp = (TH1D *)h2_ptjt_sweight->ProjectionX(Form("jt_sweight_pt%d", j), j + 1, j + 1); 
-        //         NormalizeHist(h1_ptjt_temp);        
-        //         h1_ptjt_temp->SetStats(0);
-        //         h1_ptjt_temp->SetMarkerStyle(j + 20);
-                
-        //         if (j!=5) {
-        //                 h1_ptjt_temp->SetMarkerColor(j);
-        //                 h1_ptjt_temp->SetLineColor(j);
-        //         } else {
-        //                 h1_ptjt_temp->SetMarkerColor(j*j+3);
-        //                 h1_ptjt_temp->SetLineColor(j*j+3);
-        //         }
-                
-        //         h1_ptjt_temp->SetTitle(Form("%.1f < p_{T, j} < %.1f GeV", pt_binedges[j], pt_binedges[j + 1]));        
-        //         hs_ptjt_sweight->Add(h1_ptjt_temp);
-                
-        //         h1_ptr_temp = (TH1D *)h2_ptr_sweight->ProjectionX(Form("r_sweight_pt%d", j), j + 1, j + 1); 
-        //         NormalizeHist(h1_ptr_temp);        
-        //         h1_ptr_temp->SetStats(0);
-        //         h1_ptr_temp->SetMarkerStyle(j + 20);
-                
-        //         if (j!=5) {
-        //                 h1_ptr_temp->SetMarkerColor(j);
-        //                 h1_ptr_temp->SetLineColor(j);
-        //         } else {
-        //                 h1_ptr_temp->SetMarkerColor(j*j+3);
-        //                 h1_ptr_temp->SetLineColor(j*j+3);
-        //         }
-
-        //         h1_ptr_temp->SetTitle(Form("%.1f < p_{T, j} < %.1f GeV", pt_binedges[j], pt_binedges[j + 1]));        
-        //         hs_ptr_sweight->Add(h1_ptr_temp);  
-
-        //         if (isData) {
-        //                 // Add uncorrected z histos (pt binned) to THStack
-        //                 h1_ptz_temp = (TH1D *)h2_ptz_uncorrected->ProjectionX(Form("z_pt%d_raw", j), j + 1, j + 1); 
-        //                 h1_ptz_temp->SetStats(0);
-        //                 NormalizeHist(h1_ptz_temp);
-        //                 h1_ptz_temp->SetMarkerStyle(j + 20);
-                        
-        //                 if (j!=5) {
-        //                         h1_ptz_temp->SetMarkerColor(j);
-        //                         h1_ptz_temp->SetLineColor(j);
-        //                 } else {
-        //                         h1_ptz_temp->SetMarkerColor(j*j+3);
-        //                         h1_ptz_temp->SetLineColor(j*j+3);
-        //                 }
-
-        //                 h1_ptz_temp->SetTitle(Form("%.1f < p_{T, j} < %.1f GeV", pt_binedges[j], pt_binedges[j + 1]));                
-        //                 hs_ptz_uncorrected->Add(h1_ptz_temp);
-                        
-        //                 // Add uncorrected jt histos (pt binned) to THStack        
-        //                 h1_ptjt_temp = (TH1D *)h2_ptjt_uncorrected->ProjectionX(Form("jt_pt%d_raw", j), j + 1, j + 1); 
-        //                 h1_ptjt_temp->SetStats(0);
-        //                 NormalizeHist(h1_ptjt_temp);
-        //                 h1_ptjt_temp->SetMarkerStyle(j + 20);
-                        
-        //                 if (j!=5) {
-        //                         h1_ptjt_temp->SetMarkerColor(j);
-        //                         h1_ptjt_temp->SetLineColor(j);
-        //                 } else {
-        //                         h1_ptjt_temp->SetMarkerColor(j*j+3);
-        //                         h1_ptjt_temp->SetLineColor(j*j+3);
-        //                 }
-
-        //                 h1_ptjt_temp->SetTitle(Form("%.1f < p_{T, j} < %.1f GeV", pt_binedges[j], pt_binedges[j + 1]));                
-        //                 hs_ptjt_uncorrected->Add(h1_ptjt_temp);  
-                        
-        //                 // Add uncorrected r histos (pt binned) to THStack
-        //                 h1_ptr_temp = (TH1D *)h2_ptr_uncorrected->ProjectionX(Form("r_pt%d_raw", j), j + 1, j + 1); 
-        //                 h1_ptr_temp->SetStats(0);
-        //                 NormalizeHist(h1_ptr_temp);
-        //                 h1_ptr_temp->SetMarkerStyle(j + 20);
-                        
-        //                 if (j!=5) {
-        //                         h1_ptr_temp->SetMarkerColor(j);
-        //                         h1_ptr_temp->SetLineColor(j);
-        //                 } else {
-        //                         h1_ptr_temp->SetMarkerColor(j*j+3);
-        //                         h1_ptr_temp->SetLineColor(j*j+3);
-        //                 }
-
-        //                 h1_ptr_temp->SetTitle(Form("%.1f < p_{T, j} < %.1f GeV", pt_binedges[j], pt_binedges[j + 1]));                
-        //                 hs_ptr_uncorrected->Add(h1_ptr_temp);
-                        
-        //                 // Add no bg sub z histos (pt binned) to THStack
-        //                 h1_ptz_temp = (TH1D *)h2_ptz_nobgsub->ProjectionX(Form("z_pt%d_nobgsub", j), j + 1, j + 1); 
-        //                 h1_ptz_temp->SetStats(0);
-        //                 NormalizeHist(h1_ptz_temp);
-        //                 h1_ptz_temp->SetMarkerStyle(j + 20);
-                        
-        //                 if (j!=5) {
-        //                         h1_ptz_temp->SetMarkerColor(j);
-        //                         h1_ptz_temp->SetLineColor(j);
-        //                 } else {
-        //                         h1_ptz_temp->SetMarkerColor(j*j+3);
-        //                         h1_ptz_temp->SetLineColor(j*j+3);
-        //                 }
-
-        //                 h1_ptz_temp->SetTitle(Form("%.1f < p_{T, j} < %.1f GeV", pt_binedges[j], pt_binedges[j + 1]));                
-        //                 hs_ptz_nobgsub->Add(h1_ptz_temp);
-                        
-        //                 // Add no bg sub jt histos (pt binned) to THStack        
-        //                 h1_ptjt_temp = (TH1D *)h2_ptjt_nobgsub->ProjectionX(Form("jt_pt%d_nobgsub", j), j + 1, j + 1); 
-        //                 h1_ptjt_temp->SetStats(0);
-        //                 NormalizeHist(h1_ptjt_temp);
-        //                 h1_ptjt_temp->SetMarkerStyle(j + 20);
-                        
-        //                 if (j!=5) {
-        //                         h1_ptjt_temp->SetMarkerColor(j);
-        //                         h1_ptjt_temp->SetLineColor(j);
-        //                 } else {
-        //                         h1_ptjt_temp->SetMarkerColor(j*j+3);
-        //                         h1_ptjt_temp->SetLineColor(j*j+3);
-        //                 }
-
-        //                 h1_ptjt_temp->SetTitle(Form("%.1f < p_{T, j} < %.1f GeV", pt_binedges[j], pt_binedges[j + 1]));                
-        //                 hs_ptjt_nobgsub->Add(h1_ptjt_temp);  
-                        
-        //                 // Add no bg sub r histos (pt binned) to THStack
-        //                 h1_ptr_temp = (TH1D *)h2_ptr_nobgsub->ProjectionX(Form("r_pt%d_nobgsub", j), j + 1, j + 1); 
-        //                 h1_ptr_temp->SetStats(0);
-        //                 NormalizeHist(h1_ptr_temp);
-        //                 h1_ptr_temp->SetMarkerStyle(j + 20);
-        //                 if (j!=5) {
-        //                         h1_ptr_temp->SetMarkerColor(j);
-        //                         h1_ptr_temp->SetLineColor(j);
-        //                 } else {
-        //                         h1_ptr_temp->SetMarkerColor(j*j+3);
-        //                         h1_ptr_temp->SetLineColor(j*j+3);
-        //                 }
-
-        //                 h1_ptr_temp->SetTitle(Form("%.1f < p_{T, j} < %.1f GeV", pt_binedges[j], pt_binedges[j + 1]));                
-        //                 hs_ptr_nobgsub->Add(h1_ptr_temp);                                    
-                        
-        //                 h3_ptzjt_uncorrected->GetZaxis()->SetRange(j+1, j+1);      
-        //                 h2_zjt_ptbinned_uncorrected[j-1] = (TH2D *)h3_ptzjt_uncorrected->Project3D("yx");
-        //                 h2_zjt_ptbinned_uncorrected[j-1]->SetName(Form("zjt_uncorrected_pt%d",j)); 
-        //                 NormalizeHist(h2_zjt_ptbinned_uncorrected[j-1]);	
-
-        //                 h3_ptzr_uncorrected->GetZaxis()->SetRange(j+1, j+1);        
-        //                 h2_zr_ptbinned_uncorrected[j-1] = (TH2D *)h3_ptzr_uncorrected->Project3D("yx");
-        //                 h2_zr_ptbinned_uncorrected[j-1]->SetName(Form("zr_uncorrected_pt%d",j));
-        //                 NormalizeHist(h2_zr_ptbinned_uncorrected[j-1]);	
-                        
-        //                 h3_ptjtr_uncorrected->GetZaxis()->SetRange(j+1, j+1);        
-        //                 h2_jtr_ptbinned_uncorrected[j-1] = (TH2D *)h3_ptjtr_uncorrected->Project3D("yx");
-        //                 h2_jtr_ptbinned_uncorrected[j-1]->SetName(Form("jtr_uncorrected_pt%d",j));
-        //                 NormalizeHist(h2_jtr_ptbinned_uncorrected[j-1]);	
-        //         }  
-                
-        //         h3_ptzjt->GetZaxis()->SetRange(j+1, j+1);             
-        //         h2_zjt_ptbinned[j-1] = (TH2D *)h3_ptzjt->Project3D("yx");
-                
-        //         if (isData)
-        //                 h2_zjt_ptbinned[j-1]->SetName(Form("zjt_pt%d",j));
-        //         else
-        //                 h2_zjt_ptbinned[j-1]->SetName(Form("zjt_reco_pt%d",j));                              
-                
-        //         NormalizeHist(h2_zjt_ptbinned[j-1]);
-
-        //         h3_ptzr->GetZaxis()->SetRange(j+1, j+1);  
-        //         h2_zr_ptbinned[j-1] = (TH2D *)h3_ptzr->Project3D("yx");     
-                
-        //         if (isData)
-        //                 h2_zr_ptbinned[j-1]->SetName(Form("zr_pt%d",j));
-        //         else
-        //                 h2_zr_ptbinned[j-1]->SetName(Form("zr_reco_pt%d",j));                    
-                
-        //         NormalizeHist(h2_zr_ptbinned[j-1]);
-
-        //         h3_ptjtr->GetZaxis()->SetRange(j+1, j+1);
-        //         h2_jtr_ptbinned[j-1] = (TH2D *)h3_ptjtr->Project3D("yx");    
-                
-        //         if (isData)
-        //                 h2_jtr_ptbinned[j-1]->SetName(Form("jtr_pt%d",j));
-        //         else
-        //                 h2_jtr_ptbinned[j-1]->SetName(Form("jtr_reco_pt%d",j));             
-
-        //         NormalizeHist(h2_jtr_ptbinned[j-1]);        
-        // }  
-
-        // h1_nSPDHits->Write();
-
-        // if (isData) {
-        //         hs_ptz->SetName("z_evtweights_sbsub_data_all");
-        //         hs_ptjt->SetName("jt_evtweights_sbsub_data_all");
-        //         hs_ptr->SetName("r_evtweights_sbsub_data_all");    
-        //         //hs_ptz_sweight->SetName("z_evtweights_sbsub_data_sweight_all");
-        //         //hs_ptjt_sweight->SetName("jt_evtweights_sbsub_data_sweight_all");
-        //         //hs_ptr_sweight->SetName("r_evtweights_sbsub_data_sweight_all");   
-        //         hs_ptz_uncorrected->Write();
-        //         hs_ptjt_uncorrected->Write();   
-        //         hs_ptr_uncorrected->Write();      
-        //         hs_ptz_nobgsub->Write();
-        //         hs_ptjt_nobgsub->Write();
-        //         hs_ptr_nobgsub->Write();
-        // } else {
-        //         hs_ptz->SetName("z_reco_all");
-        //         hs_ptjt->SetName("jt_reco_all");
-        //         hs_ptr->SetName("r_reco_all");
-        // }
-
-        // hs_ptz->Write();
-        // hs_ptjt->Write();
-        // hs_ptr->Write();
-        // hs_ptz_sweight->Write();
-        // hs_ptjt_sweight->Write();
-        // hs_ptr_sweight->Write();
-
-        // h3_ptzjt->GetZaxis()->SetRange(1, ptbinsize+1);
-        // h3_ptzr->GetZaxis()->SetRange(1, ptbinsize+1);
-        // h3_ptjtr->GetZaxis()->SetRange(1, ptbinsize+1);
-        // h3_ptzjt_uncorrected->GetZaxis()->SetRange(1, ptbinsize+1);
-        // h3_ptzr_uncorrected->GetZaxis()->SetRange(1, ptbinsize+1);
-        // h3_ptjtr_uncorrected->GetZaxis()->SetRange(1, ptbinsize+1);    
-                
-        // SetRecoStyle(h1_jet_eta);
-        // SetDataStyle(h1_jet_rap);
-        // SetRecoStyle(h1_jet_pt);
-        // SetRecoStyle(h1_jet_phi);
-
-        // SetRecoStyle(h1_HF_rap);
-        // SetRecoStyle(h1_HF_pt);
-        // SetRecoStyle(h1_HF_mass);
-        // SetRecoStyle(h1_HF_phi);
-        
-        // SetRecoStyle(h1_z);
-        // SetRecoStyle(h1_jt);
-        // SetRecoStyle(h1_r);
-        
-        // SetRecoStyle(h1_Jpsi_rap);
-        // SetRecoStyle(h1_Jpsi_pt);
-        // SetRecoStyle(h1_Jpsi_mass);
-        // SetRecoStyle(h1_Jpsi_ipchi2);
-
-        // SetRecoStyle(h1_z_comb);
-        // SetRecoStyle(h1_jt_comb);
-        // SetRecoStyle(h1_r_comb);
-
         f.Write();
         f.Close();
 }

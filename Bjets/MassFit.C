@@ -27,7 +27,7 @@
 
 using namespace RooFit;
 
-void MassFit(int NumEvts = -1, int dataset = 91599, bool isData = true,
+void MassFit(int NumEvts = -1, bool isData = true,
              bool UseDTF = true,
              bool DoRecSelEff = 0,
              bool DoSystematic = 0,             

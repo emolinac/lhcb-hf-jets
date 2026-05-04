@@ -48,10 +48,6 @@ void SimpleUnfold(int NumEvts = -1,
         
         TH3D *h3_denom_efficiency_HFptetajetpt = (TH3D*) file_eff->Get("denom_efficiency_HFptetajetpt");
         
-        TH3D *h3_denom_efficiency_rl_jetpt_weight       = (TH3D*) file_eff->Get("denom_efficiency_rl_jetpt_weight");
-        TH3D *h3_denom_efficiency_rl_jetpt_weight_eqch  = (TH3D*) file_eff->Get("denom_efficiency_rl_jetpt_weight_eqch");
-        TH3D *h3_denom_efficiency_rl_jetpt_weight_neqch = (TH3D*) file_eff->Get("denom_efficiency_rl_jetpt_weight_neqch");  
-        
         //    /////////////////// Mass Fit Parameters /////////////////////////////////
         // TString extension_mass("");
         // if (sPlotFit)
@@ -110,10 +106,9 @@ void SimpleUnfold(int NumEvts = -1,
         
         TH1D *h1_num_efficiency_jetpt = new TH1D("num_efficiency_jetpt", "", ptbinsize, pt_binedges);
         
-        TH1D *h1_jetpt       = new TH1D("jetpt"      , "", ptbinsize, pt_binedges);
-        TH1D *h1_jetpt_truth = new TH1D("jetpt_truth", "", ptbinsize, pt_binedges);
-       
-        RooUnfoldResponse *response_jetpt = new RooUnfoldResponse(h1_jetpt, h1_jetpt_truth, "response_jetpt");
+        TH1D *h1_jetpt          = new TH1D("jetpt"      , "", ptbinsize, pt_binedges);
+        TH1D *h1_jetpt_truth    = new TH1D("jetpt_truth", "", ptbinsize, pt_binedges);
+        TH2D *h2_response_jetpt = new TH2D("h2_response_jetpt", "", ptbinsize, pt_binedges, ptbinsize, pt_binedges);
         
         // 1D RMs (for visualization purposes)
         TH1D *h1_form_rl     = new TH1D("h1_form_rl"    , "", nbin_rl_nominal_unfolding, unfolding_rl_nominal_binning);
@@ -139,6 +134,15 @@ void SimpleUnfold(int NumEvts = -1,
         RooUnfoldResponse *response_npair_neqch = new RooUnfoldResponse(h3_meas_rl_jetpt_weight_neqch, h3_true_rl_jetpt_weight_neqch, "response_npair_neqch");
         
         // 3D Efficiencies
+        // TH3D *h3_denom_efficiency_rl_jetpt_weight       = (TH3D*) file_eff->Get("denom_efficiency_rl_jetpt_weight");
+        // TH3D *h3_denom_efficiency_rl_jetpt_weight_eqch  = (TH3D*) file_eff->Get("denom_efficiency_rl_jetpt_weight_eqch");
+        // TH3D *h3_denom_efficiency_rl_jetpt_weight_neqch = (TH3D*) file_eff->Get("denom_efficiency_rl_jetpt_weight_neqch");  
+        // TH2D *h2_denom_efficiency_rl_jetpt = (TH2D*) file_eff->Get("denom_efficiency_rl_jetpt");
+        
+        TH3D *h3_denom_efficiency_rl_jetpt_weight       = new TH3D("h3_denom_efficiency_rl_jetpt_weight"      , "", nbin_rl_nominal_unfolding, unfolding_rl_nominal_binning, ptbinsize, pt_binedges, nbin_weight, weight_binning);
+        TH3D *h3_denom_efficiency_rl_jetpt_weight_eqch  = new TH3D("h3_denom_efficiency_rl_jetpt_weight_eqch" , "", nbin_rl_nominal_unfolding, unfolding_rl_nominal_binning, ptbinsize, pt_binedges, nbin_weight, weight_binning);
+        TH3D *h3_denom_efficiency_rl_jetpt_weight_neqch = new TH3D("h3_denom_efficiency_rl_jetpt_weight_neqch", "", nbin_rl_nominal_unfolding, unfolding_rl_nominal_binning, ptbinsize, pt_binedges, nbin_weight, weight_binning);  
+
         TH3D* h3_num_efficiency_rl_jetpt_weight = new TH3D("h3_num_efficiency_rl_jetpt_weight", "", nbin_rl_nominal_unfolding, unfolding_rl_nominal_binning, ptbinsize, pt_binedges, nbin_weight, weight_binning);
         TH3D* h3_efficiency_rl_jetpt_weight     = new TH3D("h3_efficiency_rl_jetpt_weight"    , "", nbin_rl_nominal_unfolding, unfolding_rl_nominal_binning, ptbinsize, pt_binedges, nbin_weight, weight_binning);
         
@@ -147,6 +151,10 @@ void SimpleUnfold(int NumEvts = -1,
         
         TH3D* h3_num_efficiency_rl_jetpt_weight_neqch = new TH3D("h3_num_efficiency_rl_jetpt_weight_neqch", "", nbin_rl_nominal_unfolding, unfolding_rl_nominal_binning, ptbinsize, pt_binedges, nbin_weight, weight_binning);
         TH3D* h3_efficiency_rl_jetpt_weight_neqch     = new TH3D("h3_efficiency_rl_jetpt_weight_neqch"    , "", nbin_rl_nominal_unfolding, unfolding_rl_nominal_binning, ptbinsize, pt_binedges, nbin_weight, weight_binning);
+        
+        TH2D* h2_num_efficiency_rl_jetpt   = new TH2D("h2_num_efficiency_rl_jetpt", "", nbin_rl_nominal_unfolding, unfolding_rl_nominal_binning, ptbinsize, pt_binedges);
+        TH2D* h2_denom_efficiency_rl_jetpt = new TH2D("h2_denom_efficiency_rl_jetpt", "", nbin_rl_nominal_unfolding, unfolding_rl_nominal_binning, ptbinsize, pt_binedges);
+        TH2D* h2_efficiency_rl_jetpt       = new TH2D("h2_efficiency_rl_jetpt"    , "", nbin_rl_nominal_unfolding, unfolding_rl_nominal_binning, ptbinsize, pt_binedges);
         
         // 3D Purities
         TH3D* h3_num_purity_rl_jetpt_weight     = new TH3D("h3_num_purity_rl_jetpt_weight"   , "", nbin_rl_nominal_unfolding, unfolding_rl_nominal_binning, ptbinsize, pt_binedges, nbin_weight, weight_binning);
@@ -161,6 +169,10 @@ void SimpleUnfold(int NumEvts = -1,
         TH3D* h3_denom_purity_rl_jetpt_weight_neqch = new TH3D("h3_denom_purity_rl_jetpt_weight_neqch" , "", nbin_rl_nominal_unfolding, unfolding_rl_nominal_binning, ptbinsize, pt_binedges, nbin_weight, weight_binning);
         TH3D* h3_purity_rl_jetpt_weight_neqch       = new TH3D("h3_purity_rl_jetpt_weight_neqch"       , "", nbin_rl_nominal_unfolding, unfolding_rl_nominal_binning, ptbinsize, pt_binedges, nbin_weight, weight_binning);
         
+        TH2D* h2_num_purity_rl_jetpt     = new TH2D("h2_num_purity_rl_jetpt"   , "", nbin_rl_nominal_unfolding, unfolding_rl_nominal_binning, ptbinsize, pt_binedges);
+        TH2D* h2_denom_purity_rl_jetpt   = new TH2D("h2_denom_purity_rl_jetpt" , "", nbin_rl_nominal_unfolding, unfolding_rl_nominal_binning, ptbinsize, pt_binedges);
+        TH2D* h2_purity_rl_jetpt         = new TH2D("h2_purity_rl_jetpt"       , "", nbin_rl_nominal_unfolding, unfolding_rl_nominal_binning, ptbinsize, pt_binedges);
+
         // Prior-weighted observables
         TH3D *h3_rl_jetpt_weight_weighted = new TH3D("h3_rl_jetpt_weight_weighted", "", nbin_rl_nominal_unfolding, unfolding_rl_nominal_binning, ptbinsize, pt_binedges, nbin_weight, weight_binning);
         
@@ -187,9 +199,12 @@ void SimpleUnfold(int NumEvts = -1,
         float sv_mass, sv_chi2, sv_ntrks, sv_cosine;
         int SVTag;
         float K_PIDK, chi2ndf_dtf, tau_dtf;
+
+        double WTA_reco_dist, WTA_true_dist;
         
         vector<float> *pair_rl = 0, *pair_weight = 0, *pair_chargeprod = 0;
         vector<float> *truthmatched_pair_rl = 0, *truthmatched_pair_weight = 0;
+        vector<float> *true_pair_rl = 0, *true_pair_weight = 0, *true_pair_chargeprod = 0;        
         
         BTree->SetBranchAddress("pair_rl"        , &pair_rl);
         BTree->SetBranchAddress("pair_weight"    , &pair_weight);
@@ -197,6 +212,13 @@ void SimpleUnfold(int NumEvts = -1,
         
         BTree->SetBranchAddress("truthmatched_pair_rl"    , &truthmatched_pair_rl);
         BTree->SetBranchAddress("truthmatched_pair_weight", &truthmatched_pair_weight);
+
+        BTree->SetBranchAddress("true_pair_rl"        , &true_pair_rl);
+        BTree->SetBranchAddress("true_pair_weight"    , &true_pair_weight);
+        BTree->SetBranchAddress("true_pair_chargeprod", &true_pair_chargeprod);
+        
+        BTree->SetBranchAddress("WTA_reco_dist", &WTA_reco_dist);
+        BTree->SetBranchAddress("WTA_true_dist", &WTA_true_dist);
         
         BTree->SetBranchAddress("HF_px", &HF_px);
         BTree->SetBranchAddress("HF_py", &HF_py);
@@ -319,9 +341,9 @@ void SimpleUnfold(int NumEvts = -1,
                 
                 float HF_rap = HFmeson.Rapidity();
         
-                bool num_cond_eff = tr_pt_cond && tr_rap_cond && isTrueBjet && pt_cond && rap_cond;
-                bool num_cond_pur = tr_pt_cond && tr_rap_cond && isTrueBjet && pt_cond && rap_cond;
-                bool denom_cond   = pt_cond && rap_cond;
+                bool num_cond_eff = tr_pt_cond && tr_rap_cond && isTrueBjet && pt_cond && rap_cond && (WTA_reco_dist < WTA_dist_max && WTA_true_dist < WTA_dist_max);
+                bool num_cond_pur = tr_pt_cond && tr_rap_cond && isTrueBjet && pt_cond && rap_cond && (WTA_reco_dist < WTA_dist_max && WTA_true_dist < WTA_dist_max);
+                bool denom_cond   = pt_cond && rap_cond && (WTA_reco_dist < WTA_dist_max);
                 
                 if (num_cond_eff) {
                         h1_num_efficiency_jetpt->Fill(tr_jet_pt, eff_weight);
@@ -340,12 +362,80 @@ void SimpleUnfold(int NumEvts = -1,
 
                                         h3_num_efficiency_rl_jetpt_weight->Fill(rl_info[vector_index], tr_jet_pt, weight_info[vector_index]);
 
+                                        h2_num_efficiency_rl_jetpt->Fill(rl_info[vector_index], tr_jet_pt);
+
                                         if (chargeprod_info[vector_index] > 0)
                                                 h3_num_efficiency_rl_jetpt_weight_eqch->Fill(rl_info[vector_index], tr_jet_pt, weight_info[vector_index]);
                                         else if (chargeprod_info[vector_index] < 0)
                                                 h3_num_efficiency_rl_jetpt_weight_neqch->Fill(rl_info[vector_index], tr_jet_pt, weight_info[vector_index]);
                                 }
                         }
+
+                        if (!true_pair_rl->empty()) {
+                                ULong_t vector_size = true_pair_rl->size();
+
+                                // Note: this vectors will have the same size always, dont worry
+                                float *rl_info         = true_pair_rl->data();
+                                float *weight_info     = true_pair_weight->data();
+                                float *chargeprod_info = true_pair_chargeprod->data();
+                                
+                                for(int vector_index = 0 ; vector_index < vector_size ; vector_index++) {
+                                        h3_denom_efficiency_rl_jetpt_weight->Fill(rl_info[vector_index], tr_jet_pt, weight_info[vector_index]);
+
+                                        h2_denom_efficiency_rl_jetpt->Fill(rl_info[vector_index], tr_jet_pt);
+
+                                        if (chargeprod_info[vector_index] > 0)
+                                                h3_denom_efficiency_rl_jetpt_weight_eqch->Fill(rl_info[vector_index], tr_jet_pt, weight_info[vector_index]);
+                                        else if (chargeprod_info[vector_index] < 0)
+                                                h3_denom_efficiency_rl_jetpt_weight_neqch->Fill(rl_info[vector_index], tr_jet_pt, weight_info[vector_index]);
+                                }
+                        }
+                }
+
+                if (num_cond_pur) {
+                        h1_num_purity_jetpt->Fill(jet_pt, eff_weight);
+
+                        h2_response_jetpt->Fill(jet_pt, tr_jet_pt, prior_weight);
+                        
+                        if (!truthmatched_pair_rl->empty()) {
+                                ULong_t vector_size = pair_rl->size();
+
+                                // Note: this vectors will have the same size always, dont worry
+                                float *rl_info         = pair_rl->data();
+                                float *weight_info     = pair_weight->data();
+                                float *chargeprod_info = pair_chargeprod->data();
+
+                                float *truthmatched_rl_info     = truthmatched_pair_rl->data();
+                                float *truthmatched_weight_info = truthmatched_pair_weight->data();
+                                
+                                for(int vector_index = 0 ; vector_index < vector_size ; vector_index++) {
+                                        if (truthmatched_rl_info[vector_index] == -999)
+                                                continue;
+                                        
+                                        h3_num_purity_rl_jetpt_weight->Fill(rl_info[vector_index], jet_pt, weight_info[vector_index]);
+
+                                        h2_num_purity_rl_jetpt->Fill(rl_info[vector_index], jet_pt);
+
+                                        response_npair->Fill(rl_info[vector_index], jet_pt, weight_info[vector_index], truthmatched_rl_info[vector_index], tr_jet_pt, truthmatched_weight_info[vector_index]);
+                                
+                                        response_rl->Fill(rl_info[vector_index], truthmatched_rl_info[vector_index]);
+
+                                        response_weight->Fill(weight_info[vector_index], truthmatched_weight_info[vector_index]);
+                                        
+                                        if (chargeprod_info[vector_index] > 0) {
+                                                h3_num_purity_rl_jetpt_weight_eqch->Fill(rl_info[vector_index], jet_pt, weight_info[vector_index]);
+                                                
+                                                response_npair_eqch->Fill(rl_info[vector_index], jet_pt, weight_info[vector_index], truthmatched_rl_info[vector_index], tr_jet_pt, truthmatched_weight_info[vector_index]);
+
+                                        } else if (chargeprod_info[vector_index] < 0) {
+                                                h3_num_purity_rl_jetpt_weight_neqch->Fill(rl_info[vector_index], jet_pt, weight_info[vector_index]);
+
+                                                response_npair_neqch->Fill(rl_info[vector_index], jet_pt, weight_info[vector_index], truthmatched_rl_info[vector_index], tr_jet_pt, truthmatched_weight_info[vector_index]);
+                                        }
+                                }
+                        }
+
+                        NumTrueBjets++;              
                 }
                 
                 if (denom_cond) {
@@ -362,100 +452,23 @@ void SimpleUnfold(int NumEvts = -1,
                                 float *chargeprod_info = pair_chargeprod->data();
                                 
                                 for(int vector_index = 0 ; vector_index < vector_size ; vector_index++) {
-                                        if (truthmatched_rl_info[vector_index] == -999)
-                                                continue;
-                                        
-                                        h3_denom_purity_rl_jetpt_weight->Fill(rl_info[vector_index], tr_jet_pt, weight_info[vector_index]);
+                                        h3_denom_purity_rl_jetpt_weight->Fill(rl_info[vector_index], jet_pt, weight_info[vector_index]);
+
+                                        h2_denom_purity_rl_jetpt->Fill(rl_info[vector_index], jet_pt);
 
                                         if (chargeprod_info[vector_index] > 0)
-                                                h3_denom_purity_rl_jetpt_weight_eqch->Fill(rl_info[vector_index], tr_jet_pt, weight_info[vector_index]);
+                                                h3_denom_purity_rl_jetpt_weight_eqch->Fill(rl_info[vector_index], jet_pt, weight_info[vector_index]);
                                         else if (chargeprod_info[vector_index] < 0)
-                                                h3_denom_purity_rl_jetpt_weight_neqch->Fill(rl_info[vector_index], tr_jet_pt, weight_info[vector_index]);
+                                                h3_denom_purity_rl_jetpt_weight_neqch->Fill(rl_info[vector_index], jet_pt, weight_info[vector_index]);
                                 }
                         }
                 }    
-
-                if (num_cond_pur) {
-                        // Note: Two birds in one shot baby
-                        h1_num_purity_jetpt->Fill(jet_pt, eff_weight);
-
-                        response_jetpt->Fill(jet_pt, tr_jet_pt, prior_weight);
-                        
-                        if (!truthmatched_pair_rl->empty()) {
-                                ULong_t vector_size = pair_rl->size();
-
-                                // Note: this vectors will have the same size always, dont worry
-                                float *rl_info         = pair_rl->data();
-                                float *weight_info     = pair_weight->data();
-                                float *chargeprod_info = pair_chargeprod->data();
-
-                                float *truthmatched_rl_info     = truthmatched_pair_rl->data();
-                                float *truthmatched_weight_info = truthmatched_pair_weight->data();
-                                
-                                for(int vector_index = 0 ; vector_index < vector_size ; vector_index++) {
-                                        h3_num_purity_rl_jetpt_weight->Fill(rl_info[vector_index], tr_jet_pt, weight_info[vector_index]);
-
-                                        if (truthmatched_rl_info[vector_index] != -999) {
-                                                response_npair->Fill(rl_info[vector_index], jet_pt, weight_info[vector_index], truthmatched_rl_info[vector_index], tr_jet_pt, truthmatched_weight_info[vector_index]);
-                                        
-                                                response_rl->Fill(rl_info[vector_index], truthmatched_rl_info[vector_index]);
-
-                                                response_weight->Fill(weight_info[vector_index], truthmatched_weight_info[vector_index]);
-                                        }
-
-                                        if (chargeprod_info[vector_index] > 0) {
-                                                h3_num_purity_rl_jetpt_weight_eqch->Fill(rl_info[vector_index], tr_jet_pt, weight_info[vector_index]);
-
-                                                if (truthmatched_rl_info[vector_index] != -999)
-                                                        response_npair_eqch->Fill(rl_info[vector_index], jet_pt, weight_info[vector_index], truthmatched_rl_info[vector_index], tr_jet_pt, truthmatched_weight_info[vector_index]);
-
-                                        } else if (chargeprod_info[vector_index] < 0) {
-                                                h3_num_purity_rl_jetpt_weight_neqch->Fill(rl_info[vector_index], tr_jet_pt, weight_info[vector_index]);
-
-                                                if (truthmatched_rl_info[vector_index] != -999)
-                                                        response_npair_neqch->Fill(rl_info[vector_index], jet_pt, weight_info[vector_index], truthmatched_rl_info[vector_index], tr_jet_pt, truthmatched_weight_info[vector_index]);
-                                        }
-                                }
-                        }
-
-                        NumTrueBjets++;              
-                }
-                
-                // if (!pt_cond || !tr_pt_cond || !isTrueBjet || !rap_cond || !tr_rap_cond )
-                //         continue;
-
-                // response_ptz->Fill( z,  jet_pt, tr_z, tr_jet_pt, prior_weight);        
-                // response_ptjt->Fill( jt, jet_pt, tr_jt, tr_jet_pt, prior_weight);
-                // response_ptr->Fill( r,  jet_pt, tr_r, tr_jet_pt, prior_weight);
-                
-                // response_ptzjt->Fill( z, jt, jet_pt, tr_z, tr_jt, tr_jet_pt, prior_weight);
-                // response_ptzr->Fill( z, r, jet_pt, tr_z, tr_r, tr_jet_pt, prior_weight);
-                // response_ptjtr->Fill( jt,  r, jet_pt, tr_jt, tr_r, tr_jet_pt, prior_weight);  
-                
-                // h2_truthreco_jetpt->Fill(jet_pt, tr_jet_pt, prior_weight);
-                // h2_truthreco_z->Fill(z, tr_z, prior_weight);
-                // h2_truthreco_jt->Fill(jt, tr_jt, prior_weight);
-                // h2_truthreco_r->Fill(r, tr_r, prior_weight);
-                
-                // // For a cross check on the unfold prior systematic
-                // h2_ptz_weighted->Fill(z, jet_pt, prior_weight);
-                // h2_ptjt_weighted->Fill(jt, jet_pt, prior_weight);
-                // h2_ptr_weighted->Fill(r, jet_pt, prior_weight);  
-                // h1_z_weighted->Fill(z, prior_weight);
-                // h1_jt_weighted->Fill(jt, prior_weight);
-                // h1_r_weighted->Fill(r, prior_weight);       
-                
-                // h2_ptz->Fill(z, jet_pt);
-                // h2_ptjt->Fill(jt, jet_pt);
-                // h2_ptr->Fill(r, jet_pt);
-                // h1_z->Fill(z);
-                // h1_jt->Fill(jt);
-                // h1_r->Fill(r);
                 
                 event_counter++;
         }
-                
-        TH2 *h2_response_jetpt  = response_jetpt->Hresponse();
+        
+        RooUnfoldResponse *response_jetpt = new RooUnfoldResponse(h1_jetpt, h1_jetpt_truth, h2_response_jetpt, "response_jetpt");
+        // TH2 *h2_response_jetpt  = response_jetpt->Hresponse();
         TH2 *h2_response_rl     = response_rl->Hresponse();
         TH2 *h2_response_weight = response_weight->Hresponse();
         
@@ -477,7 +490,7 @@ void SimpleUnfold(int NumEvts = -1,
         // h3_response_npair_neqch->GetXaxis()->SetTitle("reco bin # (flattened)");
         // h3_response_npair_neqch->GetYaxis()->SetTitle("truth bin # (flattened)");
         
-        h2_response_jetpt->Write("response_jetpt");
+        h2_response_jetpt->Write("h2_response_jetpt");
         h2_response_rl->Write("response_rl");
         h2_response_weight->Write("response_weight");
         
@@ -503,17 +516,23 @@ void SimpleUnfold(int NumEvts = -1,
         h3_efficiency_rl_jetpt_weight_eqch->Divide(h3_num_efficiency_rl_jetpt_weight_eqch, h3_denom_efficiency_rl_jetpt_weight_eqch, 1, 1, "B");
         h3_efficiency_rl_jetpt_weight_neqch->Divide(h3_num_efficiency_rl_jetpt_weight_neqch, h3_denom_efficiency_rl_jetpt_weight_neqch, 1, 1, "B");    
         
-        h3_purity_rl_jetpt_weight->Divide(h3_num_purity_rl_jetpt_weight, h3_denom_purity_rl_jetpt_weight, 1, 1);
-        h3_purity_rl_jetpt_weight_eqch->Divide(h3_num_purity_rl_jetpt_weight_eqch, h3_denom_purity_rl_jetpt_weight_eqch, 1, 1);
-        h3_purity_rl_jetpt_weight_neqch->Divide(h3_num_purity_rl_jetpt_weight_neqch, h3_denom_purity_rl_jetpt_weight_neqch, 1, 1);
+        h2_efficiency_rl_jetpt->Divide(h2_num_efficiency_rl_jetpt, h2_denom_efficiency_rl_jetpt, 1, 1, "B");
+
+        h3_purity_rl_jetpt_weight->Divide(h3_num_purity_rl_jetpt_weight, h3_denom_purity_rl_jetpt_weight, 1, 1, "B");
+        h3_purity_rl_jetpt_weight_eqch->Divide(h3_num_purity_rl_jetpt_weight_eqch, h3_denom_purity_rl_jetpt_weight_eqch, 1, 1, "B");
+        h3_purity_rl_jetpt_weight_neqch->Divide(h3_num_purity_rl_jetpt_weight_neqch, h3_denom_purity_rl_jetpt_weight_neqch, 1, 1, "B");
+        
+        h2_purity_rl_jetpt->Divide(h2_num_purity_rl_jetpt, h2_denom_purity_rl_jetpt, 1, 1, "B");
         
         h1_efficiency_jetpt->Write("efficiency_jetpt");
         h1_purity_jetpt->Write("purity_jetpt");
         
+        h2_efficiency_rl_jetpt->Write("efficiency_rl_jetpt");
         h3_efficiency_rl_jetpt_weight->Write("efficiency_rl_jetpt_weight");
         h3_efficiency_rl_jetpt_weight_eqch->Write("efficiency_rl_jetpt_weight_eqch");
         h3_efficiency_rl_jetpt_weight_neqch->Write("efficiency_rl_jetpt_weight_neqch");    
         
+        h2_purity_rl_jetpt->Write("purity_rl_jetpt");
         h3_purity_rl_jetpt_weight->Write("purity_rl_jetpt_weight");
         h3_purity_rl_jetpt_weight_eqch->Write("purity_rl_jetpt_weight_eqch");
         h3_purity_rl_jetpt_weight_neqch->Write("purity_rl_jetpt_weight_neqch");    
@@ -661,42 +680,6 @@ void SimpleUnfold(int NumEvts = -1,
         //         h2_purity_jtr_ptbinned[i-1]->Write();                        
         // }   
         
-        // hs_efficiency_ptz->Write();
-        // hs_efficiency_ptjt->Write();
-        // hs_efficiency_ptr->Write();
-        // hs_purity_ptz->Write();
-        // hs_purity_ptjt->Write();
-        // hs_purity_ptr->Write();       
-                        
-        // NormalizeHist(h2_ptz_weighted);
-        // NormalizeHist(h2_ptjt_weighted);
-        // NormalizeHist(h2_ptr_weighted);   
-        
-        // NormalizeHist(h1_z_weighted);
-        // NormalizeHist(h1_jt_weighted);
-        // NormalizeHist(h1_r_weighted);    
-                
-        // NormalizeHist(h2_ptz);
-        // NormalizeHist(h2_ptjt);
-        // NormalizeHist(h2_ptr);   
-        
-        // NormalizeHist(h1_z);
-        // NormalizeHist(h1_jt);
-        // NormalizeHist(h1_r); 
-                        
-        // h2_ptz_weighted->Write();
-        // h2_ptjt_weighted->Write();
-        // h2_ptr_weighted->Write();
-        // h1_z_weighted->Write();
-        // h1_jt_weighted->Write();
-        // h1_r_weighted->Write();   
-        
-        // h2_ptz->Write();
-        // h2_ptjt->Write();
-        // h2_ptr->Write();
-        // h1_z->Write();
-        // h1_jt->Write();
-        // h1_r->Write();       
 
         cout << event_counter << " events processed" << endl;
                 

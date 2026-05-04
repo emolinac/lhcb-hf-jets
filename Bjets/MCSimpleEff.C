@@ -51,6 +51,8 @@ void MCSimpleEff(int NumEvts = -1, int dataset = 91599, int flavor = 5,
         TH3D *h3_denom_efficiency_rl_jetpt_weight       = new TH3D("denom_efficiency_rl_jetpt_weight", "", nbin_rl_nominal_unfolding, unfolding_rl_nominal_binning, ptbinsize, pt_binedges, nbin_weight, weight_binning);
         TH3D *h3_denom_efficiency_rl_jetpt_weight_eqch  = new TH3D("denom_efficiency_rl_jetpt_weight_eqch", "", nbin_rl_nominal_unfolding, unfolding_rl_nominal_binning, ptbinsize, pt_binedges, nbin_weight, weight_binning);
         TH3D *h3_denom_efficiency_rl_jetpt_weight_neqch = new TH3D("denom_efficiency_rl_jetpt_weight_neqch", "", nbin_rl_nominal_unfolding, unfolding_rl_nominal_binning, ptbinsize, pt_binedges, nbin_weight, weight_binning);
+
+        TH2D *h2_denom_efficiency_rl_jetpt = new TH2D("denom_efficiency_rl_jetpt", "", nbin_rl_nominal_unfolding, unfolding_rl_nominal_binning, ptbinsize, pt_binedges);
         
         TH2D *h2_SVTag_eff_denom   = new TH2D("h2_SVTag_eff_denom","", ptHFbinsize, ptHF_binedges, customptbinsize, custompt_binedges);
         TH2D *h2_SVTag_eff_denom_z = new TH2D("h2_SVTag_eff_denom_z","", zbinsize, z_binedges, customptbinsize, custompt_binedges); 
@@ -213,6 +215,36 @@ void MCSimpleEff(int NumEvts = -1, int dataset = 91599, int flavor = 5,
                         
                         h2_denom_efficiency_HFptnTracks->Fill(HFmeson.Pt(), nTracks);
                         
+                        // if (!pair_rl->empty()) {
+                        //         ULong_t vector_size = pair_rl->size();
+
+                        //         float *rl_info         = pair_rl->data();
+                        //         float *weight_info     = pair_weight->data();
+                        //         float *chargeprod_info = pair_chargeprod->data();
+                                
+                        //         for(int vector_index = 0 ; vector_index < vector_size ; vector_index++) {
+                        //                 h3_denom_efficiency_rl_jetpt_weight->Fill(rl_info[vector_index], jet_pt, weight_info[vector_index]);
+
+                        //                 h2_denom_efficiency_rl_jetpt->Fill(rl_info[vector_index], jet_pt);
+
+                        //                 if (chargeprod_info[vector_index] > 0)
+                        //                         h3_denom_efficiency_rl_jetpt_weight_eqch->Fill(rl_info[vector_index], jet_pt, weight_info[vector_index]);
+                        //                 else if (chargeprod_info[vector_index] < 0)
+                        //                         h3_denom_efficiency_rl_jetpt_weight_neqch->Fill(rl_info[vector_index], jet_pt, weight_info[vector_index]);
+                        //         }
+                        // }
+                }
+
+                if (pt_cond && rap_cond && meas_pt_cond && meas_rap_cond) {
+                        // h1_denom_efficiency_HFpt->Fill(HF_pt);
+                        
+                        // h2_denom_efficiency_HFpteta->Fill(HFmeson.Pt(), HFmeson.Rapidity());
+                        // h3_denom_efficiency_HFptetajetpt->Fill(HFmeson.Pt(), HFmeson.Rapidity(), jet_pt);
+                        // h1_denom_efficiency_jetpt->Fill(jet_pt);
+                        // h2_denom_efficiency_HFptjetpt->Fill(HFmeson.Pt(), jet_pt);
+                        
+                        // h2_denom_efficiency_HFptnTracks->Fill(HFmeson.Pt(), nTracks);
+                        
                         if (!pair_rl->empty()) {
                                 ULong_t vector_size = pair_rl->size();
 
@@ -222,6 +254,8 @@ void MCSimpleEff(int NumEvts = -1, int dataset = 91599, int flavor = 5,
                                 
                                 for(int vector_index = 0 ; vector_index < vector_size ; vector_index++) {
                                         h3_denom_efficiency_rl_jetpt_weight->Fill(rl_info[vector_index], jet_pt, weight_info[vector_index]);
+
+                                        h2_denom_efficiency_rl_jetpt->Fill(rl_info[vector_index], jet_pt);
 
                                         if (chargeprod_info[vector_index] > 0)
                                                 h3_denom_efficiency_rl_jetpt_weight_eqch->Fill(rl_info[vector_index], jet_pt, weight_info[vector_index]);
