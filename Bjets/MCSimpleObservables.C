@@ -73,8 +73,9 @@ void MCSimpleObservables(int NumEvts = -1)
         TH1D *h1_HF_mass         = new TH1D("HF_mass", "", 30, 5.279 - 0.3, 5.279 + 0.3);
         TH1D *h1_HFjet_ptbalance = new TH1D("HFjet_ptbalance", "", 20, 0, 2);
 
-        TH1D *h1_HFpt      = new TH1D("h1_HFpt", "", ptHFbinsize, ptHF_binedges);
-        TH2D *h2_HFptjetpt = new TH2D("h2_HFptjetpt", "", ptHFbinsize, ptHF_binedges, customptbinsize, custompt_binedges);
+        TH1D *h1_HFpt         = new TH1D("h1_HFpt"        , "", ptHFbinsize, ptHF_binedges);
+        TH2D *h2_HFptjetpt    = new TH2D("h2_HFptjetpt"   , "", ptHFbinsize, ptHF_binedges, customptbinsize, custompt_binedges);
+        TH3D *h3_HFptetajetpt = new TH3D("h3_HFptetajetpt", "", ptHFbinsize, ptHF_binedges, HFetabinsize, HFeta_binedges, ptbinsize, pt_binedges);
 
         // EEC RELATED PLOTS
         TH3D* h_npair_mc          = new TH3D("h_npair_mc"         , "", nbin_rl_nominal_unfolding, unfolding_rl_nominal_binning, ptbinsize, pt_binedges, nbin_weight, weight_binning);
@@ -256,8 +257,13 @@ void MCSimpleObservables(int NumEvts = -1)
                 if (!pt_cond)
                         continue;
 
-                if (WTA_true_dist > 0.005)
+                if (WTA_true_dist > WTA_dist_max)
                         continue;
+
+                // // NOTE: DELETEEEEEEEEE
+                // if (!hasRecoHF)
+                //         continue;
+                // // NOTE: DELETEEEEEEEEE
                 
                 NumBJets++;
 
@@ -287,7 +293,9 @@ void MCSimpleObservables(int NumEvts = -1)
                 TVector3 HF_meson = HFmeson.Vect();
                 
                 h2_jetpteta->Fill(HFjet.Pt(), HFjet.Eta());  
-                h2_jetptp->Fill(HFjet.Pt(), HFjet.P());            
+                h2_jetptp->Fill(HFjet.Pt(), HFjet.P());    
+                
+                h3_HFptetajetpt->Fill(HFjet.Pt(), HFjet.Eta(),jet_pt);
 
                 if (!pair_rl->empty()) {
                         ULong_t vector_size = pair_rl->size();

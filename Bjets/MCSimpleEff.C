@@ -40,12 +40,12 @@ void MCSimpleEff(int NumEvts = -1, int dataset = 91599, int flavor = 5,
         TH1D *h1_denom_efficiency_jetpt = new TH1D("denom_efficiency_jetpt", "", ptbinsize, pt_binedges); //stay 
         TH1D *h1_denom_efficiency_HFpt  = new TH1D("denom_efficiency_HFpt", "", ptHFbinsize, ptHF_binedges);
         
-        TH2D *h2_denom_efficiency_jetpteta    = new TH2D("denom_efficiency_jetpteta", "", ptbinsize, pt_binedges, etabinsize, eta_binedges);
-        TH2D *h2_denom_efficiency_HFpteta     = new TH2D("denom_efficiency_HFpteta"     , "", ptHFbinsize, ptHF_binedges, HFetabinsize, HFeta_binedges); 
-        TH2D *h2_denom_efficiency_HFptjetpt   = new TH2D("denom_efficiency_HFptjetpt", "", ptHFbinsize, ptHF_binedges, customptbinsize, custompt_binedges);
-        TH2D *h2_denom_efficiency_HFptnTracks = new TH2D("denom_efficiency_HFptnTracks","",ptHFbinsize, ptHF_binedges, nTracksbinsize, nTrack_binedges);
+        TH2D *h2_denom_efficiency_jetpteta    = new TH2D("denom_efficiency_jetpteta"   , "", ptbinsize, pt_binedges, etabinsize, eta_binedges);
+        TH2D *h2_denom_efficiency_HFpteta     = new TH2D("denom_efficiency_HFpteta"    , "", ptHFbinsize, ptHF_binedges, HFetabinsize, HFeta_binedges); 
+        TH2D *h2_denom_efficiency_HFptjetpt   = new TH2D("denom_efficiency_HFptjetpt"  , "", ptHFbinsize, ptHF_binedges, ptbinsize, pt_binedges);
+        TH2D *h2_denom_efficiency_HFptnTracks = new TH2D("denom_efficiency_HFptnTracks", "", ptHFbinsize, ptHF_binedges, nTracksbinsize, nTrack_binedges);
         
-        TH3D *h3_denom_efficiency_HFptetajetpt = new TH3D("denom_efficiency_HFptetajetpt", "", ptHFbinsize, ptHF_binedges, HFetabinsize, HFeta_binedges, customptbinsize, custompt_binedges);
+        TH3D *h3_denom_efficiency_HFptetajetpt = new TH3D("denom_efficiency_HFptetajetpt", "", ptHFbinsize, ptHF_binedges, HFetabinsize, HFeta_binedges, ptbinsize, pt_binedges);
 
         // EEC-related 
         TH3D *h3_denom_efficiency_rl_jetpt_weight       = new TH3D("denom_efficiency_rl_jetpt_weight", "", nbin_rl_nominal_unfolding, unfolding_rl_nominal_binning, ptbinsize, pt_binedges, nbin_weight, weight_binning);
@@ -90,11 +90,12 @@ void MCSimpleEff(int NumEvts = -1, int dataset = 91599, int flavor = 5,
         int NumDtrRecoHF;
         bool hasRecoHF, Hasbbbar;
 
-        double WTA_true_dist;
+        double WTA_true_dist, WTA_reco_dist;
 
         vector<float> *pair_rl = 0, *pair_weight = 0, *pair_chargeprod = 0;
 
         BTree->SetBranchAddress("WTA_true_dist", &WTA_true_dist);
+        BTree->SetBranchAddress("WTA_reco_dist", &WTA_reco_dist);
 
         BTree->SetBranchAddress("pair_rl"        , &pair_rl);
         BTree->SetBranchAddress("pair_weight"    , &pair_weight);
@@ -183,19 +184,11 @@ void MCSimpleEff(int NumEvts = -1, int dataset = 91599, int flavor = 5,
                 mup.SetPxPyPzE(mup_px, mup_py, mup_pz, mup_e);
                 mum.SetPxPyPzE(mum_px, mum_py, mum_pz, mum_e);
 
-                // new
-                //    if(NumDtrRecoHF > 1) continue;
-                
                 bool rap_cond      = (jet_rap > etaMin && jet_rap < etaMax);
                 bool pt_cond       = (jet_pt > pTLow);
                 bool meas_rap_cond = (meas_jet_rap > etaMin && meas_jet_rap < etaMax);
                 bool meas_pt_cond  = (meas_jet_pt > pTLow);
-
-                //        if (NumHFHads > 1) {
-                //            continue;
-                //        }
-                //
-                //        if(Hasbbbar) continue;
+                bool meas_is_bjet  = (WTA_reco_dist < WTA_dist_max);
                 
                 if (SubtractGS && Hasbbbar)
                         continue;
@@ -214,37 +207,9 @@ void MCSimpleEff(int NumEvts = -1, int dataset = 91599, int flavor = 5,
                         h2_denom_efficiency_HFptjetpt->Fill(HFmeson.Pt(), jet_pt);
                         
                         h2_denom_efficiency_HFptnTracks->Fill(HFmeson.Pt(), nTracks);
-                        
-                        // if (!pair_rl->empty()) {
-                        //         ULong_t vector_size = pair_rl->size();
-
-                        //         float *rl_info         = pair_rl->data();
-                        //         float *weight_info     = pair_weight->data();
-                        //         float *chargeprod_info = pair_chargeprod->data();
-                                
-                        //         for(int vector_index = 0 ; vector_index < vector_size ; vector_index++) {
-                        //                 h3_denom_efficiency_rl_jetpt_weight->Fill(rl_info[vector_index], jet_pt, weight_info[vector_index]);
-
-                        //                 h2_denom_efficiency_rl_jetpt->Fill(rl_info[vector_index], jet_pt);
-
-                        //                 if (chargeprod_info[vector_index] > 0)
-                        //                         h3_denom_efficiency_rl_jetpt_weight_eqch->Fill(rl_info[vector_index], jet_pt, weight_info[vector_index]);
-                        //                 else if (chargeprod_info[vector_index] < 0)
-                        //                         h3_denom_efficiency_rl_jetpt_weight_neqch->Fill(rl_info[vector_index], jet_pt, weight_info[vector_index]);
-                        //         }
-                        // }
                 }
 
-                if (pt_cond && rap_cond && meas_pt_cond && meas_rap_cond) {
-                        // h1_denom_efficiency_HFpt->Fill(HF_pt);
-                        
-                        // h2_denom_efficiency_HFpteta->Fill(HFmeson.Pt(), HFmeson.Rapidity());
-                        // h3_denom_efficiency_HFptetajetpt->Fill(HFmeson.Pt(), HFmeson.Rapidity(), jet_pt);
-                        // h1_denom_efficiency_jetpt->Fill(jet_pt);
-                        // h2_denom_efficiency_HFptjetpt->Fill(HFmeson.Pt(), jet_pt);
-                        
-                        // h2_denom_efficiency_HFptnTracks->Fill(HFmeson.Pt(), nTracks);
-                        
+                if (pt_cond && rap_cond && meas_pt_cond && meas_rap_cond && meas_is_bjet) {
                         if (!pair_rl->empty()) {
                                 ULong_t vector_size = pair_rl->size();
 

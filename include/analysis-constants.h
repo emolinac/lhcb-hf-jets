@@ -18,6 +18,9 @@ const int nominal_niter = 4;
 const int niter_ct = 1; // if we are separating by polarities then 1 is correct!
 const int reg_par_window = 3;
 
+const double jet_pt_zjet_data_avge[]   = {24.6, 38.2, 66.1};
+const double jet_pt_bjet_data_avge[]   = {23.4, 35.8, 61.0};
+
 // Visual
 const double std_marker_size  = 1.0;
 const int    std_marker_style = 8;

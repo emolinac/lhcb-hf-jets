@@ -108,6 +108,9 @@ void MakeVarTreeMC(int NumEvts_user = -1)
         bool isSingle_tr_Bjet;
         bool isPhoton_tr_Bjet;
 
+        bool truthHF_in_truthJet;
+        bool recoHF_in_matchedRecoJet;
+
         // TLorentzVector
         TTree *BTree = new TTree("BTree", "B-jets Tree Variables");
         
@@ -187,6 +190,9 @@ void MakeVarTreeMC(int NumEvts_user = -1)
         BTree->Branch("WTA_true_dist", &WTA_true_dist);
         BTree->Branch("WTA_reco_dist", &WTA_reco_dist);
 
+        BTree->Branch("truthHF_in_truthJet"     , &truthHF_in_truthJet);
+        BTree->Branch("recoHF_in_matchedRecoJet", &recoHF_in_matchedRecoJet);
+
         // Event loop
         int eventNum;
         unsigned long long last_eventNum = 0;
@@ -212,8 +218,13 @@ void MakeVarTreeMC(int NumEvts_user = -1)
         PseudoJet WTA_reco_jet;
                 
         // NOTE: Stripping cuts are not applied at truth level! 
+        int nRecoHFoutsideJet = 0;
+        int nTruthHFJet = 0;
 
         for (int ev = 0; ev < NumEvts; ev++) {
+                truthHF_in_truthJet = false;
+                recoHF_in_matchedRecoJet = false;
+
                 pair_rl.clear();
                 pair_weight.clear();
                 pair_chargeprod.clear();
@@ -281,6 +292,8 @@ void MakeVarTreeMC(int NumEvts_user = -1)
 
                 if (HF_jet_truedR > jetradius) 
                         continue;
+                else
+                        truthHF_in_truthJet = true;
         
                 meas_HFjet.SetPxPyPzE(Tree.MCJet_recojet_PX / 1000.,
                                       Tree.MCJet_recojet_PY / 1000.,
@@ -316,29 +329,10 @@ void MakeVarTreeMC(int NumEvts_user = -1)
 
                 meas_HFmeson = meas_mup + meas_mum + meas_Kmeson;
 
-                double HF_jet_measdR = static_cast < TLorentzVector > (meas_HFmeson).DeltaR(meas_HFjet, true); 
-                
-                if (HF_jet_measdR > jetradius) 
-                        continue;
-                
                 hasbbbar = false;
-                // GluonTag = false;
                 
-                if (Tree.hasb && Tree.hasbbar) {
+                if (Tree.hasb && Tree.hasbbar)
                         hasbbbar = true;
-                        // GluonTag = true;
-                }
-                
-                ///// Experimenting with Stripping Line cuts //// //
-                // if (Kmeson.Pt() < 0.25 || mup.Pt() < 0.25 || mum.Pt() < 0.25)
-                //     continue;
-
-                // if (HF_jet_measdR > jetradius) {
-                //      cut_HFdR++;
-                //      continue;
-                // }
-
-                // jet_Nmcdtrs = recojetNdtrs;
                 
                 bool hasHFhadron = false;
                 bool hasJpsi     = false;
@@ -409,6 +403,15 @@ void MakeVarTreeMC(int NumEvts_user = -1)
                 // Veto events that don't have a B meson
                 if (!hasHFhadron)
                         continue;
+
+                double HF_jet_measdR = static_cast < TLorentzVector > (meas_HFmeson).DeltaR(meas_HFjet, true); 
+                
+                if (HF_jet_measdR > jetradius)
+                        nRecoHFoutsideJet++;
+                else
+                        recoHF_in_matchedRecoJet = true;
+
+                nTruthHFJet++;
 
                 // Check WTA Truth
                 WTA_true_jets = ClusterSequence(jetdtrs, WTA);
@@ -503,12 +506,8 @@ void MakeVarTreeMC(int NumEvts_user = -1)
                         }
                 }
 
-                // If reconstructed HF meson (from reco Daughters) is not inside the reco jet, then the Reco HF jet end up without the HF meson inside //// 
                 if (static_cast < TLorentzVector > (meas_HFmeson).DeltaR(meas_HFjet, true) > jetradius) 
                         hasRecoHF = false;
-
-                // if (meas_HFmeson.DeltaR(meas_HFjet) > jetradius) 
-                //      hasRecoHF = false;
 
                 if (hasRecoHF)
                         NumRecoHF++;
@@ -524,48 +523,6 @@ void MakeVarTreeMC(int NumEvts_user = -1)
                 } else {
                         WTA_reco_dist = -999;
                 }
-
-                // for (int h1_index = 0; h1_index < Tree.MCJet_recojet_nrecodtrs; h1_index++) {
-                //         if (std::abs(Tree.MCJet_recojet_Dtr_ID[h1_index]) < 100)
-                //                 continue;
-
-                //         h1.SetPxPyPzE(Tree.MCJet_recojet_Dtr_PX[h1_index] / 1000.,
-                //                       Tree.MCJet_recojet_Dtr_PY[h1_index] / 1000.,
-                //                       Tree.MCJet_recojet_Dtr_PZ[h1_index] / 1000.,
-                //                       Tree.MCJet_recojet_Dtr_E[h1_index]  / 1000.);
-
-                //         double trchi2ndf = Tree.MCJet_recojet_Dtr_TrackChi2[h1_index] / Tree.MCJet_recojet_Dtr_TrackNDF[h1_index];
-
-                //         if (std::abs(Tree.MCJet_recojet_Dtr_ID[h1_index]) != HF_pdgcode && 
-                //             !apply_particle_cuts(h1.P(),
-                //                                  h1.Pt(),
-                //                                  trchi2ndf,
-                //                                  Tree.MCJet_recojet_Dtr_ProbNNghost[h1_index],
-                //                                  h1.Rapidity()))
-                //                 continue;
-
-                //         for (int h2_index = h1_index + 1; h2_index < Tree.MCJet_recojet_nrecodtrs; h2_index++) {
-                //                 if (std::abs(Tree.MCJet_recojet_Dtr_ID[h2_index]) < 100)
-                //                         continue;
-
-                //                 h2.SetPxPyPzE(Tree.MCJet_recojet_Dtr_PX[h2_index] / 1000.,
-                //                                 Tree.MCJet_recojet_Dtr_PY[h2_index] / 1000.,
-                //                                 Tree.MCJet_recojet_Dtr_PZ[h2_index] / 1000.,
-                //                                 Tree.MCJet_recojet_Dtr_E[h2_index]  / 1000.);
-                        
-                //                 double trchi2ndf_1 = Tree.MCJet_recojet_Dtr_TrackChi2[h2_index] / Tree.MCJet_recojet_Dtr_TrackNDF[h2_index];
-                        
-                //                 if (std::abs(Tree.MCJet_recojet_Dtr_ID[h2_index]) != HF_pdgcode && 
-                //                     !apply_particle_cuts(h2.P(),
-                //                                          h2.Pt(),
-                //                                          trchi2ndf_1,
-                //                                          Tree.MCJet_recojet_Dtr_ProbNNghost[h2_index],
-                //                                          h2.Rapidity()))
-                //                         continue;
-
-                //                 ntuple_reco_pair->Fill(meas_HFjet.Pt(), h1.DeltaR(h2, true), (h1.Pt() * h2.Pt()) / std::pow(meas_HFjet.Pt(), 2),WTA_reco_dist);
-                //         }
-                // }
 
                 // Calculate jet substructure kinematical variables
                 TVector3 HF_meson = HFmeson.Vect();
@@ -646,13 +603,9 @@ void MakeVarTreeMC(int NumEvts_user = -1)
         }
 
         cout << "Total number of events processed = " << events << endl;
-        cout << "NumRecoHF = " << NumRecoHF << endl;
-        cout << "NumHFHads = " << NumHFHads << endl;
-        cout << "Num Single Bjets    = " << Num_Single_tr_Bjet << endl;
-        cout << "Num Photon + B jets = " << Num_Photon_tr_Bjet << endl;
-
-        cout << "Events blocked: " << endl;
-        cout << "Dinjet = " << cut_HFdR << endl;
+        cout << "NumRecoHF         = " << NumRecoHF << endl;
+        cout << "NumTruthHF        = " << nTruthHFJet << endl;
+        cout << "nRecoHFoutsideJet = " << nRecoHFoutsideJet << endl;
         
         f.Write();
         f.Close();

@@ -27,7 +27,7 @@
 
 using namespace RooFit;
 
-void MassFit(int NumEvts = -1, bool isData = true,
+void MassFit(bool isData = true,
              bool UseDTF = true,
              bool DoRecSelEff = 0,
              bool DoSystematic = 0,             
@@ -47,11 +47,7 @@ void MassFit(int NumEvts = -1, bool isData = true,
         else
                 BTree->Add((output_folder + "ntuple_bjets_mcreco.root/BTree").c_str());
         
-        if (NumEvts > BTree->GetEntries())
-                NumEvts = BTree->GetEntries();
-        
-        if (NumEvts == -1)
-                NumEvts = BTree->GetEntries();
+        double NumEvts = BTree->GetEntries();
 
         cout << "Number of entries : " << BTree->GetEntries() << endl;
         

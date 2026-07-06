@@ -199,6 +199,8 @@ void MakeVarTreeMCReco(int NumEvts_user = -1,
         bool jpsi_L0, jpsi_L0Muon, jpsi_L0DiMuon, jpsi_Hlt1, jpsi_Hlt2, jpsi_Hlt2_Detached;
         bool Trig, TIS, TOS;
         
+        bool truthmatched_jet_passed;
+
         TTree *BTree = new TTree("BTree", "B-jets Tree Variables");
 
         BTree->Branch("eventNumber", &eventNumber);
@@ -369,6 +371,8 @@ void MakeVarTreeMCReco(int NumEvts_user = -1,
         BTree->Branch("WTA_true_dist", &WTA_true_dist);
         BTree->Branch("WTA_reco_dist", &WTA_reco_dist);
 
+        BTree->Branch("truthmatched_jet_passed", &truthmatched_jet_passed);
+
         // Event loop
         unsigned long long last_eventNum = 0;
         int events = 0;
@@ -494,11 +498,6 @@ void MakeVarTreeMCReco(int NumEvts_user = -1,
                                     Tree.Jet_mcjet_PY / 1000.,
                                     Tree.Jet_mcjet_PZ / 1000.,
                                     Tree.Jet_mcjet_PE / 1000.);
-
-                // bool truth_jet_passed = false;
-
-                // if (apply_jet_cuts(tr_HFjet.Rapidity(), tr_HFjet.Pt()))
-                //         truth_jet_passed = true;
 
                 tr_mup.SetPxPyPzE(Tree.mup_TRUEP_X / 1000., 
                                   Tree.mup_TRUEP_Y / 1000.,
@@ -664,10 +663,11 @@ void MakeVarTreeMCReco(int NumEvts_user = -1,
                                                    Tree.Jet_Dtr_TRUE_PZ[h1_index]/1000.,
                                                    Tree.Jet_Dtr_TRUE_E[h1_index]/1000.);
                                 
-                                if (!apply_chargedparticle_momentum_cuts(Tree.Jet_Dtr_TRUE_ThreeCharge[h1_index],
+                                if (std::abs(Tree.Jet_Dtr_TRUE_ID[h1_index]) != HF_pdgcode && 
+                                    !apply_chargedparticle_momentum_cuts(Tree.Jet_Dtr_TRUE_ThreeCharge[h1_index],
                                                                          true_h1.P(),
                                                                          true_h1.Pt(),
-                                                                         true_h1.Eta())) 
+                                                                         true_h1.Rapidity())) 
                                         key1_match = 0;
                         } 
 
@@ -714,10 +714,11 @@ void MakeVarTreeMCReco(int NumEvts_user = -1,
                                                             Tree.Jet_Dtr_TRUE_PZ[h2_index] / 1000.,
                                                             Tree.Jet_Dtr_TRUE_E[h2_index] / 1000.);
                                         
-                                        if (!apply_chargedparticle_momentum_cuts(Tree.Jet_Dtr_TRUE_ThreeCharge[h2_index],
-                                                                              true_h2.P(),
-                                                                              true_h2.Pt(),
-                                                                              true_h2.Eta())) 
+                                        if (std::abs(Tree.Jet_Dtr_TRUE_ID[h2_index]) != HF_pdgcode &&
+                                            !apply_chargedparticle_momentum_cuts(Tree.Jet_Dtr_TRUE_ThreeCharge[h2_index],
+                                                                                 true_h2.P(),
+                                                                                 true_h2.Pt(),
+                                                                                 true_h2.Rapidity())) 
                                                 key2_match = 0;
                                 } 
 

@@ -1,0 +1,691 @@
+#include <TCanvas.h>
+#include <vector>
+#include <iostream>
+
+#include "fastjet/ClusterSequence.hh"
+// #include "fastjet/contrib/SoftDrop.hh"
+
+#include "Settings.h"
+
+#include "../Helpers_IC.h"
+#include "../include/analysis-constants.h"
+#include "../include/analysis-binning.h"
+#include "../include/analysis-cuts.cpp"
+#include "../include/analysis-cuts.h"
+#include "../include/directories.h"
+#include "../include/TBJetsData2017MD.h"
+#include "../include/TBJetsData2017MD.C"
+
+using namespace fastjet;
+using namespace std;
+
+void MakeVarTreeData2017MD(bool DoJESJER = false, bool DoJetID = false)
+{
+        TBenchmark* benchmark = new TBenchmark();
+        benchmark->Start("MakeVarTreeData");
+
+        int HF_pdgcode = 521;
+
+        TString str_followHard = "_HF";
+        TString str_flavor     = "_b";
+        TString str_level      = "data";
+
+        ////////////////////////////////////////////////////
+        ///              Tracking and PID
+        //////////////////////////////////////////////////
+        TString eff_path = TString( "./efficiencies/");
+        
+        TFile* file_trackeff      = new TFile(eff_path + "TrackEff/trackEff_2017_Ratio_Full_Long_method.root"     , "READ");
+        TFile* file_trackeff_Muon = new TFile(eff_path + "TrackEff/trackEff_Muon_2017_Ratio_Full_Long_method.root", "READ");
+        TFile* file_trackeff_Data = new TFile(eff_path + "TrackEff/trackEff_2017_Data_Full_Long_method.root"      , "READ");
+        TFile* file_trackeff_MC   = new TFile(eff_path + "TrackEff/trackEff_2017_MC_Full_Long_method.root"        , "READ");
+        
+        TFile* file_pideffK       = new TFile(eff_path + "PIDEff/effhists-Turbo2017_MD-K-Brunel_DLLK>0-P.ETA.nTracks_Brunel.root", "READ");
+        TFile* file_pideffMu      = new TFile(eff_path + "PIDEff/effhists-Turbo2017_MD-Mu-IsMuon&Brunel_DLLmu>0-P.ETA.nTracks_Brunel.root", "READ");
+
+        TH2D* h2_ratio_trkeff_P_ETA_Muon       = (TH2D*) file_trackeff_Muon->Get("hP_ETA");
+        TH2D* h2_ratio_trkeff_P_ETA_Muon_ERRHI = (TH2D*) file_trackeff_Muon->Get("hP_ETA_errhi");
+        TH2D* h2_ratio_trkeff_P_ETA_Muon_ERRLO = (TH2D*) file_trackeff_Muon->Get("hP_ETA_errlo");
+
+        TH2D* h2_ratio_trkeff_P_ETA       = (TH2D*) file_trackeff->Get("hP_ETA");
+        TH2D* h2_ratio_trkeff_P_ETA_DATA  = (TH2D*) file_trackeff_Data->Get("hP_ETA");
+        TH2D* h2_ratio_trkeff_P_ETA_MC    = (TH2D*) file_trackeff_MC->Get("hP_ETA");
+        TH2D* h2_ratio_trkeff_P_ETA_ERRHI = (TH2D*) file_trackeff->Get("hP_ETA_errhi");
+        TH2D* h2_ratio_trkeff_P_ETA_ERRLO = (TH2D*) file_trackeff->Get("hP_ETA_errlo");
+
+        TH3D* h3_pideff_K_P_ETA_nTracks   = (TH3D*) file_pideffK->Get("eff_Brunel_DLLK>0");
+        TH3D* h3_pideff_Mu_P_ETA_nTracks  = (TH3D*) file_pideffMu->Get("eff_IsMuon&Brunel_DLLmu>0");
+
+        //////////////////////////////////////////////////
+        ///              Trigger
+        ////////////////////////////////////////////////
+        TString extension_RootFilesTrig = TString("./efficiencies/TrigEff/");
+        
+        TFile* file_trigeffMC   = new TFile(extension_RootFilesTrig + "PhotonHadronElectronTIS_jpsieff_reco_ev_-1_b_PID_91599.root", "READ");
+        TFile* file_trigeffData = new TFile(extension_RootFilesTrig + "PhotonHadronElectronTIS_jpsieff_data_ev_-1_b_PID_91599.root", "READ");
+
+        TH2D* h2_trigeff_Data  = (TH2D*) file_trigeffData->Get("efficiency_Jpsiptrap");
+        TH2D* h2_trigeff_MC    = (TH2D*) file_trigeffMC->Get("efficiency_Jpsiptrap");
+
+        TH2D *h2_trigeff_ratio = (TH2D*) h2_trigeff_Data->Clone("h2_trigeff_ratio");
+        
+        h2_trigeff_ratio->Divide(h2_trigeff_MC);
+
+        // WTA related stuff
+        JetDefinition jet_def(cambridge_algorithm, JetDefinition::max_allowable_R);
+        JetDefinition WTA(cambridge_algorithm, JetDefinition::max_allowable_R, WTA_pt_scheme);
+
+        PseudoJet dtr_pseudojet1, dtr_pseudojet2;
+
+        vector<PseudoJet> jetdtrs;
+
+        double WTA_reco_dist;
+
+        TLorentzVector WTA_reco_axis;
+                
+        TBJetsData2017MD Tree;
+        
+        double NumEvts = Tree.fChain->GetEntries();
+        
+        TFile f((output_folder + "ntuple_bjets_data_2017_MD.root").c_str(), "RECREATE");
+        
+        TH1F *h1_TIS    = new TH1F("h1_TIS"   , "", ptJpsibinsize, ptJpsi_binedges);
+        TH1F *h1_TISTOS = new TH1F("h1_TISTOS", "", ptJpsibinsize, ptJpsi_binedges);
+
+        TH2F *h2_TIS_ptrap    = new TH2F("h2_TIS_ptrap"   , "", ptJpsibinsize, ptJpsi_binedges, HFetabinsize, HFeta_binedges);
+        TH2F *h2_TISTOS_ptrap = new TH2F("h2_TISTOS_ptrap", "", ptJpsibinsize, ptJpsi_binedges, HFetabinsize, HFeta_binedges);
+
+        TH2D *h2_HFpt_RM = new TH2D("h2_HFpt_RM", "", 30, 0, 100, 30, 0, 100);
+
+        float jet_pt, jet_eta, tr_jet_pt, tr_jet_eta;
+        float jet_rap, tr_jet_rap;
+        float jet_px, jet_py, jet_pz, jet_e, jet_charge;
+        float HF_px, HF_py, HF_pz, HF_e, HF_pt;
+        float Jpsi_px, Jpsi_py, Jpsi_pz, Jpsi_e;
+        float mup_px, mup_py, mup_pz, mup_e;
+        float mum_px, mum_py, mum_pz, mum_e;
+        float K_px, K_py, K_pz, K_e, K_p, K_eta;
+        float mup_CHI2NDOF, mup_GHOSTPROB, mup_IPCHI2;
+        float mum_CHI2NDOF, mum_GHOSTPROB, mum_IPCHI2;
+        float K_CHI2NDOF, K_GHOSTPROB, K_IPCHI2;
+        float Jpsi_CHI2NDOF, Jpsi_CHI2, Jpsi_FDCHI2, Jpsi_BPVDLS, Jpsi_IPCHI2;
+        float Bu_CHI2NDOF, Bu_CHI2, Bu_IPCHI2;
+        int nTracks, nSPDHits;
+        float jpsi_ipchi2, k_ipchi2;
+        float K_PIDK;
+
+        int nSV;
+        bool Hasbbbar;
+        float bmass_dtf, chi2ndf_dtf, tau_dtf;
+        int NumBHads_tr, eventNumber;
+        
+        float pideff_K(1.0), pideff_mup(1.0), pideff_mum(1.0);
+        float pideff_K_err(1.0), pideff_mup_err(1.0), pideff_mum_err(1.0);
+        float trkeff_ratio_K(1.0), trkeff_ratio_mup(1.0), trkeff_ratio_mum(1.0);
+        float trkeff_ratio_K_errhi(1.0), trkeff_ratio_mup_errhi(1.0), trkeff_ratio_mum_errhi(1.0);
+        float trkeff_ratio_K_errlo(1.0), trkeff_ratio_mup_errlo(1.0), trkeff_ratio_mum_errlo(1.0);
+        float trigeff_Data(1.0), trigeff_MC(1.0), trigeff_ratio(1.0);
+        
+        vector<float> pair_rl, pair_weight, pair_chargeprod;
+        
+        float sv_mass, sv_chi2, sv_cosine, sv_ntrks;
+        
+        bool mup_L0, mum_L0;
+        bool jpsi_L0, jpsi_L0Muon, jpsi_L0DiMuon, jpsi_Hlt1, jpsi_Hlt2, jpsi_Hlt2_Detached;
+        bool Trig, TIS, TOS;
+        
+        TTree *BTree = new TTree("BTree", "B-jets Tree Variables");
+
+        BTree->Branch("eventNumber", &eventNumber);
+
+        BTree->Branch("pair_rl"        , &pair_rl);
+        BTree->Branch("pair_weight"    , &pair_weight);
+        BTree->Branch("pair_chargeprod", &pair_chargeprod);
+        
+        BTree->Branch("jet_pt", &jet_pt);
+        BTree->Branch("jet_eta", &jet_eta);
+        BTree->Branch("jet_rap", &jet_rap);
+
+        BTree->Branch("jet_px", &jet_px);
+        BTree->Branch("jet_py", &jet_py);
+        BTree->Branch("jet_pz", &jet_pz);
+        BTree->Branch("jet_e", &jet_e);
+
+        BTree->Branch("HF_px", &HF_px);
+        BTree->Branch("HF_py", &HF_py);
+        BTree->Branch("HF_pz", &HF_pz);
+        BTree->Branch("HF_e", &HF_e);
+        BTree->Branch("HF_pt", &HF_pt);
+
+        BTree->Branch("Bu_IPCHI2", &Bu_IPCHI2);
+        BTree->Branch("Bu_CHI2", &Bu_CHI2);
+        BTree->Branch("Bu_CHI2NDOF", &Bu_CHI2NDOF);
+
+        BTree->Branch("mum_px", &mum_px);
+        BTree->Branch("mum_py", &mum_py);
+        BTree->Branch("mum_pz", &mum_pz);
+        BTree->Branch("mum_e", &mum_e);
+        BTree->Branch("mum_IPCHI2", &mum_IPCHI2);
+        BTree->Branch("mum_CHI2NDOF", &mum_CHI2NDOF);
+        BTree->Branch("mum_GHOSTPROB", &mum_GHOSTPROB);
+
+        BTree->Branch("mup_px", &mup_px);
+        BTree->Branch("mup_py", &mup_py);
+        BTree->Branch("mup_pz", &mup_pz);
+        BTree->Branch("mup_e", &mup_e);
+        BTree->Branch("mup_IPCHI2", &mup_IPCHI2);
+        BTree->Branch("mup_CHI2NDOF", &mup_CHI2NDOF);
+        BTree->Branch("mup_GHOSTPROB", &mup_GHOSTPROB);
+
+        BTree->Branch("K_px", &K_px);
+        BTree->Branch("K_py", &K_py);
+        BTree->Branch("K_pz", &K_pz);
+        BTree->Branch("K_e", &K_e);
+        BTree->Branch("K_p", &K_p);
+        BTree->Branch("K_eta", &K_eta);
+        BTree->Branch("K_IPCHI2", &K_IPCHI2);
+        BTree->Branch("K_CHI2NDOF", &K_CHI2NDOF);
+        BTree->Branch("K_GHOSTPROB", &K_GHOSTPROB);
+        BTree->Branch("k_ipchi2", &k_ipchi2);
+
+        BTree->Branch("nTracks", &nTracks);
+        BTree->Branch("nSPDHits", &nSPDHits);
+
+        BTree->Branch("Jpsi_px", &Jpsi_px);
+        BTree->Branch("Jpsi_py", &Jpsi_py);
+        BTree->Branch("Jpsi_pz", &Jpsi_pz);
+        BTree->Branch("Jpsi_e", &Jpsi_e);
+        BTree->Branch("Jpsi_FDCHI2", &Jpsi_FDCHI2);
+        BTree->Branch("Jpsi_BPVDLS", &Jpsi_BPVDLS);    
+        BTree->Branch("Jpsi_CHI2", &Jpsi_CHI2);
+        BTree->Branch("Jpsi_CHI2NDOF", &Jpsi_CHI2NDOF);
+        BTree->Branch("jpsi_ipchi2", &jpsi_ipchi2);
+
+        BTree->Branch("nSV", &nSV);
+        BTree->Branch("sv_mass", &sv_mass);
+        BTree->Branch("sv_chi2", &sv_chi2);
+        BTree->Branch("sv_ntrks", &sv_ntrks);
+        BTree->Branch("sv_cosine", &sv_cosine);
+        
+        BTree->Branch("bmass_dtf", &bmass_dtf);
+        BTree->Branch("chi2ndf_dtf", &chi2ndf_dtf);
+        BTree->Branch("tau_dtf", &tau_dtf);
+        BTree->Branch("NumBHads_tr", &NumBHads_tr);
+        BTree->Branch("K_PIDK", &K_PIDK);
+        BTree->Branch("pideff_K", &pideff_K);
+        BTree->Branch("pideff_mum", &pideff_mum);
+        BTree->Branch("pideff_mup", &pideff_mup);
+        BTree->Branch("pideff_K_err", &pideff_K_err);
+        BTree->Branch("pideff_mum_err", &pideff_mum_err);
+        BTree->Branch("pideff_mup_err", &pideff_mup_err);
+
+        BTree->Branch("trkeff_ratio_K", &trkeff_ratio_K);
+        BTree->Branch("trkeff_ratio_mup", &trkeff_ratio_mup);
+        BTree->Branch("trkeff_ratio_mum", &trkeff_ratio_mum);
+
+        BTree->Branch("trkeff_ratio_K_errhi", &trkeff_ratio_K_errhi);
+        BTree->Branch("trkeff_ratio_mup_errhi", &trkeff_ratio_mup_errhi);
+        BTree->Branch("trkeff_ratio_mum_errhi", &trkeff_ratio_mum_errhi);
+        BTree->Branch("trkeff_ratio_K_errlo", &trkeff_ratio_K_errlo);
+        BTree->Branch("trkeff_ratio_mup_errlo", &trkeff_ratio_mup_errlo);
+        BTree->Branch("trkeff_ratio_mum_errlo", &trkeff_ratio_mum_errlo);
+
+        BTree->Branch("trigeff_Data", &trigeff_Data);
+        BTree->Branch("trigeff_MC", &trigeff_MC);
+        BTree->Branch("trigeff_ratio", &trigeff_ratio);
+
+        BTree->Branch("mup_L0", &mup_L0);
+        BTree->Branch("mum_L0", &mum_L0);
+        
+        BTree->Branch("jpsi_L0", &jpsi_L0);
+        BTree->Branch("jpsi_L0Muon", &jpsi_L0Muon);
+        BTree->Branch("jpsi_L0DiMuon", &jpsi_L0DiMuon);
+        
+        BTree->Branch("jpsi_Hlt1", &jpsi_Hlt1);
+        BTree->Branch("jpsi_Hlt2", &jpsi_Hlt2);
+        BTree->Branch("jpsi_Hlt2_Detached", &jpsi_Hlt2_Detached);
+        
+        BTree->Branch("Trig", &Trig);
+        BTree->Branch("TIS", &TIS);
+        BTree->Branch("TOS", &TOS);
+        
+        BTree->Branch("WTA_reco_dist", &WTA_reco_dist);
+
+        // Event loop
+        unsigned long long last_eventNum = 0;
+        int events = 0;
+
+        TRandom3 *myRNG = new TRandom3();
+
+        TLorentzVector HFjet, recojet, tr_truthjet, HFmeson, mup, mum, Jpsi, Kmeson;
+        TLorentzVector h1, h2;
+                
+        ClusterSequence WTA_reco_jets;
+        PseudoJet WTA_reco_jet;
+                
+        for (int ev = 0; ev < NumEvts; ev++) {
+                pair_rl.clear();
+                pair_weight.clear();
+                pair_chargeprod.clear();
+                
+                jetdtrs.clear();
+                
+                Tree.GetEntry(ev);
+
+                if (ev%10000 == 0) {
+                        double percentage = 100.*ev/NumEvts;
+                        std::cout<<"\r"<<percentage<<"\% jets processed."<< std::flush;
+                }
+
+                if (ev != 0)
+                        if (Tree.eventNumber == last_eventNum)
+                                continue;
+                
+                if (Tree.nPVs > 1)
+                        continue;
+                
+                bool WrongB = false;
+                
+                for (int h1_index = 0; h1_index < Tree.Jet_Dtr_nrecodtr; h1_index++) {
+                        if (std::abs(Tree.Jet_Dtr_ID[h1_index]) == HF_pdgcode) {
+                                if (std::abs(Tree.Jet_Dtr_E[h1_index] - Tree.Bu_PE) / (Tree.Bu_PE) > 0.001)
+                                        WrongB = true;
+                        
+                                break;
+                        }
+                }
+                
+                // EFMC: B meson in the jet daughters has to be the same as the one reconstructed by DaVinci (possible exp.)
+                if (WrongB)
+                        continue;
+
+                // Ibrahim trigger lines
+                mup_L0 = -999; // Tree.mup_L0MuonDecision_TOS || Tree.mup_L0DiMuonDecision_TOS;
+                mum_L0 = -999; // Tree.mum_L0MuonDecision_TOS || Tree.mum_L0DiMuonDecision_TOS;
+        
+                jpsi_L0       = Tree.Jpsi_L0MuonDecision_TOS || Tree.Jpsi_L0DiMuonDecision_TOS;
+                jpsi_L0Muon   = Tree.Jpsi_L0MuonDecision_TOS;
+                jpsi_L0DiMuon = Tree.Jpsi_L0DiMuonDecision_TOS;
+
+                jpsi_Hlt1          = Tree.Jpsi_Hlt1DiMuonHighMassDecision_TOS;
+                jpsi_Hlt2          = Tree.Jpsi_Hlt2DiMuonJPsiHighPTDecision_TOS;
+                jpsi_Hlt2_Detached = Tree.Jpsi_Hlt2DiMuonDetachedJPsiDecision_TOS;
+        
+                TIS = (Tree.Jpsi_L0Global_TIS && Tree.Jpsi_Hlt1Global_TIS && Tree.Jpsi_Hlt2Global_TIS);
+                TOS = jpsi_L0 && jpsi_Hlt1 && jpsi_Hlt2;
+
+                if (!TOS)
+                        continue;
+
+                HFjet.SetPxPyPzE(Tree.Jet_PX / 1000.,
+                                 Tree.Jet_PY / 1000.,
+                                 Tree.Jet_PZ / 1000.,
+                                 Tree.Jet_PE / 1000.);
+
+                if (!apply_jet_cuts(HFjet.Rapidity(), HFjet.Pt()))
+                        continue;
+                                
+                mup.SetPxPyPzE(Tree.mup_PX / 1000., 
+                               Tree.mup_PY / 1000., 
+                               Tree.mup_PZ / 1000., 
+                               Tree.mup_PE / 1000.);
+
+                if (!apply_muon_cuts(mup.Pt()))
+                        continue;
+                
+                mum.SetPxPyPzE(Tree.mum_PX / 1000., 
+                               Tree.mum_PY / 1000., 
+                               Tree.mum_PZ / 1000., 
+                               Tree.mum_PE / 1000.);
+
+                if (!apply_muon_cuts(mum.Pt()))
+                        continue;
+                
+                Kmeson.SetPxPyPzE(Tree.K_PX / 1000., 
+                                  Tree.K_PY / 1000., 
+                                  Tree.K_PZ / 1000., 
+                                  Tree.K_PE / 1000.);
+
+                if (!apply_kaon_cuts(Kmeson.Pt()))
+                        continue;
+
+                Jpsi.SetPxPyPzE(Tree.Jpsi_PX / 1000., 
+                                Tree.Jpsi_PY / 1000., 
+                                Tree.Jpsi_PZ / 1000., 
+                                Tree.Jpsi_PE / 1000.);
+                
+                HFmeson = mup + mum + Kmeson;
+
+                if (DoJESJER) {
+                        const int n_iters = n_smearing_iter;
+                        
+                        for (int i_iter = 0; i_iter < n_iters; i_iter++) {
+                                double rand = get_JES_JER(HFjet.Pt(), myRNG);  // Standard inclusive Z+jet values
+                                // double rand = get_JES_JER(HFjet.Pt(), myRNG, DoJESJER);  // Low-multiplicity Z+jet values
+                                
+                                // Temp subtraction of HFmeson to perform JESJER.
+                                HFjet -= HFmeson;
+                                
+                                //double newE2 = HFjet.E()*HFjet.E() + (rand*rand - 1) * HFjet.Pt()*HFjet.Pt();
+                                double newE2 = HFjet.E()*HFjet.E() + (rand*rand - 1) * HFjet.P()*HFjet.P();
+                                double newE = (newE2 < 0) ? 0 : std::sqrt(newE2);
+
+                                HFjet.SetPxPyPzE(HFjet.Px()*rand, HFjet.Py()*rand, HFjet.Pz()*rand, newE);
+                                
+                                HFjet += HFmeson;
+                        }
+                }
+
+                if (DoJetID) {
+                        double mpt = 0;
+                        double mtf = 0;
+                        
+                        int num_trk  = 0;
+                        int num_neut = 0;
+                        int num_part = 0;
+                        
+                        for (int h1_index = 0; h1_index < Tree.Jet_Dtr_nrecodtr; h1_index++) {
+                                if (std::abs(Tree.Jet_Dtr_ThreeCharge[h1_index]) == 0)
+                                        num_neut++;
+                                else
+                                        num_trk++;
+                        }
+
+                        if (num_trk < 2)
+                                continue;
+                }
+
+
+                bmass_dtf   = Tree.Bu_ConsBu_M[0] / 1000.;
+                chi2ndf_dtf = Tree.Bu_ConsBu_chi2[0] / Tree.Bu_ConsBu_nDOF[0];
+                tau_dtf     = Tree.Bu_ConsBu_ctau[0];
+
+                nSV         = Tree.Jet_SVTag_Nvertices;
+                jpsi_ipchi2 = log10(Tree.Jpsi_IPCHI2_OWNPV);
+                k_ipchi2    = (Tree.K_IPCHI2_OWNPV);
+
+                float leading_pT = 0;
+
+                int n_maxpT_cand  = -999;
+                int n_maxpT_entry = -999;
+                int n_HFpt_entry  = -999;
+                int HF_counter    = 0;
+
+                bool hasHFhadron = false;
+
+                int NumBHads = 0;
+
+                // Loop to determine the reclustering particles
+                for (int h1_index = 0; h1_index < Tree.Jet_Dtr_nrecodtr; h1_index++) {
+                        float h1_chi2ndf = Tree.Jet_Dtr_TrackChi2[h1_index] / Tree.Jet_Dtr_TrackNDF[h1_index];
+                        float h1_charge  = Tree.Jet_Dtr_ThreeCharge[h1_index] / 3.;
+
+                        h1.SetPxPyPzE(Tree.Jet_Dtr_PX[h1_index] / 1000.,
+                                      Tree.Jet_Dtr_PY[h1_index] / 1000.,
+                                      Tree.Jet_Dtr_PZ[h1_index] / 1000.,
+                                      Tree.Jet_Dtr_E[h1_index] / 1000.);
+                        
+                        if (std::abs(Tree.Jet_Dtr_ID[h1_index]) != HF_pdgcode && 
+                            !apply_particle_cuts(h1.P(), 
+                                                 h1.Pt(), 
+                                                 h1_chi2ndf, 
+                                                 Tree.Jet_Dtr_ProbNNghost[h1_index], 
+                                                 h1.Rapidity()))
+                                continue;
+
+                        jetdtrs.push_back(PseudoJet(Tree.Jet_Dtr_PX[h1_index] / 1000.,
+                                                    Tree.Jet_Dtr_PY[h1_index] / 1000.,
+                                                    Tree.Jet_Dtr_PZ[h1_index] / 1000.,
+                                                    Tree.Jet_Dtr_E[h1_index] / 1000.));
+                        
+                        jetdtrs.back().set_user_info(new MyInfo(Tree.Jet_Dtr_ID[h1_index]));
+                        
+                        if (std::abs(Tree.Jet_Dtr_ID[h1_index]) == HF_pdgcode) {
+                                HFmeson.SetPxPyPzE(h1.Px(), h1.Py(), h1.Pz(), h1.E());
+
+                                hasHFhadron = true;
+                                NumBHads++;
+                        }
+                }
+
+                if (!hasHFhadron)
+                        continue;
+
+                // Loop to determine the hadronic pairs
+                for (int h1_index = 0; h1_index < Tree.Jet_Dtr_nrecodtr; h1_index++) {
+                        if (std::abs(Tree.Jet_Dtr_ID[h1_index]) < 100)
+                                continue;
+
+                        float h1_chi2ndf = Tree.Jet_Dtr_TrackChi2[h1_index] / Tree.Jet_Dtr_TrackNDF[h1_index];
+                        float h1_charge  = Tree.Jet_Dtr_ThreeCharge[h1_index] / 3.;
+
+                        h1.SetPxPyPzE(Tree.Jet_Dtr_PX[h1_index] / 1000.,
+                                      Tree.Jet_Dtr_PY[h1_index] / 1000.,
+                                      Tree.Jet_Dtr_PZ[h1_index] / 1000.,
+                                      Tree.Jet_Dtr_E[h1_index] / 1000.);
+                        
+                        if (std::abs(Tree.Jet_Dtr_ID[h1_index]) != HF_pdgcode && 
+                            !apply_chargedparticle_cuts(h1_charge,
+                                                        h1.P(), 
+                                                        h1.Pt(), 
+                                                        h1_chi2ndf, 
+                                                        Tree.Jet_Dtr_ProbNNghost[h1_index], 
+                                                        h1.Rapidity()))
+                                continue;
+
+                        for (int h2_index = h1_index + 1; h2_index < Tree.Jet_Dtr_nrecodtr; h2_index++) {
+                                if (std::abs(Tree.Jet_Dtr_ID[h2_index]) < 100)
+                                        continue;
+
+                                float h2_chi2ndf = Tree.Jet_Dtr_TrackChi2[h2_index] / Tree.Jet_Dtr_TrackNDF[h2_index];
+                                float h2_charge  = Tree.Jet_Dtr_ThreeCharge[h2_index] / 3.;
+
+                                h2.SetPxPyPzE(Tree.Jet_Dtr_PX[h2_index] / 1000.,
+                                              Tree.Jet_Dtr_PY[h2_index] / 1000.,
+                                              Tree.Jet_Dtr_PZ[h2_index] / 1000.,
+                                              Tree.Jet_Dtr_E[h2_index] / 1000.);
+                                
+                                if (std::abs(Tree.Jet_Dtr_ID[h2_index]) != HF_pdgcode && 
+                                    !apply_chargedparticle_cuts(h2_charge,
+                                                                h2.P(), 
+                                                                h2.Pt(), 
+                                                                h2_chi2ndf, 
+                                                                Tree.Jet_Dtr_ProbNNghost[h2_index], 
+                                                                h2.Rapidity()))
+                                        continue;
+
+                                pair_rl.push_back(h2.DeltaR(h1, true));
+                                pair_weight.push_back(h1.Pt() * h2.Pt() / (HFjet.Pt() * HFjet.Pt()));
+                                pair_chargeprod.push_back(h1_charge * h2_charge);
+                        }
+                }
+
+                TVector3 HF_meson = HFmeson.Vect();
+                TVector3 HF_jet   = HFjet.Vect();
+
+                // Check WTA Reco
+                WTA_reco_jets = ClusterSequence(jetdtrs, WTA);
+
+                WTA_reco_jet = sorted_by_pt(WTA_reco_jets.inclusive_jets())[0];
+                
+                WTA_reco_axis.SetPxPyPzE(WTA_reco_jet.px(), WTA_reco_jet.py(), WTA_reco_jet.pz(), WTA_reco_jet.e());
+                WTA_reco_dist = HFmeson.DeltaR(WTA_reco_axis, true);
+                
+                jet_pt  = HFjet.Pt();
+                jet_eta = HFjet.Eta();
+                jet_rap = HFjet.Rapidity();
+                
+                jet_px = HFjet.Px();
+                jet_py = HFjet.Py();
+                jet_pz = HFjet.Pz();
+                jet_e  = HFjet.E();
+                
+                HF_px = HFmeson.Px();
+                HF_py = HFmeson.Py();
+                HF_pz = HFmeson.Pz();
+                HF_e  = HFmeson.E();
+                HF_pt = HFmeson.Pt();
+
+                Bu_CHI2NDOF = Tree.Bu_ENDVERTEX_CHI2 / Tree.Bu_ENDVERTEX_NDOF;
+                Bu_IPCHI2   = Tree.Bu_IPCHI2_OWNPV;
+                Bu_CHI2     = Tree.Bu_ENDVERTEX_CHI2;
+                // Bu_CHI2 = Tree.Bu_OWNPV_CHI2;
+                
+                mum_px = mum.Px();
+                mum_py = mum.Py();
+                mum_pz = mum.Pz();
+                mum_e  = mum.E();
+                
+                mum_CHI2NDOF  = Tree.mum_TRACK_CHI2NDOF;
+                mum_GHOSTPROB = Tree.mum_TRACK_GhostProb;
+                mum_IPCHI2    = Tree.mum_IPCHI2_OWNPV;
+
+                mup_px = mup.Px();
+                mup_py = mup.Py();
+                mup_pz = mup.Pz();
+                mup_e  = mup.E();
+                
+                mup_CHI2NDOF  = Tree.mup_TRACK_CHI2NDOF;
+                mup_GHOSTPROB = Tree.mup_TRACK_GhostProb;
+                mup_IPCHI2    = Tree.mup_IPCHI2_OWNPV;
+
+                K_px  = Kmeson.Px();
+                K_py  = Kmeson.Py();
+                K_pz  = Kmeson.Pz();
+                K_e   = Kmeson.E();
+                K_p   = Kmeson.P() * 1000; // DUDE WHAT
+                K_eta = Kmeson.Eta();
+                
+                K_CHI2NDOF  = Tree.K_TRACK_CHI2NDOF;
+                K_GHOSTPROB = Tree.K_TRACK_GhostProb;
+                K_IPCHI2    = Tree.K_IPCHI2_OWNPV;
+                K_PIDK      = Tree.K_PIDK;
+
+                Jpsi_px = Jpsi.Px();
+                Jpsi_py = Jpsi.Py();
+                Jpsi_pz = Jpsi.Pz();
+                Jpsi_e  = Jpsi.E();
+
+                Jpsi_CHI2NDOF = Tree.Jpsi_ENDVERTEX_CHI2 / Tree.Jpsi_ENDVERTEX_NDOF;
+                Jpsi_IPCHI2   = Tree.Jpsi_IPCHI2_OWNPV;
+                Jpsi_CHI2     = Tree.Jpsi_ENDVERTEX_CHI2;
+                Jpsi_FDCHI2   = Tree.Jpsi_FDCHI2_OWNPV;
+                Jpsi_BPVDLS   = Tree.Jpsi_BPVDLS;
+                
+                nTracks  = Tree.nTracks;
+                nSPDHits = Tree.nSPDHits;
+
+                sv_mass   = Tree.Jet_SVTag_SigMaxMass / 1000.;
+                sv_chi2   = log10(Tree.Jet_SVTag_SigMaxVtxChi2NDF);
+                sv_ntrks  = Tree.Jet_SVTag_SigMaxNtracks;
+                sv_cosine = Tree.Jet_SVTag_SigMaxDirAngleS2S;
+
+                if (h3_pideff_K_P_ETA_nTracks != NULL && h2_ratio_trkeff_P_ETA != NULL) {
+                        float p_K   = (Kmeson.P() >= 400) ? 399 * 1e3 : Kmeson.P() * 1e3;
+                        float p_mum = (mum.P() >= 400) ? 399 * 1e3 : mum.P() * 1e3;
+                        float p_mup = (mup.P() >= 400) ? 399 * 1e3 : mup.P() * 1e3;
+                        p_K   = (p_K <= 4000.) ? 4000.1 : p_K;
+                        p_mum = (p_mum <= 4000.) ? 4000.1 : p_mum;
+                        p_mup = (p_mup <= 4000.) ? 4000.1 : p_mup;
+
+                        float eta_K   = (Kmeson.Eta() >= 4.5) ? 4.4 : Kmeson.Eta();
+                        float eta_mum = (mum.Eta() >= 4.5) ? 4.4 : mum.Eta();
+                        float eta_mup = (mup.Eta() >= 4.5) ? 4.4 : mup.Eta();
+                        eta_K   = (eta_K <= 2.) ? 2.1 : eta_K;
+                        eta_mum = (eta_mum <= 2.) ? 2.1 : eta_mum;
+                        eta_mup = (eta_mup <= 2.) ? 2.1 : eta_mup;
+
+                        int nTracks_new = (nTracks >= 500) ? 400 : nTracks;
+
+                        pideff_K   = h3_pideff_K_P_ETA_nTracks->GetBinContent(h3_pideff_K_P_ETA_nTracks->GetXaxis()->FindBin(p_K), 
+                                                                                h3_pideff_K_P_ETA_nTracks->GetYaxis()->FindBin(eta_K), 
+                                                                                h3_pideff_K_P_ETA_nTracks->GetZaxis()->FindBin(nTracks_new));
+                        
+                        pideff_mup = h3_pideff_Mu_P_ETA_nTracks->GetBinContent(h3_pideff_Mu_P_ETA_nTracks->GetXaxis()->FindBin(p_mup), 
+                                                                               h3_pideff_Mu_P_ETA_nTracks->GetYaxis()->FindBin(eta_mup), 
+                                                                               h3_pideff_Mu_P_ETA_nTracks->GetZaxis()->FindBin(nTracks_new));
+                        
+                        pideff_mum = h3_pideff_Mu_P_ETA_nTracks->GetBinContent(h3_pideff_Mu_P_ETA_nTracks->GetXaxis()->FindBin(p_mum), 
+                                                                               h3_pideff_Mu_P_ETA_nTracks->GetYaxis()->FindBin(eta_mum), 
+                                                                               h3_pideff_Mu_P_ETA_nTracks->GetZaxis()->FindBin(nTracks_new));
+
+                        pideff_K_err   = h3_pideff_K_P_ETA_nTracks->GetBinError(h3_pideff_K_P_ETA_nTracks->GetXaxis()->FindBin(p_K), 
+                                                                                h3_pideff_K_P_ETA_nTracks->GetYaxis()->FindBin(eta_K), 
+                                                                                h3_pideff_K_P_ETA_nTracks->GetZaxis()->FindBin(nTracks_new));
+
+                        pideff_mup_err = h3_pideff_Mu_P_ETA_nTracks->GetBinError(h3_pideff_Mu_P_ETA_nTracks->GetXaxis()->FindBin(p_mup), 
+                                                                                 h3_pideff_Mu_P_ETA_nTracks->GetYaxis()->FindBin(eta_mup), 
+                                                                                 h3_pideff_Mu_P_ETA_nTracks->GetZaxis()->FindBin(nTracks_new));
+
+                        pideff_mum_err = h3_pideff_Mu_P_ETA_nTracks->GetBinError(h3_pideff_Mu_P_ETA_nTracks->GetXaxis()->FindBin(p_mum),
+                                                                                 h3_pideff_Mu_P_ETA_nTracks->GetYaxis()->FindBin(eta_mum), 
+                                                                                 h3_pideff_Mu_P_ETA_nTracks->GetZaxis()->FindBin(nTracks_new));
+
+                        // cout << pideff_mum << ", " << pideff_mup << ", " << pideff_mum_err << ", " << pideff_mup_err << endl;
+                        // if (pideff_mum == 0)
+                        //     cout << p_mum << ", " << eta_mum << ", " << nTracks_new << endl;
+                        
+                        trkeff_ratio_K   = h2_ratio_trkeff_P_ETA->GetBinContent(h2_ratio_trkeff_P_ETA->GetXaxis()->FindBin(p_K), 
+                                                                                h2_ratio_trkeff_P_ETA->GetYaxis()->FindBin(eta_K));
+                        
+                        trkeff_ratio_mup = h2_ratio_trkeff_P_ETA_Muon->GetBinContent(h2_ratio_trkeff_P_ETA_Muon->GetXaxis()->FindBin(p_mup), 
+                                                                                     h2_ratio_trkeff_P_ETA_Muon->GetYaxis()->FindBin(eta_mup));
+                        
+                        trkeff_ratio_mum = h2_ratio_trkeff_P_ETA_Muon->GetBinContent(h2_ratio_trkeff_P_ETA_Muon->GetXaxis()->FindBin(p_mum), 
+                                                                                     h2_ratio_trkeff_P_ETA_Muon->GetYaxis()->FindBin(eta_mum));
+                        
+                        // double trkeff_K_DATA = h2_ratio_trkeff_P_ETA_DATA->GetBinContent(h2_ratio_trkeff_P_ETA_DATA->GetXaxis()->FindBin(p_K), h2_ratio_trkeff_P_ETA_DATA->GetYaxis()->FindBin(eta_K));
+                        // double trkeff_K_MC = h2_ratio_trkeff_P_ETA_MC->GetBinContent(h2_ratio_trkeff_P_ETA_MC->GetXaxis()->FindBin(p_K), h2_ratio_trkeff_P_ETA_MC->GetYaxis()->FindBin(eta_K));
+                        // cout << trkeff_ratio_K << ", " << trkeff_K_DATA / trkeff_K_MC << ", " << trkeff_K_MC / trkeff_K_DATA << endl;
+
+                        trkeff_ratio_K_errhi   = h2_ratio_trkeff_P_ETA_ERRHI->GetBinContent(h2_ratio_trkeff_P_ETA_ERRHI->GetXaxis()->FindBin(p_K), 
+                                                                                            h2_ratio_trkeff_P_ETA_ERRHI->GetYaxis()->FindBin(eta_K));
+                        
+                        trkeff_ratio_mup_errhi = h2_ratio_trkeff_P_ETA_Muon_ERRHI->GetBinContent(h2_ratio_trkeff_P_ETA_Muon_ERRHI->GetXaxis()->FindBin(p_mup), 
+                                                                                                 h2_ratio_trkeff_P_ETA_Muon_ERRHI->GetYaxis()->FindBin(eta_mup));
+                        
+                        trkeff_ratio_mum_errhi = h2_ratio_trkeff_P_ETA_Muon_ERRHI->GetBinContent(h2_ratio_trkeff_P_ETA_Muon_ERRHI->GetXaxis()->FindBin(p_mum), 
+                                                                                                 h2_ratio_trkeff_P_ETA_Muon_ERRHI->GetYaxis()->FindBin(eta_mum));
+
+                        trkeff_ratio_K_errlo   = h2_ratio_trkeff_P_ETA_ERRLO->GetBinContent(h2_ratio_trkeff_P_ETA_ERRLO->GetXaxis()->FindBin(p_K), 
+                                                                                            h2_ratio_trkeff_P_ETA_ERRLO->GetYaxis()->FindBin(eta_K));
+                        
+                        trkeff_ratio_mup_errlo = h2_ratio_trkeff_P_ETA_Muon_ERRLO->GetBinContent(h2_ratio_trkeff_P_ETA_Muon_ERRLO->GetXaxis()->FindBin(p_mup),
+                                                                                                 h2_ratio_trkeff_P_ETA_Muon_ERRLO->GetYaxis()->FindBin(eta_mup));
+                        
+                        trkeff_ratio_mum_errlo = h2_ratio_trkeff_P_ETA_Muon_ERRLO->GetBinContent(h2_ratio_trkeff_P_ETA_Muon_ERRLO->GetXaxis()->FindBin(p_mum), 
+                                                                                                 h2_ratio_trkeff_P_ETA_Muon_ERRLO->GetYaxis()->FindBin(eta_mum));
+
+                        if (Kmeson.P() > 100 && Kmeson.P() < 200 && Kmeson.Eta() < 2.5)
+                                trkeff_ratio_K_errhi = trkeff_ratio_K_errlo = 0.04;
+                        
+                        if (Kmeson.P() < 10 && Kmeson.Eta() > 3.6)
+                                trkeff_ratio_K_errhi = trkeff_ratio_K_errlo = 0.06;
+                        
+                        if (pideff_K == 0 || trkeff_ratio_K == 0 || trkeff_ratio_mup == 0 || trkeff_ratio_mum == 0) {
+                                cout << pideff_K << ", " << trkeff_ratio_K << ", " << trkeff_ratio_mup << ", " << trkeff_ratio_mum << endl;
+                                cout << p_K << ", " << eta_K << endl;
+                                cout << p_mup << ", " << eta_mup << endl;
+                                cout << p_mum << ", " << eta_mum << endl;
+                                cout << nTracks << endl;
+                        }
+                } else {
+                        std::cout << "input histograms not found! Tracking and pid efficiencies being set to 1.0." << std::endl;
+
+                        pideff_K = pideff_mum = pideff_mup = trkeff_ratio_K = trkeff_ratio_mup = trkeff_ratio_mum = 1.0;
+                }
+                
+                last_eventNum = Tree.eventNumber;
+                eventNumber   = Tree.eventNumber;
+
+                events++;
+
+                BTree->Fill();
+        }
+
+        cout << "Number of saved events = " << events << endl;
+        f.Write();
+        f.Close();
+
+        benchmark->Show("MakeVarTreeData");
+}

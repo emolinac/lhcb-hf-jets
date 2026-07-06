@@ -87,4 +87,8 @@ double weight(double h1_E, double h2_E, double jet_E);
 
 void smooth_nominal_phase_space(TH1F* h_to_smooth, TH1F* h_nominal_phase_space);
 
+double map_jetpt_HFpt(double jet_pt, double HF_pt);
+
+void integrate_mapped_HFpt(TH3D* h, TH3D* h_integrated);
+
 #endif

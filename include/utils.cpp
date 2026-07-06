@@ -570,3 +570,48 @@ void smooth_nominal_phase_space(TH1F* h_to_smooth, TH1F* h_nominal_phase_space)
                 h_to_smooth->SetBinError(bin, h_nominal_phase_space->GetBinError(bin - 1));
         }
 }
+
+double map_jetpt_HFpt(double jet_pt, double HF_pt)
+{
+        double x = 0;
+        double y = 0;
+
+        for (int i = 0 ; i < ptbinsize ; i++) {
+                if (jet_pt > pt_binedges[i] && jet_pt < pt_binedges[i + 1]) {
+                        x = i + 1;
+
+                        break;
+                }
+        }
+
+        for (int i = 0 ; i < ptHFbinsize ; i++) {
+                if (HF_pt > ptHF_binedges[i] && HF_pt < ptHF_binedges[i + 1]) {
+                        y = i + 1;
+
+                        break;
+                }
+        }
+
+        double bin_center = (y > 9) ? x * 100 + y : x * 10 + y;
+
+        return bin_center + .5;
+}
+
+void integrate_mapped_HFpt(TH3D* h, TH3D* h_integrated)
+{
+        for (int i = 1 ; i <= h->GetNbinsX() ; i++) {
+                for (int k = 1 ; k <= h->GetNbinsZ() ; k++) {
+                        for (int j = 1 ; j <= h->GetNbinsY() ; j++) {
+                                int bin_code = h->GetYaxis()->GetBinCenter(j) - 0.5;
+
+                                double code_length = std::to_string(std::abs((int) bin_code)).length();
+
+                                double jetpt_bin = (code_length == 3) ? bin_code / 100 : bin_code / 10;
+                                
+                                double original_content = h_integrated->GetBinContent(i, jetpt_bin, k);
+
+                                h_integrated->SetBinContent(i, jetpt_bin, k, original_content + h->GetBinContent(i, j, k));
+                        }
+                }
+        }
+}

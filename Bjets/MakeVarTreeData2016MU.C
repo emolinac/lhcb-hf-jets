@@ -13,106 +13,61 @@
 #include "../include/analysis-cuts.cpp"
 #include "../include/analysis-cuts.h"
 #include "../include/directories.h"
-#include "../include/TBJetsData.h"
-#include "../include/TBJetsData.C"
+#include "../include/TBJetsData2016MU.h"
+#include "../include/TBJetsData2016MU.C"
 
 using namespace fastjet;
 using namespace std;
 
-void MakeVarTreeData(int NumEvts_user = -1,
-                     int year = 6, // 2016
-                     int Mag = 1, // 1 up, -1 down
-                     bool DoJESJER = false,
-                     bool DoJetID = false,
-                     bool L0MuonDiMuon = false)
+void MakeVarTreeData2016MU(bool DoJESJER = false, bool DoJetID = false)
 {
         TBenchmark* benchmark = new TBenchmark();
         benchmark->Start("MakeVarTreeData");
 
-        int NumEvts      = NumEvts_user;
-        int NumEvtsTruth = NumEvts_user;
-        
         int HF_pdgcode = 521;
 
         TString str_followHard = "_HF";
         TString str_flavor     = "_b";
         TString str_level      = "data";
 
-        TString str_year = "2016";
-        if (year == 6)
-                str_year = "2016";
-        else if (year == 7)
-                str_year = "2017";
-        else if (year == 8)
-                str_year = "2018";
-
-        TString str_Mag = "";
-        if (Mag == -1)
-                str_Mag = "_MD";
-        else if (Mag == 1)
-                str_Mag = "_MU";
-        
-        TString str_L0 = "";
-        if (L0MuonDiMuon)
-                str_L0 = "_L0MuonDiMuon";
-
-        TString extension = TString("tree_") + str_level + Form("_ev_%d", NumEvts) + Form("_eta_%.1f%.1f", etaMin, etaMax) + 
-                            str_followHard + str_Mag + str_flavor + str_L0;
-        
-        if (DoJESJER)
-                extension = TString("JESJER_") + extension;
-        if (DoJetID)
-                extension = TString("jetid_") + extension;
-
         ////////////////////////////////////////////////////
         ///              Tracking and PID
         //////////////////////////////////////////////////
         TString eff_path = TString( "./efficiencies/");
         
-        TString extension_pideffK       = "effhists-Turbo" + str_year + str_Mag + "-K-Brunel_DLLK>0-P.ETA.nTracks_Brunel";
-        TString extension_pideffMu      = "effhists-Turbo" + str_year + str_Mag + "-Mu-IsMuon&Brunel_DLLmu>0-P.ETA.nTracks_Brunel";
-        TString extension_trackeff      = "trackEff_" + str_year + "_Ratio_Full_Long_method";
-        TString extension_trackeff_Muon = "trackEff_Muon_" + str_year + "_Ratio_Full_Long_method";
-        TString extension_trackeff_Data = "trackEff_" + str_year + "_Data_Full_Long_method";
-        TString extension_trackeff_MC   = "trackEff_" + str_year + "_MC_Full_Long_method";
+        TFile* file_trackeff      = new TFile(eff_path + "TrackEff/trackEff_2016_Ratio_Full_Long_method.root"     , "READ");
+        TFile* file_trackeff_Muon = new TFile(eff_path + "TrackEff/trackEff_Muon_2016_Ratio_Full_Long_method.root", "READ");
+        TFile* file_trackeff_Data = new TFile(eff_path + "TrackEff/trackEff_2016_Data_Full_Long_method.root"      , "READ");
+        TFile* file_trackeff_MC   = new TFile(eff_path + "TrackEff/trackEff_2016_MC_Full_Long_method.root"        , "READ");
         
-        TFile file_trackeff(eff_path+ "TrackEff/" + extension_trackeff + ".root", "READ");
-        TFile file_trackeff_Muon(eff_path+ "TrackEff/" + extension_trackeff_Muon + ".root", "READ");
-        TFile file_trackeff_Data(eff_path+ "TrackEff/" + extension_trackeff_Data + ".root", "READ");
-        TFile file_trackeff_MC(eff_path+ "TrackEff/" + extension_trackeff_MC + ".root", "READ");
-        TFile file_pideffK(eff_path + "PIDEff/" + extension_pideffK + ".root", "READ");
-        TFile file_pideffMu(eff_path + "PIDEff/" + extension_pideffMu + ".root", "READ");
+        TFile* file_pideffK       = new TFile(eff_path + "PIDEff/effhists-Turbo2016_MU-K-Brunel_DLLK>0-P.ETA.nTracks_Brunel.root", "READ");
+        TFile* file_pideffMu      = new TFile(eff_path + "PIDEff/effhists-Turbo2016_MU-Mu-IsMuon&Brunel_DLLmu>0-P.ETA.nTracks_Brunel.root", "READ");
 
-        std::cout << extension_pideffK << std::endl;
-        std::cout << extension_pideffMu << std::endl;
-        std::cout << extension_trackeff << std::endl;
+        TH2D* h2_ratio_trkeff_P_ETA_Muon       = (TH2D*) file_trackeff_Muon->Get("hP_ETA");
+        TH2D* h2_ratio_trkeff_P_ETA_Muon_ERRHI = (TH2D*) file_trackeff_Muon->Get("hP_ETA_errhi");
+        TH2D* h2_ratio_trkeff_P_ETA_Muon_ERRLO = (TH2D*) file_trackeff_Muon->Get("hP_ETA_errlo");
 
-        TH2D* h2_ratio_trkeff_P_ETA_Muon       = (TH2D *)file_trackeff_Muon.Get("hP_ETA");
-        TH2D* h2_ratio_trkeff_P_ETA_Muon_ERRHI = (TH2D *)file_trackeff_Muon.Get("hP_ETA_errhi");
-        TH2D* h2_ratio_trkeff_P_ETA_Muon_ERRLO = (TH2D *)file_trackeff_Muon.Get("hP_ETA_errlo");
+        TH2D* h2_ratio_trkeff_P_ETA       = (TH2D*) file_trackeff->Get("hP_ETA");
+        TH2D* h2_ratio_trkeff_P_ETA_DATA  = (TH2D*) file_trackeff_Data->Get("hP_ETA");
+        TH2D* h2_ratio_trkeff_P_ETA_MC    = (TH2D*) file_trackeff_MC->Get("hP_ETA");
+        TH2D* h2_ratio_trkeff_P_ETA_ERRHI = (TH2D*) file_trackeff->Get("hP_ETA_errhi");
+        TH2D* h2_ratio_trkeff_P_ETA_ERRLO = (TH2D*) file_trackeff->Get("hP_ETA_errlo");
 
-        TH2D* h2_ratio_trkeff_P_ETA       = (TH2D *)file_trackeff.Get("hP_ETA");
-        TH2D* h2_ratio_trkeff_P_ETA_DATA  = (TH2D *)file_trackeff_Data.Get("hP_ETA");
-        TH2D* h2_ratio_trkeff_P_ETA_MC    = (TH2D *)file_trackeff_MC.Get("hP_ETA");
-        TH2D* h2_ratio_trkeff_P_ETA_ERRHI = (TH2D *)file_trackeff.Get("hP_ETA_errhi");
-        TH2D* h2_ratio_trkeff_P_ETA_ERRLO = (TH2D *)file_trackeff.Get("hP_ETA_errlo");
-        TH3D* h3_pideff_K_P_ETA_nTracks   = (TH3D *)file_pideffK.Get("eff_Brunel_DLLK>0");
-        TH3D* h3_pideff_Mu_P_ETA_nTracks  = (TH3D *)file_pideffMu.Get("eff_IsMuon&Brunel_DLLmu>0");
+        TH3D* h3_pideff_K_P_ETA_nTracks   = (TH3D*) file_pideffK->Get("eff_Brunel_DLLK>0");
+        TH3D* h3_pideff_Mu_P_ETA_nTracks  = (TH3D*) file_pideffMu->Get("eff_IsMuon&Brunel_DLLmu>0");
 
         //////////////////////////////////////////////////
         ///              Trigger
         ////////////////////////////////////////////////
         TString extension_RootFilesTrig = TString("./efficiencies/TrigEff/");
         
-        TString extension_trig_MC   = "PhotonHadronElectronTIS_jpsieff_reco_ev_-1_b_PID_91599.root";
-        TString extension_trig_Data = "PhotonHadronElectronTIS_jpsieff_data_ev_-1_b_PID_91599.root";
+        TFile* file_trigeffMC   = new TFile(extension_RootFilesTrig + "PhotonHadronElectronTIS_jpsieff_reco_ev_-1_b_PID_91599.root", "READ");
+        TFile* file_trigeffData = new TFile(extension_RootFilesTrig + "PhotonHadronElectronTIS_jpsieff_data_ev_-1_b_PID_91599.root", "READ");
 
-        TFile file_trigeffMC(extension_RootFilesTrig + extension_trig_MC, "READ");
-        TFile file_trigeffData(extension_RootFilesTrig + extension_trig_Data, "READ");
+        TH2D* h2_trigeff_Data  = (TH2D*) file_trigeffData->Get("efficiency_Jpsiptrap");
+        TH2D* h2_trigeff_MC    = (TH2D*) file_trigeffMC->Get("efficiency_Jpsiptrap");
 
-        TH2D* h2_trigeff_Data  = (TH2D *)file_trigeffData.Get("efficiency_Jpsiptrap");
-        TH2D* h2_trigeff_MC    = (TH2D *)file_trigeffMC.Get("efficiency_Jpsiptrap");
-        TH2D *h2_trigeff_ratio = (TH2D *)h2_trigeff_Data->Clone("h2_trigeff_ratio");
+        TH2D *h2_trigeff_ratio = (TH2D*) h2_trigeff_Data->Clone("h2_trigeff_ratio");
         
         h2_trigeff_ratio->Divide(h2_trigeff_MC);
 
@@ -128,12 +83,11 @@ void MakeVarTreeData(int NumEvts_user = -1,
 
         TLorentzVector WTA_reco_axis;
                 
-        TBJetsData Tree;
+        TBJetsData2016MU Tree;
         
-        if (NumEvts == -1)
-                NumEvts = Tree.fChain->GetEntries();
+        double NumEvts = Tree.fChain->GetEntries();
         
-        TFile f((output_folder + "ntuple_bjets_data.root").c_str(), "RECREATE");
+        TFile f((output_folder + "ntuple_bjets_data_2016_MU.root").c_str(), "RECREATE");
         
         TH1F *h1_TIS    = new TH1F("h1_TIS"   , "", ptJpsibinsize, ptJpsi_binedges);
         TH1F *h1_TISTOS = new TH1F("h1_TISTOS", "", ptJpsibinsize, ptJpsi_binedges);
@@ -301,7 +255,6 @@ void MakeVarTreeData(int NumEvts_user = -1,
         unsigned long long last_eventNum = 0;
         int events = 0;
 
-        int ev_min = 0;
         TRandom3 *myRNG = new TRandom3();
 
         TLorentzVector HFjet, recojet, tr_truthjet, HFmeson, mup, mum, Jpsi, Kmeson;
@@ -310,7 +263,7 @@ void MakeVarTreeData(int NumEvts_user = -1,
         ClusterSequence WTA_reco_jets;
         PseudoJet WTA_reco_jet;
                 
-        for (int ev = ev_min; ev < NumEvts + ev_min; ev++) {
+        for (int ev = 0; ev < NumEvts; ev++) {
                 pair_rl.clear();
                 pair_weight.clear();
                 pair_chargeprod.clear();
