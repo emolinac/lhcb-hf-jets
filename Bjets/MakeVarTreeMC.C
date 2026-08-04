@@ -53,7 +53,7 @@ void MakeVarTreeMC(int NumEvts_user = -1)
         JetDefinition jet_def(cambridge_algorithm, JetDefinition::max_allowable_R);
         JetDefinition WTA(cambridge_algorithm, JetDefinition::max_allowable_R, WTA_pt_scheme);
 
-        vector<float> pair_rl, pair_weight, pair_chargeprod;
+        vector<float> pair_rl, pair_weight, pair_chargeprod, pair_has_hf;
         
         vector<PseudoJet> jetdtrs, meas_jetdtrs;
 
@@ -119,6 +119,7 @@ void MakeVarTreeMC(int NumEvts_user = -1)
         BTree->Branch("pair_rl"        , &pair_rl);
         BTree->Branch("pair_weight"    , &pair_weight);
         BTree->Branch("pair_chargeprod", &pair_chargeprod);
+        BTree->Branch("pair_has_hf"    , &pair_has_hf);
         
         BTree->Branch("jet_pt", &jet_pt);
         BTree->Branch("jet_eta", &jet_eta);
@@ -228,6 +229,7 @@ void MakeVarTreeMC(int NumEvts_user = -1)
                 pair_rl.clear();
                 pair_weight.clear();
                 pair_chargeprod.clear();
+                pair_has_hf.clear();
                 
                 jetdtrs.clear();
                 meas_jetdtrs.clear();
@@ -459,6 +461,11 @@ void MakeVarTreeMC(int NumEvts_user = -1)
                                 pair_rl.push_back(h2.DeltaR(h1, true));
                                 pair_weight.push_back(h1.Pt() * h2.Pt() / (HFjet.Pt() * HFjet.Pt()));
                                 pair_chargeprod.push_back(h1_charge * h2_charge);
+
+                                double is_hfpair = (std::abs(Tree.MCJet_Dtr_ID[h1_index]) == HF_pdgcode ||
+                                                    std::abs(Tree.MCJet_Dtr_ID[h2_index]) == HF_pdgcode) ? 1 : 0;
+
+                                pair_has_hf.push_back(is_hfpair);
                         }
                 }
 

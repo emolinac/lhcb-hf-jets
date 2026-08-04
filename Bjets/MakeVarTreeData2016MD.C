@@ -126,7 +126,7 @@ void MakeVarTreeData2016MD(bool DoJESJER = false, bool DoJetID = false)
         float trkeff_ratio_K_errlo(1.0), trkeff_ratio_mup_errlo(1.0), trkeff_ratio_mum_errlo(1.0);
         float trigeff_Data(1.0), trigeff_MC(1.0), trigeff_ratio(1.0);
         
-        vector<float> pair_rl, pair_weight, pair_chargeprod;
+        vector<float> pair_rl, pair_weight, pair_chargeprod, pair_has_hf;
         
         float sv_mass, sv_chi2, sv_cosine, sv_ntrks;
         
@@ -141,6 +141,7 @@ void MakeVarTreeData2016MD(bool DoJESJER = false, bool DoJetID = false)
         BTree->Branch("pair_rl"        , &pair_rl);
         BTree->Branch("pair_weight"    , &pair_weight);
         BTree->Branch("pair_chargeprod", &pair_chargeprod);
+        BTree->Branch("pair_has_hf"    , &pair_has_hf);
         
         BTree->Branch("jet_pt", &jet_pt);
         BTree->Branch("jet_eta", &jet_eta);
@@ -267,6 +268,7 @@ void MakeVarTreeData2016MD(bool DoJESJER = false, bool DoJetID = false)
                 pair_rl.clear();
                 pair_weight.clear();
                 pair_chargeprod.clear();
+                pair_has_hf.clear();
                 
                 jetdtrs.clear();
                 
@@ -497,6 +499,11 @@ void MakeVarTreeData2016MD(bool DoJESJER = false, bool DoJetID = false)
                                 pair_rl.push_back(h2.DeltaR(h1, true));
                                 pair_weight.push_back(h1.Pt() * h2.Pt() / (HFjet.Pt() * HFjet.Pt()));
                                 pair_chargeprod.push_back(h1_charge * h2_charge);
+
+                                double is_hfpair = (std::abs(Tree.Jet_Dtr_ID[h1_index]) == HF_pdgcode ||
+                                                    std::abs(Tree.Jet_Dtr_ID[h2_index]) == HF_pdgcode) ? 1 : 0;
+
+                                pair_has_hf.push_back(is_hfpair);
                         }
                 }
 

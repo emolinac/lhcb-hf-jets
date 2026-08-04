@@ -188,9 +188,9 @@ void MakeVarTreeMCReco(int NumEvts_user = -1,
         float trkeff_ratio_K_errlo(1.0), trkeff_ratio_mup_errlo(1.0), trkeff_ratio_mum_errlo(1.0);
         float trigeff_Data(1.0), trigeff_MC(1.0), trigeff_ratio(1.0);
         
-        vector<float> pair_rl, pair_weight, pair_chargeprod;
-        vector<float> truthmatched_pair_rl, truthmatched_pair_weight;
-        vector<float> true_pair_rl, true_pair_weight, true_pair_chargeprod;
+        vector<float> pair_rl, pair_weight, pair_chargeprod, pair_has_hf;
+        vector<float> truthmatched_pair_rl, truthmatched_pair_weight, truthmatched_pair_has_hf;
+        vector<float> true_pair_rl, true_pair_weight, true_pair_chargeprod, true_pair_has_hf;
                 
         float sv_mass, sv_chi2, sv_cosine, sv_ntrks;
         int SVTag;
@@ -208,13 +208,16 @@ void MakeVarTreeMCReco(int NumEvts_user = -1,
         BTree->Branch("pair_rl"        , &pair_rl);
         BTree->Branch("pair_weight"    , &pair_weight);
         BTree->Branch("pair_chargeprod", &pair_chargeprod);
+        BTree->Branch("pair_has_hf"    , &pair_has_hf);
         
         BTree->Branch("truthmatched_pair_rl"    , &truthmatched_pair_rl);
         BTree->Branch("truthmatched_pair_weight", &truthmatched_pair_weight);
+        BTree->Branch("truthmatched_pair_has_hf", &truthmatched_pair_has_hf);
         
         BTree->Branch("true_pair_rl"        , &true_pair_rl);
         BTree->Branch("true_pair_weight"    , &true_pair_weight);
         BTree->Branch("true_pair_chargeprod", &true_pair_chargeprod);
+        BTree->Branch("true_pair_has_hf"    , &true_pair_has_hf);
         
         BTree->Branch("jet_pt", &jet_pt);
         BTree->Branch("jet_eta", &jet_eta);
@@ -398,13 +401,16 @@ void MakeVarTreeMCReco(int NumEvts_user = -1,
                 pair_rl.clear();
                 pair_weight.clear();
                 pair_chargeprod.clear();
+                pair_has_hf.clear();
 
                 truthmatched_pair_rl.clear();
                 truthmatched_pair_weight.clear();
+                truthmatched_pair_has_hf.clear();
                 
                 true_pair_rl.clear();
                 true_pair_weight.clear();
                 true_pair_chargeprod.clear();
+                true_pair_has_hf.clear();
 
                 jetdtrs.clear();
                 true_jetdtrs.clear();
@@ -726,13 +732,24 @@ void MakeVarTreeMCReco(int NumEvts_user = -1,
                                 pair_weight.push_back(h1.Pt() * h2.Pt() / (HFjet.Pt() * HFjet.Pt()));
                                 pair_chargeprod.push_back(h1_charge * h2_charge);
 
+                                double is_hfpair = (std::abs(Tree.Jet_Dtr_ID[h1_index]) == HF_pdgcode ||
+                                                    std::abs(Tree.Jet_Dtr_ID[h2_index]) == HF_pdgcode) ? 1 : 0;
+
+                                pair_has_hf.push_back(is_hfpair);
+
                                 // EFMC: for purities it will be required that the following quantities are different than -999
                                 if (key1_match == 0 || key2_match == 0) {
                                         truthmatched_pair_rl.push_back(-999);
                                         truthmatched_pair_weight.push_back(-999);
+                                        truthmatched_pair_has_hf.push_back(-999);
                                 } else {
                                         truthmatched_pair_rl.push_back(true_h2.DeltaR(true_h1, true));
                                         truthmatched_pair_weight.push_back(true_h1.Pt() * true_h2.Pt() / (tr_HFjet.Pt() * tr_HFjet.Pt()));
+
+                                        double is_truthmatched_hfpair = (std::abs(Tree.Jet_Dtr_TRUE_ID[h1_index]) == HF_pdgcode ||
+                                                                         std::abs(Tree.Jet_Dtr_TRUE_ID[h2_index]) == HF_pdgcode) ? 1 : 0;
+
+                                        truthmatched_pair_has_hf.push_back(is_truthmatched_hfpair);
                                 }
 
                         }
@@ -823,6 +840,11 @@ void MakeVarTreeMCReco(int NumEvts_user = -1,
                                 true_pair_rl.push_back(h2_matchtruthjet.DeltaR(h1_matchtruthjet, true));
                                 true_pair_weight.push_back(h1_matchtruthjet.Pt() * h2_matchtruthjet.Pt() / (tr_HFjet.Pt() * tr_HFjet.Pt()));
                                 true_pair_chargeprod.push_back(h1_charge * h2_charge);
+
+                                double is_true_hfpair = (std::abs(Tree.Jet_mcjet_dtrID[h1_index]) == HF_pdgcode ||
+                                                         std::abs(Tree.Jet_mcjet_dtrID[h2_index]) == HF_pdgcode) ? 1 : 0;
+
+                                true_pair_has_hf.push_back(is_true_hfpair);
                         }
                 } // End of MC loop
 
@@ -916,7 +938,7 @@ void MakeVarTreeMCReco(int NumEvts_user = -1,
                 K_py = Kmeson.Py();
                 K_pz = Kmeson.Pz();
                 K_e  = Kmeson.E();
-                K_p  = Kmeson.P() * 1000; // DUDE WHAT
+                K_p  = Kmeson.P() * 1000; // Note: what ?!
                 K_eta = Kmeson.Eta();
                 
                 K_CHI2NDOF  = Tree.K_TRACK_CHI2NDOF;
