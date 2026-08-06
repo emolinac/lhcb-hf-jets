@@ -82,14 +82,25 @@ void MCSimpleObservables(int NumEvts = -1)
         TH3D* h_npair_eqcharge_mc = new TH3D("h_npair_eqcharge_mc", "", nbin_rl_nominal_unfolding, unfolding_rl_nominal_binning, ptbinsize, pt_binedges, nbin_weight, weight_binning);
         TH3D* h_npair_opcharge_mc = new TH3D("h_npair_opcharge_mc", "", nbin_rl_nominal_unfolding, unfolding_rl_nominal_binning, ptbinsize, pt_binedges, nbin_weight, weight_binning);
 
+        TH3D* h_npair_whf_mc  = new TH3D("h_npair_whf_mc" , "", nbin_rl_nominal_unfolding, unfolding_rl_nominal_binning, ptbinsize, pt_binedges, nbin_weight, weight_binning);
+        TH3D* h_npair_wohf_mc = new TH3D("h_npair_wohf_mc", "", nbin_rl_nominal_unfolding, unfolding_rl_nominal_binning, ptbinsize, pt_binedges, nbin_weight, weight_binning);
+        
         TH2D* h_eec_mc_rl_jetpt          = new TH2D("h_eec_mc_rl_jetpt"         , "", nbin_rl_nominal_unfolding, unfolding_rl_nominal_binning, ptbinsize, pt_binedges);
         TH2D* h_eec_eqcharge_mc_rl_jetpt = new TH2D("h_eec_eqcharge_mc_rl_jetpt", "", nbin_rl_nominal_unfolding, unfolding_rl_nominal_binning, ptbinsize, pt_binedges);
         TH2D* h_eec_opcharge_mc_rl_jetpt = new TH2D("h_eec_opcharge_mc_rl_jetpt", "", nbin_rl_nominal_unfolding, unfolding_rl_nominal_binning, ptbinsize, pt_binedges);
 
+        TH2D* h_eec_whf_mc_rl_jetpt  = new TH2D("h_eec_whf_mc_rl_jetpt" , "", nbin_rl_nominal_unfolding, unfolding_rl_nominal_binning, ptbinsize, pt_binedges);
+        TH2D* h_eec_wohf_mc_rl_jetpt = new TH2D("h_eec_wohf_mc_rl_jetpt", "", nbin_rl_nominal_unfolding, unfolding_rl_nominal_binning, ptbinsize, pt_binedges);
+        
+
         TH1F* hmc_eec[ptbinsize]; 
+        TH1F* hmc_whf_eec[ptbinsize]; 
+        TH1F* hmc_wohf_eec[ptbinsize]; 
         TH1F* hmc_eqcheec[ptbinsize]; 
         TH1F* hmc_neqcheec[ptbinsize]; 
         TH1F* hmc_npair[ptbinsize]; 
+        TH1F* hmc_whf_npair[ptbinsize]; 
+        TH1F* hmc_wohf_npair[ptbinsize]; 
 
         std::cout<<"Histos defined"<<std::endl;
 
@@ -127,7 +138,7 @@ void MCSimpleObservables(int NumEvts = -1)
         bool isSingle_tr_Bjet;
         bool isPhoton_tr_Bjet;
 
-        vector<float> *pair_rl = 0, *pair_weight = 0, *pair_chargeprod = 0;
+        vector<float> *pair_rl = 0, *pair_weight = 0, *pair_chargeprod = 0, *pair_has_hf = 0;
 
         double WTA_true_dist;
         double WTA_reco_dist;
@@ -137,6 +148,7 @@ void MCSimpleObservables(int NumEvts = -1)
         BTree->SetBranchAddress("pair_rl"        , &pair_rl);
         BTree->SetBranchAddress("pair_weight"    , &pair_weight);
         BTree->SetBranchAddress("pair_chargeprod", &pair_chargeprod);
+        BTree->SetBranchAddress("pair_has_hf"    , &pair_has_hf);
         
         BTree->SetBranchAddress("jet_pt", &jet_pt);
         BTree->SetBranchAddress("jet_eta", &jet_eta);
@@ -303,6 +315,7 @@ void MCSimpleObservables(int NumEvts = -1)
                         float *rl_info         = pair_rl->data();
                         float *weight_info     = pair_weight->data();
                         float *chargeprod_info = pair_chargeprod->data();
+                        float *has_hf_info     = pair_has_hf->data();
                         
                         for(int vector_index = 0 ; vector_index < vector_size ; vector_index++) {
                                 h_npair_mc->Fill(rl_info[vector_index], HFjet.Pt(), weight_info[vector_index]);
@@ -311,6 +324,11 @@ void MCSimpleObservables(int NumEvts = -1)
                                         h_npair_eqcharge_mc->Fill(rl_info[vector_index], HFjet.Pt(), weight_info[vector_index]);
                                 else if (chargeprod_info[vector_index] < 0)
                                         h_npair_opcharge_mc->Fill(rl_info[vector_index], HFjet.Pt(), weight_info[vector_index]);
+
+                                if (has_hf_info[vector_index] == 1)
+                                        h_npair_whf_mc->Fill(rl_info[vector_index], HFjet.Pt(), weight_info[vector_index]);
+                                else
+                                        h_npair_wohf_mc->Fill(rl_info[vector_index], HFjet.Pt(), weight_info[vector_index]);
                         }
                 }
 
@@ -321,33 +339,59 @@ void MCSimpleObservables(int NumEvts = -1)
         // Operate the EEC related plots
         
         apply_unfolded_weights(h_npair_mc, h_eec_mc_rl_jetpt);
+        apply_unfolded_weights(h_npair_whf_mc, h_eec_whf_mc_rl_jetpt);
+        apply_unfolded_weights(h_npair_wohf_mc, h_eec_wohf_mc_rl_jetpt);
         apply_unfolded_weights(h_npair_eqcharge_mc, h_eec_eqcharge_mc_rl_jetpt);
         apply_unfolded_weights(h_npair_opcharge_mc, h_eec_opcharge_mc_rl_jetpt);
 
-        TH2D* h_npair_mc_rl_jetpt = (TH2D*) h_npair_mc->Project3D("yx");
+        TH2D* h_npair_mc_rl_jetpt      = (TH2D*) h_npair_mc->Project3D("yx");
+        TH2D* h_npair_whf_mc_rl_jetpt  = (TH2D*) h_npair_whf_mc->Project3D("yx");
+        TH2D* h_npair_wohf_mc_rl_jetpt = (TH2D*) h_npair_wohf_mc->Project3D("yx");
 
         for (int bin = 0 ; bin < ptbinsize ; bin++) {
                 // Pseudodata operations
                 hmc_eec[bin]      = new TH1F(Form("hmc_eec%i",bin)     , "", nbin_rl_nominal_unfolding,unfolding_rl_nominal_binning);
+                hmc_whf_eec[bin]  = new TH1F(Form("hmc_whf_eec%i",bin) , "", nbin_rl_nominal_unfolding,unfolding_rl_nominal_binning);
+                hmc_wohf_eec[bin] = new TH1F(Form("hmc_wohf_eec%i",bin), "", nbin_rl_nominal_unfolding,unfolding_rl_nominal_binning);
+                
                 hmc_eqcheec[bin]  = new TH1F(Form("hmc_eqcheec%i",bin) , "", nbin_rl_nominal_unfolding, unfolding_rl_nominal_binning);
                 hmc_neqcheec[bin] = new TH1F(Form("hmc_neqcheec%i",bin), "", nbin_rl_nominal_unfolding, unfolding_rl_nominal_binning);
-                hmc_npair[bin]    = new TH1F(Form("hmc_npair%i",bin)   , "", nbin_rl_nominal_unfolding,unfolding_rl_nominal_binning);
+                
+                hmc_npair[bin]      = new TH1F(Form("hmc_npair%i",bin)     , "", nbin_rl_nominal_unfolding,unfolding_rl_nominal_binning);
+                hmc_whf_npair[bin]  = new TH1F(Form("hmc_whf_npair%i",bin) , "", nbin_rl_nominal_unfolding,unfolding_rl_nominal_binning);
+                hmc_wohf_npair[bin] = new TH1F(Form("hmc_wohf_npair%i",bin), "", nbin_rl_nominal_unfolding,unfolding_rl_nominal_binning);
                 
                 set_histogram_style(hmc_eec[bin]     , corr_marker_color_jet_pt[bin], std_line_width-1, corr_marker_style_jet_pt[bin], std_marker_size+1);
+                set_histogram_style(hmc_whf_eec[bin] , corr_marker_color_jet_pt[bin], std_line_width-1, corr_marker_style_jet_pt[bin], std_marker_size+1);
+                set_histogram_style(hmc_wohf_eec[bin], corr_marker_color_jet_pt[bin], std_line_width-1, corr_marker_style_jet_pt[bin], std_marker_size+1);
+                
                 set_histogram_style(hmc_eqcheec[bin] , corr_marker_color_jet_pt[bin], std_line_width-1, std_marker_style_jet_pt[bin] , std_marker_size+1);
                 set_histogram_style(hmc_neqcheec[bin], corr_marker_color_jet_pt[bin], std_line_width-1, corr_marker_style_jet_pt[bin], std_marker_size+1);
-                set_histogram_style(hmc_npair[bin]   , corr_marker_color_jet_pt[bin], std_line_width, corr_marker_style_jet_pt[bin], std_marker_size+1);
+                
+                set_histogram_style(hmc_npair[bin]     , corr_marker_color_jet_pt[bin], std_line_width, corr_marker_style_jet_pt[bin], std_marker_size+1);
+                set_histogram_style(hmc_whf_npair[bin] , corr_marker_color_jet_pt[bin], std_line_width, corr_marker_style_jet_pt[bin], std_marker_size+1);
+                set_histogram_style(hmc_wohf_npair[bin], corr_marker_color_jet_pt[bin], std_line_width, corr_marker_style_jet_pt[bin], std_marker_size+1);
 
-                project_nominal_phase_space(h_eec_mc_rl_jetpt          , hmc_eec[bin]     , bin + 1);
+                project_nominal_phase_space(h_eec_mc_rl_jetpt     , hmc_eec[bin]     , bin + 1);
+                project_nominal_phase_space(h_eec_whf_mc_rl_jetpt , hmc_whf_eec[bin] , bin + 1);
+                project_nominal_phase_space(h_eec_wohf_mc_rl_jetpt, hmc_wohf_eec[bin], bin + 1);
+                
                 project_nominal_phase_space(h_eec_eqcharge_mc_rl_jetpt , hmc_eqcheec[bin] , bin + 1);
                 project_nominal_phase_space(h_eec_opcharge_mc_rl_jetpt , hmc_neqcheec[bin], bin + 1);
-                project_nominal_phase_space(h_npair_mc_rl_jetpt        , hmc_npair[bin]   , bin + 1);
+                
+                project_nominal_phase_space(h_npair_mc_rl_jetpt     , hmc_npair[bin]     , bin + 1);
+                project_nominal_phase_space(h_npair_whf_mc_rl_jetpt , hmc_whf_npair[bin] , bin + 1);
+                project_nominal_phase_space(h_npair_wohf_mc_rl_jetpt, hmc_wohf_npair[bin], bin + 1);
 
                 hmc_eqcheec[bin]->Divide(hmc_eec[bin]);
                 hmc_neqcheec[bin]->Divide(hmc_eec[bin]);
 
                 hmc_eec[bin]->Scale(1./h1_jet_pt->GetBinContent(bin + 1),"width");
+                hmc_whf_eec[bin]->Scale(1./h1_jet_pt->GetBinContent(bin + 1),"width");
+                hmc_wohf_eec[bin]->Scale(1./h1_jet_pt->GetBinContent(bin + 1),"width");
                 hmc_npair[bin]->Scale(1./h1_jet_pt->GetBinContent(bin + 1),"width");
+                hmc_whf_npair[bin]->Scale(1./h1_jet_pt->GetBinContent(bin + 1),"width");
+                hmc_wohf_npair[bin]->Scale(1./h1_jet_pt->GetBinContent(bin + 1),"width");
         }
         
         //

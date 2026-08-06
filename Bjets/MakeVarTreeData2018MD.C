@@ -126,7 +126,7 @@ void MakeVarTreeData2018MD(bool DoJESJER = false, bool DoJetID = false)
         float trkeff_ratio_K_errlo(1.0), trkeff_ratio_mup_errlo(1.0), trkeff_ratio_mum_errlo(1.0);
         float trigeff_Data(1.0), trigeff_MC(1.0), trigeff_ratio(1.0);
         
-        vector<float> pair_rl, pair_weight, pair_chargeprod;
+        vector<float> pair_rl, pair_weight, pair_chargeprod, pair_has_hf;
         
         float sv_mass, sv_chi2, sv_cosine, sv_ntrks;
         

@@ -681,6 +681,9 @@ void MakeVarTreeMCReco(int NumEvts_user = -1,
                                 if (std::abs(Tree.Jet_Dtr_ID[h2_index]) < 100)
                                         continue;
 
+                                if (std::abs(Tree.Jet_Dtr_TRUE_ID[h1_index])>100000 || std::abs(Tree.Jet_Dtr_TRUE_ID[h2_index])>100000)
+                                        std::cout<<"Spurious ID"<<std::endl;
+
                                 float h2_chi2ndf = Tree.Jet_Dtr_TrackChi2[h2_index] / Tree.Jet_Dtr_TrackNDF[h2_index];
                                 float h2_charge  = Tree.Jet_Dtr_ThreeCharge[h2_index] / 3.;
 
@@ -742,6 +745,9 @@ void MakeVarTreeMCReco(int NumEvts_user = -1,
                                         truthmatched_pair_rl.push_back(-999);
                                         truthmatched_pair_weight.push_back(-999);
                                         truthmatched_pair_has_hf.push_back(-999);
+
+                                        if (std::abs(Tree.Jet_Dtr_TRUE_ID[h1_index])>100000 || std::abs(Tree.Jet_Dtr_TRUE_ID[h2_index])>100000)
+                                                std::cout<<"Non matched pair has spurious ID"<<std::endl;
                                 } else {
                                         truthmatched_pair_rl.push_back(true_h2.DeltaR(true_h1, true));
                                         truthmatched_pair_weight.push_back(true_h1.Pt() * true_h2.Pt() / (tr_HFjet.Pt() * tr_HFjet.Pt()));
@@ -750,6 +756,9 @@ void MakeVarTreeMCReco(int NumEvts_user = -1,
                                                                          std::abs(Tree.Jet_Dtr_TRUE_ID[h2_index]) == HF_pdgcode) ? 1 : 0;
 
                                         truthmatched_pair_has_hf.push_back(is_truthmatched_hfpair);
+
+                                        if (std::abs(Tree.Jet_Dtr_TRUE_ID[h1_index])>100000 || std::abs(Tree.Jet_Dtr_TRUE_ID[h2_index])>100000)
+                                                std::cout<<"Matched pair has spurious ID"<<std::endl;
                                 }
 
                         }

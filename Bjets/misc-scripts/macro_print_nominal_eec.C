@@ -19,6 +19,8 @@
 
 using namespace std;
 
+int niter_npair = 4;
+
 void macro_print_nominal_eec()
 {
         /////////////////////   Get Files /////////////////////////////////
@@ -95,12 +97,64 @@ void macro_print_nominal_eec()
         
         h3_rl_jetpt_weight_data->Divide(h3_eff_rl_jetpt_weight);
 
+        std::cout << "############################## Unfolding 3D Npair with HF distribution ##############################" << std::endl;
+        
+        // Get all the necessary histograms
+        TH3D *h3_rl_jetpt_weight_truth_whf      = (TH3D*) file_truth->Get("h_npair_whf_mc");
+        TH3D *h3_rl_jetpt_weight_data_whf       = (TH3D*) file_data->Get("h3_rl_jetpt_weight_whf");
+        
+        TH3D *h3_eff_rl_jetpt_weight_whf    = (TH3D *)file_unfold->Get("efficiency_rl_jetpt_weight_whf");
+        TH3D *h3_purity_rl_jetpt_weight_whf = (TH3D *)file_unfold->Get("purity_rl_jetpt_weight_whf");
+        
+        RooUnfoldResponse *response_rl_jetpt_weight_whf = (RooUnfoldResponse *)file_unfold->Get("Roo_response_npair_whf");
+        
+        // Correct the distributions
+        h3_rl_jetpt_weight_data_whf->Multiply(h3_purity_rl_jetpt_weight_whf);
+        
+        RooUnfoldBayes unfold_rl_jetpt_weight_whf(response_rl_jetpt_weight_whf, h3_rl_jetpt_weight_data_whf, niter_npair);
+
+        h3_rl_jetpt_weight_data_whf = (TH3D *)unfold_rl_jetpt_weight_whf.Hreco();
+        
+        h3_rl_jetpt_weight_data_whf->Divide(h3_eff_rl_jetpt_weight_whf);
+
+        std::cout << "############################## Unfolding 3D Npair without HF distribution ##############################" << std::endl;
+        
+        // Get all the necessary histograms
+        TH3D *h3_rl_jetpt_weight_truth_wohf      = (TH3D*) file_truth->Get("h_npair_wohf_mc");
+        TH3D *h3_rl_jetpt_weight_data_wohf       = (TH3D*) file_data->Get("h3_rl_jetpt_weight_wohf");
+        
+        TH3D *h3_eff_rl_jetpt_weight_wohf    = (TH3D *)file_unfold->Get("efficiency_rl_jetpt_weight_wohf");
+        TH3D *h3_purity_rl_jetpt_weight_wohf = (TH3D *)file_unfold->Get("purity_rl_jetpt_weight_wohf");
+        
+        RooUnfoldResponse *response_rl_jetpt_weight_wohf = (RooUnfoldResponse *)file_unfold->Get("Roo_response_npair_wohf");
+        
+        // Correct the distributions
+        h3_rl_jetpt_weight_data_wohf->Multiply(h3_purity_rl_jetpt_weight_wohf);
+        
+        RooUnfoldBayes unfold_rl_jetpt_weight_wohf(response_rl_jetpt_weight_wohf, h3_rl_jetpt_weight_data_wohf, niter_npair);
+
+        h3_rl_jetpt_weight_data_wohf = (TH3D *)unfold_rl_jetpt_weight_wohf.Hreco();
+        
+        h3_rl_jetpt_weight_data_wohf->Divide(h3_eff_rl_jetpt_weight_wohf);
+
         // Calculate EECs from the npair 3D distributions
         TH2D *h2_eec_data  = new TH2D("h2_eec_data" , "", nbin_rl_nominal_unfolding, unfolding_rl_nominal_binning, ptbinsize, pt_binedges);
         TH2D *h2_eec_truth = new TH2D("h2_eec_truth", "", nbin_rl_nominal_unfolding, unfolding_rl_nominal_binning, ptbinsize, pt_binedges);
         
         apply_unfolded_weights(h3_rl_jetpt_weight_data  , h2_eec_data);
         apply_unfolded_weights(h3_rl_jetpt_weight_truth , h2_eec_truth);
+
+        TH2D *h2_eec_data_whf  = new TH2D("h2_eec_data_whf" , "", nbin_rl_nominal_unfolding, unfolding_rl_nominal_binning, ptbinsize, pt_binedges);
+        TH2D *h2_eec_truth_whf = new TH2D("h2_eec_truth_whf", "", nbin_rl_nominal_unfolding, unfolding_rl_nominal_binning, ptbinsize, pt_binedges);
+        
+        apply_unfolded_weights(h3_rl_jetpt_weight_data_whf  , h2_eec_data_whf);
+        apply_unfolded_weights(h3_rl_jetpt_weight_truth_whf , h2_eec_truth_whf);
+
+        TH2D *h2_eec_data_wohf  = new TH2D("h2_eec_data_wohf" , "", nbin_rl_nominal_unfolding, unfolding_rl_nominal_binning, ptbinsize, pt_binedges);
+        TH2D *h2_eec_truth_wohf = new TH2D("h2_eec_truth_wohf", "", nbin_rl_nominal_unfolding, unfolding_rl_nominal_binning, ptbinsize, pt_binedges);
+        
+        apply_unfolded_weights(h3_rl_jetpt_weight_data_wohf  , h2_eec_data_wohf);
+        apply_unfolded_weights(h3_rl_jetpt_weight_truth_wohf , h2_eec_truth_wohf);
 
         // Calculate Npair 2D from the npair 3D distributions
         TH2D *h2_npair_data  = new TH2D("h2_npair_data" , "", nbin_rl_nominal_unfolding, unfolding_rl_nominal_binning, ptbinsize, pt_binedges);
@@ -109,14 +163,46 @@ void macro_print_nominal_eec()
         h2_npair_data  = (TH2D*) h3_rl_jetpt_weight_data->Project3D("yx");
         h2_npair_truth = (TH2D*) h3_rl_jetpt_weight_truth->Project3D("yx");
         
+        TH2D *h2_npair_data_whf  = new TH2D("h2_npair_data_whf" , "", nbin_rl_nominal_unfolding, unfolding_rl_nominal_binning, ptbinsize, pt_binedges);
+        TH2D *h2_npair_truth_whf = new TH2D("h2_npair_truth_whf", "", nbin_rl_nominal_unfolding, unfolding_rl_nominal_binning, ptbinsize, pt_binedges);
+        
+        h2_npair_data_whf  = (TH2D*) h3_rl_jetpt_weight_data_whf->Project3D("yx");
+        h2_npair_truth_whf = (TH2D*) h3_rl_jetpt_weight_truth_whf->Project3D("yx");
+        
+        TH2D *h2_npair_data_wohf  = new TH2D("h2_npair_data_wohf" , "", nbin_rl_nominal_unfolding, unfolding_rl_nominal_binning, ptbinsize, pt_binedges);
+        TH2D *h2_npair_truth_wohf = new TH2D("h2_npair_truth_wohf", "", nbin_rl_nominal_unfolding, unfolding_rl_nominal_binning, ptbinsize, pt_binedges);
+        
+        h2_npair_data_wohf  = (TH2D*) h3_rl_jetpt_weight_data_wohf->Project3D("yx");
+        h2_npair_truth_wohf = (TH2D*) h3_rl_jetpt_weight_truth_wohf->Project3D("yx");
+        
         // Project EECs into 1D histograms
         TH1F* hmc_eec[ptbinsize]; 
         TH1F* hdata_eec[ptbinsize]; 
         TH1F* h_eec_data_truth_ratio[ptbinsize]; 
 
+        TH1F* hdata_eec_corr[ptbinsize]; 
+        TH1F* h_eec_data_truth_ratio_corr[ptbinsize]; 
+
+        TH1F* hmc_eec_whf[ptbinsize]; 
+        TH1F* hdata_eec_whf[ptbinsize]; 
+        TH1F* h_eec_data_truth_ratio_whf[ptbinsize]; 
+
+        TH1F* hmc_eec_wohf[ptbinsize]; 
+        TH1F* hdata_eec_wohf[ptbinsize]; 
+        TH1F* h_eec_data_truth_ratio_wohf[ptbinsize]; 
+
         TH1F* hmc_npair[ptbinsize]; 
         TH1F* hdata_npair[ptbinsize]; 
+        TH1F* hdata_npair_corr[ptbinsize]; 
         TH1F* h_npair_data_truth_ratio[ptbinsize]; 
+
+        TH1F* hmc_npair_whf[ptbinsize]; 
+        TH1F* hdata_npair_whf[ptbinsize]; 
+        TH1F* h_npair_data_truth_ratio_whf[ptbinsize]; 
+
+        TH1F* hmc_npair_wohf[ptbinsize]; 
+        TH1F* hdata_npair_wohf[ptbinsize]; 
+        TH1F* h_npair_data_truth_ratio_wohf[ptbinsize]; 
 
         std::cout<<"Calculating per bin"<<std::endl;
         for (int bin = 0 ; bin < ptbinsize ; bin++) {
@@ -126,9 +212,11 @@ void macro_print_nominal_eec()
                 // EECs
                 hmc_eec[bin]   = new TH1F(Form("hmc_eec%i",bin)  , "", nbin_rl_nominal_unfolding,unfolding_rl_nominal_binning);
                 hdata_eec[bin] = new TH1F(Form("hdata_eec%i",bin), "", nbin_rl_nominal_unfolding,unfolding_rl_nominal_binning);
+                hdata_eec_corr[bin] = new TH1F(Form("hdata_eec_corr%i",bin), "", nbin_rl_nominal_unfolding,unfolding_rl_nominal_binning);
                 
                 set_histogram_style(hmc_eec[bin]  , corr_marker_color_jet_pt[bin], std_line_width-1, corr_marker_style_jet_pt[bin], std_marker_size+1);
                 set_histogram_style(hdata_eec[bin], corr_marker_color_jet_pt[bin], std_line_width, corr_marker_style_jet_pt[bin], std_marker_size+1);
+                set_histogram_style(hdata_eec_corr[bin], corr_marker_color_jet_pt[bin], std_line_width, corr_marker_style_jet_pt[bin], std_marker_size+1);
 
                 project_nominal_phase_space(h2_eec_truth , hmc_eec[bin]  , bin + 1);
                 project_nominal_phase_space(h2_eec_data  , hdata_eec[bin], bin + 1);
@@ -136,12 +224,40 @@ void macro_print_nominal_eec()
                 hmc_eec[bin]->Scale(1./h1_jetpt_truth->GetBinContent(bin + 1),"width");
                 hdata_eec[bin]->Scale(1./h1_jetpt_data->GetBinContent(bin + 1),"width");
 
+                hmc_eec_whf[bin]   = new TH1F(Form("hmc_eec_whf%i",bin)  , "", nbin_rl_nominal_unfolding,unfolding_rl_nominal_binning);
+                hdata_eec_whf[bin] = new TH1F(Form("hdata_eec_whf%i",bin), "", nbin_rl_nominal_unfolding,unfolding_rl_nominal_binning);
+                
+                set_histogram_style(hmc_eec_whf[bin]  , corr_marker_color_jet_pt[bin], std_line_width-1, corr_marker_style_jet_pt[bin], std_marker_size+1);
+                set_histogram_style(hdata_eec_whf[bin], corr_marker_color_jet_pt[bin], std_line_width, corr_marker_style_jet_pt[bin], std_marker_size+1);
+
+                project_nominal_phase_space(h2_eec_truth_whf , hmc_eec_whf[bin]  , bin + 1);
+                project_nominal_phase_space(h2_eec_data_whf  , hdata_eec_whf[bin], bin + 1);
+
+                hmc_eec_whf[bin]->Scale(1./h1_jetpt_truth->GetBinContent(bin + 1),"width");
+                hdata_eec_whf[bin]->Scale(1./h1_jetpt_data->GetBinContent(bin + 1),"width");
+
+                hmc_eec_wohf[bin]   = new TH1F(Form("hmc_eec_wohf%i",bin)  , "", nbin_rl_nominal_unfolding,unfolding_rl_nominal_binning);
+                hdata_eec_wohf[bin] = new TH1F(Form("hdata_eec_wohf%i",bin), "", nbin_rl_nominal_unfolding,unfolding_rl_nominal_binning);
+                
+                set_histogram_style(hmc_eec_wohf[bin]  , corr_marker_color_jet_pt[bin], std_line_width-1, corr_marker_style_jet_pt[bin], std_marker_size+1);
+                set_histogram_style(hdata_eec_wohf[bin], corr_marker_color_jet_pt[bin], std_line_width, corr_marker_style_jet_pt[bin], std_marker_size+1);
+
+                project_nominal_phase_space(h2_eec_truth_wohf , hmc_eec_wohf[bin]  , bin + 1);
+                project_nominal_phase_space(h2_eec_data_wohf  , hdata_eec_wohf[bin], bin + 1);
+
+                hmc_eec_wohf[bin]->Scale(1./h1_jetpt_truth->GetBinContent(bin + 1),"width");
+                hdata_eec_wohf[bin]->Scale(1./h1_jetpt_data->GetBinContent(bin + 1),"width");
+
+                hdata_eec_corr[bin]->Add(hdata_eec_whf[bin], hdata_eec_wohf[bin], 1, 1);
+
                 // Npairs
                 hmc_npair[bin]   = new TH1F(Form("hmc_npair%i",bin)  , "", nbin_rl_nominal_unfolding,unfolding_rl_nominal_binning);
                 hdata_npair[bin] = new TH1F(Form("hdata_npair%i",bin), "", nbin_rl_nominal_unfolding,unfolding_rl_nominal_binning);
+                hdata_npair_corr[bin] = new TH1F(Form("hdata_npair_corr%i",bin), "", nbin_rl_nominal_unfolding,unfolding_rl_nominal_binning);
                 
                 set_histogram_style(hmc_npair[bin]  , corr_marker_color_jet_pt[bin], std_line_width-1, corr_marker_style_jet_pt[bin], std_marker_size+1);
                 set_histogram_style(hdata_npair[bin], corr_marker_color_jet_pt[bin], std_line_width, corr_marker_style_jet_pt[bin], std_marker_size+1);
+                set_histogram_style(hdata_npair_corr[bin], corr_marker_color_jet_pt[bin], std_line_width, corr_marker_style_jet_pt[bin], std_marker_size+1);
 
                 project_nominal_phase_space(h2_npair_truth , hmc_npair[bin]  , bin + 1);
                 project_nominal_phase_space(h2_npair_data  , hdata_npair[bin], bin + 1);
@@ -149,10 +265,48 @@ void macro_print_nominal_eec()
                 hmc_npair[bin]->Scale(1./h1_jetpt_truth->GetBinContent(bin + 1),"width");
                 hdata_npair[bin]->Scale(1./h1_jetpt_data->GetBinContent(bin + 1),"width");
 
+                hmc_npair_whf[bin]   = new TH1F(Form("hmc_npair_whf%i",bin)  , "", nbin_rl_nominal_unfolding,unfolding_rl_nominal_binning);
+                hdata_npair_whf[bin] = new TH1F(Form("hdata_npair_whf%i",bin), "", nbin_rl_nominal_unfolding,unfolding_rl_nominal_binning);
+                
+                set_histogram_style(hmc_npair_whf[bin]  , corr_marker_color_jet_pt[bin], std_line_width-1, corr_marker_style_jet_pt[bin], std_marker_size+1);
+                set_histogram_style(hdata_npair_whf[bin], corr_marker_color_jet_pt[bin], std_line_width, corr_marker_style_jet_pt[bin], std_marker_size+1);
+
+                project_nominal_phase_space(h2_npair_truth_whf , hmc_npair_whf[bin]  , bin + 1);
+                project_nominal_phase_space(h2_npair_data_whf  , hdata_npair_whf[bin], bin + 1);
+
+                hmc_npair_whf[bin]->Scale(1./h1_jetpt_truth->GetBinContent(bin + 1),"width");
+                hdata_npair_whf[bin]->Scale(1./h1_jetpt_data->GetBinContent(bin + 1),"width");
+
+                hmc_npair_wohf[bin]   = new TH1F(Form("hmc_npair_wohf%i",bin)  , "", nbin_rl_nominal_unfolding,unfolding_rl_nominal_binning);
+                hdata_npair_wohf[bin] = new TH1F(Form("hdata_npair_wohf%i",bin), "", nbin_rl_nominal_unfolding,unfolding_rl_nominal_binning);
+                
+                set_histogram_style(hmc_npair_wohf[bin]  , corr_marker_color_jet_pt[bin], std_line_width-1, corr_marker_style_jet_pt[bin], std_marker_size+1);
+                set_histogram_style(hdata_npair_wohf[bin], corr_marker_color_jet_pt[bin], std_line_width, corr_marker_style_jet_pt[bin], std_marker_size+1);
+
+                project_nominal_phase_space(h2_npair_truth_wohf , hmc_npair_wohf[bin]  , bin + 1);
+                project_nominal_phase_space(h2_npair_data_wohf  , hdata_npair_wohf[bin], bin + 1);
+
+                hmc_npair_wohf[bin]->Scale(1./h1_jetpt_truth->GetBinContent(bin + 1),"width");
+                hdata_npair_wohf[bin]->Scale(1./h1_jetpt_data->GetBinContent(bin + 1),"width");
+
+                hdata_npair_corr[bin]->Add(hdata_npair_whf[bin], hdata_npair_wohf[bin], 1, 1);
+
                 hmc_eec[bin]->Write();
                 hdata_eec[bin]->Write();
+                hdata_eec_corr[bin]->Write();
                 hmc_npair[bin]->Write();
                 hdata_npair[bin]->Write();
+                hdata_npair_corr[bin]->Write();
+
+                hmc_eec_whf[bin]->Write();
+                hdata_eec_whf[bin]->Write();
+                hmc_npair_whf[bin]->Write();
+                hdata_npair_whf[bin]->Write();
+
+                hmc_eec_wohf[bin]->Write();
+                hdata_eec_wohf[bin]->Write();
+                hmc_npair_wohf[bin]->Write();
+                hdata_npair_wohf[bin]->Write();
         }
 
         TH1F* hcorr_tau[nbin_jet_pt];        

@@ -96,18 +96,26 @@ void SimpleObservables(bool isData = true,
         TH3D *h3_rl_jetpt_weight       = new TH3D("h3_rl_jetpt_weight"      , "", nbin_rl_nominal_unfolding, unfolding_rl_nominal_binning, ptbinsize, pt_binedges, nbin_weight, weight_binning);
         TH3D *h3_rl_jetpt_weight_eqch  = new TH3D("h3_rl_jetpt_weight_eqch" , "", nbin_rl_nominal_unfolding, unfolding_rl_nominal_binning, ptbinsize, pt_binedges, nbin_weight, weight_binning);
         TH3D *h3_rl_jetpt_weight_neqch = new TH3D("h3_rl_jetpt_weight_neqch", "", nbin_rl_nominal_unfolding, unfolding_rl_nominal_binning, ptbinsize, pt_binedges, nbin_weight, weight_binning);
+        TH3D *h3_rl_jetpt_weight_whf   = new TH3D("h3_rl_jetpt_weight_whf"  , "", nbin_rl_nominal_unfolding, unfolding_rl_nominal_binning, ptbinsize, pt_binedges, nbin_weight, weight_binning);
+        TH3D *h3_rl_jetpt_weight_wohf  = new TH3D("h3_rl_jetpt_weight_wohf" , "", nbin_rl_nominal_unfolding, unfolding_rl_nominal_binning, ptbinsize, pt_binedges, nbin_weight, weight_binning);
 
         TH3D *h3_rl_jetpt_weight_nobgsub       = new TH3D("h3_rl_jetpt_weight_nobgsub"      , "", nbin_rl_nominal_unfolding, unfolding_rl_nominal_binning, ptbinsize, pt_binedges, nbin_weight, weight_binning);
         TH3D *h3_rl_jetpt_weight_nobgsub_eqch  = new TH3D("h3_rl_jetpt_weight_nobgsub_eqch" , "", nbin_rl_nominal_unfolding, unfolding_rl_nominal_binning, ptbinsize, pt_binedges, nbin_weight, weight_binning);
         TH3D *h3_rl_jetpt_weight_nobgsub_neqch = new TH3D("h3_rl_jetpt_weight_nobgsub_neqch", "", nbin_rl_nominal_unfolding, unfolding_rl_nominal_binning, ptbinsize, pt_binedges, nbin_weight, weight_binning);
+        TH3D *h3_rl_jetpt_weight_nobgsub_whf   = new TH3D("h3_rl_jetpt_weight_nobgsub_whf"  , "", nbin_rl_nominal_unfolding, unfolding_rl_nominal_binning, ptbinsize, pt_binedges, nbin_weight, weight_binning);
+        TH3D *h3_rl_jetpt_weight_nobgsub_wohf  = new TH3D("h3_rl_jetpt_weight_nobgsub_wohf" , "", nbin_rl_nominal_unfolding, unfolding_rl_nominal_binning, ptbinsize, pt_binedges, nbin_weight, weight_binning);
 
         TH3D *h3_rl_jetpt_weight_uncorrected       = new TH3D("h3_rl_jetpt_weight_uncorrected"      , "", nbin_rl_nominal_unfolding, unfolding_rl_nominal_binning, ptbinsize, pt_binedges, nbin_weight, weight_binning);
         TH3D *h3_rl_jetpt_weight_uncorrected_eqch  = new TH3D("h3_rl_jetpt_weight_uncorrected_eqch" , "", nbin_rl_nominal_unfolding, unfolding_rl_nominal_binning, ptbinsize, pt_binedges, nbin_weight, weight_binning);
         TH3D *h3_rl_jetpt_weight_uncorrected_neqch = new TH3D("h3_rl_jetpt_weight_uncorrected_neqch", "", nbin_rl_nominal_unfolding, unfolding_rl_nominal_binning, ptbinsize, pt_binedges, nbin_weight, weight_binning);
+        TH3D *h3_rl_jetpt_weight_uncorrected_whf   = new TH3D("h3_rl_jetpt_weight_uncorrected_whf"  , "", nbin_rl_nominal_unfolding, unfolding_rl_nominal_binning, ptbinsize, pt_binedges, nbin_weight, weight_binning);
+        TH3D *h3_rl_jetpt_weight_uncorrected_wohf  = new TH3D("h3_rl_jetpt_weight_uncorrected_wohf" , "", nbin_rl_nominal_unfolding, unfolding_rl_nominal_binning, ptbinsize, pt_binedges, nbin_weight, weight_binning);
 
         TH3D *h3_rl_jetpt_weight_uncorrected_nomasscond       = new TH3D("h3_rl_jetpt_weight_uncorrected_nomasscond"      , "", nbin_rl_nominal_unfolding, unfolding_rl_nominal_binning, ptbinsize, pt_binedges, nbin_weight, weight_binning);
         TH3D *h3_rl_jetpt_weight_uncorrected_nomasscond_eqch  = new TH3D("h3_rl_jetpt_weight_uncorrected_nomasscond_eqch" , "", nbin_rl_nominal_unfolding, unfolding_rl_nominal_binning, ptbinsize, pt_binedges, nbin_weight, weight_binning);
         TH3D *h3_rl_jetpt_weight_uncorrected_nomasscond_neqch = new TH3D("h3_rl_jetpt_weight_uncorrected_nomasscond_neqch", "", nbin_rl_nominal_unfolding, unfolding_rl_nominal_binning, ptbinsize, pt_binedges, nbin_weight, weight_binning);
+        TH3D *h3_rl_jetpt_weight_uncorrected_nomasscond_whf   = new TH3D("h3_rl_jetpt_weight_uncorrected_nomasscond_whf"  , "", nbin_rl_nominal_unfolding, unfolding_rl_nominal_binning, ptbinsize, pt_binedges, nbin_weight, weight_binning);
+        TH3D *h3_rl_jetpt_weight_uncorrected_nomasscond_wohf  = new TH3D("h3_rl_jetpt_weight_uncorrected_nomasscond_wohf" , "", nbin_rl_nominal_unfolding, unfolding_rl_nominal_binning, ptbinsize, pt_binedges, nbin_weight, weight_binning);
         
         TH1D *h1_z_ptHFcut_g5 = new TH1D("z_ptHFcut_g5", ";z;", zbinsize, z_binedges);
         TH1D *h1_z_ptHFcut_l5 = new TH1D("z_ptHFcut_l5", ";z;", zbinsize, z_binedges); 
@@ -126,10 +134,14 @@ void SimpleObservables(bool isData = true,
         TH3D *h3_rl_jetpt_weight_comb       = new TH3D("h3_rl_jetpt_weight_comb"      , "", nbin_rl_nominal_unfolding, unfolding_rl_nominal_binning, ptbinsize, pt_binedges, nbin_weight, weight_binning);
         TH3D *h3_rl_jetpt_weight_comb_eqch  = new TH3D("h3_rl_jetpt_weight_comb_eqch" , "", nbin_rl_nominal_unfolding, unfolding_rl_nominal_binning, ptbinsize, pt_binedges, nbin_weight, weight_binning);
         TH3D *h3_rl_jetpt_weight_comb_neqch = new TH3D("h3_rl_jetpt_weight_comb_neqch", "", nbin_rl_nominal_unfolding, unfolding_rl_nominal_binning, ptbinsize, pt_binedges, nbin_weight, weight_binning);
+        TH3D *h3_rl_jetpt_weight_comb_whf   = new TH3D("h3_rl_jetpt_weight_comb_whf"  , "", nbin_rl_nominal_unfolding, unfolding_rl_nominal_binning, ptbinsize, pt_binedges, nbin_weight, weight_binning);
+        TH3D *h3_rl_jetpt_weight_comb_wohf  = new TH3D("h3_rl_jetpt_weight_comb_wohf" , "", nbin_rl_nominal_unfolding, unfolding_rl_nominal_binning, ptbinsize, pt_binedges, nbin_weight, weight_binning);
 
         TH3D *h3_rl_jetpt_weight_comb_nobkgweight       = new TH3D("h3_rl_jetpt_weight_comb_nobkgweight"      , "", nbin_rl_nominal_unfolding, unfolding_rl_nominal_binning, ptbinsize, pt_binedges, nbin_weight, weight_binning);
         TH3D *h3_rl_jetpt_weight_comb_nobkgweight_eqch  = new TH3D("h3_rl_jetpt_weight_comb_nobkgweight_eqch" , "", nbin_rl_nominal_unfolding, unfolding_rl_nominal_binning, ptbinsize, pt_binedges, nbin_weight, weight_binning);
         TH3D *h3_rl_jetpt_weight_comb_nobkgweight_neqch = new TH3D("h3_rl_jetpt_weight_comb_nobkgweight_neqch", "", nbin_rl_nominal_unfolding, unfolding_rl_nominal_binning, ptbinsize, pt_binedges, nbin_weight, weight_binning);
+        TH3D *h3_rl_jetpt_weight_comb_nobkgweight_whf   = new TH3D("h3_rl_jetpt_weight_comb_nobkgweight_whf"  , "", nbin_rl_nominal_unfolding, unfolding_rl_nominal_binning, ptbinsize, pt_binedges, nbin_weight, weight_binning);
+        TH3D *h3_rl_jetpt_weight_comb_nobkgweight_wohf  = new TH3D("h3_rl_jetpt_weight_comb_nobkgweight_wohf" , "", nbin_rl_nominal_unfolding, unfolding_rl_nominal_binning, ptbinsize, pt_binedges, nbin_weight, weight_binning);
 
         /// ------------------------------------------ END COMBINATORIAL --------------------------------------------- ///
 
@@ -213,7 +225,7 @@ void SimpleObservables(bool isData = true,
         float trkeff_ratio_K_errlo(1.0), trkeff_ratio_mup_errlo(1.0), trkeff_ratio_mum_errlo(1.0);
         float trigeff_Data(1.0), trigeff_MC(1.0), trigeff_ratio(1.0);
         
-        vector<float> *pair_rl = 0, *pair_weight = 0, *pair_chargeprod = 0;
+        vector<float> *pair_rl = 0, *pair_weight = 0, *pair_chargeprod = 0, *pair_has_hf = 0;
 
         double WTA_dist;
         
@@ -224,6 +236,7 @@ void SimpleObservables(bool isData = true,
         BTree->SetBranchAddress("pair_rl"        , &pair_rl);
         BTree->SetBranchAddress("pair_weight"    , &pair_weight);
         BTree->SetBranchAddress("pair_chargeprod", &pair_chargeprod);
+        BTree->SetBranchAddress("pair_has_hf"    , &pair_has_hf);
 
         BTree->SetBranchAddress("dtr_pt", &dtr_pt);
         BTree->SetBranchAddress("dtr_rap", &dtr_rap);
@@ -437,8 +450,9 @@ void SimpleObservables(bool isData = true,
                 Jpsi = mup + mum;
                 float HF_eta = HFmeson.Eta();
 
-                double event_weight = 1.0;
-                double jet_weight   = 1.0;
+                double event_whf_weight  = 1.0;
+                double event_wohf_weight = 1.0;
+                double jet_weight        = 1.0;
 
                 float reweight = 1.0;
                 float bkg_weight = h1_BkgScale != NULL ? h1_BkgScale->GetBinContent(h1_BkgScale->FindBin(HFmeson.Pt())) : 1.0;
@@ -619,21 +633,26 @@ void SimpleObservables(bool isData = true,
                         continue;
 
                 if (isData){
-                        event_weight = jet_reconstruction_pur / (jet_reconstruction_eff * trkeff_ratio_K * trkeff_ratio_mum * trkeff_ratio_mup * pideff_mum * pideff_mup * trigeff_ratio);
-                        jet_weight   = 1. / (trkeff_ratio_K * trkeff_ratio_mum * trkeff_ratio_mup * pideff_mum * pideff_mup * trigeff_ratio);
+                        event_whf_weight  = jet_reconstruction_pur / (jet_reconstruction_eff * trkeff_ratio_K * trkeff_ratio_mum * trkeff_ratio_mup * pideff_mum * pideff_mup * trigeff_ratio);
+                        event_wohf_weight = jet_reconstruction_pur / (jet_reconstruction_eff);
+                        jet_weight        = 1. / (trkeff_ratio_K * trkeff_ratio_mum * trkeff_ratio_mup * pideff_mum * pideff_mup * trigeff_ratio);
                 } else {
-                        event_weight = jet_reconstruction_pur / jet_reconstruction_eff;
+                        event_whf_weight  = jet_reconstruction_pur / jet_reconstruction_eff;
+                        event_wohf_weight = jet_reconstruction_pur / jet_reconstruction_eff;
                         jet_weight   = 1.;
                 }
                 
-                if (std::isinf(event_weight) || std::isnan(event_weight))
-                        event_weight = jet_reconstruction_pur / jet_reconstruction_eff;
+                if (std::isinf(event_whf_weight) || std::isnan(event_whf_weight))
+                        event_whf_weight = jet_reconstruction_pur / jet_reconstruction_eff;
+
+                // if (std::isinf(event_wohf_weight) || std::isnan(event_wohf_weight))
+                //         event_wohf_weight = jet_reconstruction_pur / jet_reconstruction_eff;
 
                 if (std::isinf(jet_weight) || std::isnan(jet_weight))
                         jet_weight = 1.0;
 
                 if (PID_cut && isData) {
-                        event_weight *= (1. / (pideff_K));
+                        event_whf_weight *= (1. / (pideff_K));
                         jet_weight   *= (1. / (pideff_K));
                 }
 
@@ -650,17 +669,26 @@ void SimpleObservables(bool isData = true,
                                 float *rl_info         = pair_rl->data();
                                 float *weight_info     = pair_weight->data();
                                 float *chargeprod_info = pair_chargeprod->data();
+                                float *has_hf_info     = pair_has_hf->data();
                                 
                                 for(int vector_index = 0 ; vector_index < vector_size ; vector_index++) {
-                                        h3_rl_jetpt_weight_comb->Fill(rl_info[vector_index],jet_pt, weight_info[vector_index], event_weight * bkg_weight);
-                                        h3_rl_jetpt_weight_comb_nobkgweight->Fill(rl_info[vector_index],jet_pt, weight_info[vector_index], event_weight);
+                                        h3_rl_jetpt_weight_comb->Fill(rl_info[vector_index],jet_pt, weight_info[vector_index], event_whf_weight * bkg_weight);
+                                        h3_rl_jetpt_weight_comb_nobkgweight->Fill(rl_info[vector_index],jet_pt, weight_info[vector_index], event_whf_weight);
 
                                         if (chargeprod_info[vector_index] > 0) {
-                                                h3_rl_jetpt_weight_comb_eqch->Fill(rl_info[vector_index], jet_pt, weight_info[vector_index], event_weight * bkg_weight);
-                                                h3_rl_jetpt_weight_comb_nobkgweight_eqch->Fill(rl_info[vector_index],jet_pt, weight_info[vector_index], event_weight);
+                                                h3_rl_jetpt_weight_comb_eqch->Fill(rl_info[vector_index], jet_pt, weight_info[vector_index], event_whf_weight * bkg_weight);
+                                                h3_rl_jetpt_weight_comb_nobkgweight_eqch->Fill(rl_info[vector_index],jet_pt, weight_info[vector_index], event_whf_weight);
                                         } else if (chargeprod_info[vector_index] < 0) {
-                                                h3_rl_jetpt_weight_comb_neqch->Fill(rl_info[vector_index], jet_pt, weight_info[vector_index], event_weight * bkg_weight);
-                                                h3_rl_jetpt_weight_comb_nobkgweight_neqch->Fill(rl_info[vector_index], jet_pt, weight_info[vector_index], event_weight);
+                                                h3_rl_jetpt_weight_comb_neqch->Fill(rl_info[vector_index], jet_pt, weight_info[vector_index], event_whf_weight * bkg_weight);
+                                                h3_rl_jetpt_weight_comb_nobkgweight_neqch->Fill(rl_info[vector_index], jet_pt, weight_info[vector_index], event_whf_weight);
+                                        }
+
+                                        if (has_hf_info[vector_index] == 1) {
+                                                h3_rl_jetpt_weight_comb_whf->Fill(rl_info[vector_index], jet_pt, weight_info[vector_index], event_whf_weight * bkg_weight);
+                                                h3_rl_jetpt_weight_comb_nobkgweight_whf->Fill(rl_info[vector_index],jet_pt, weight_info[vector_index], event_whf_weight);
+                                        } else {
+                                                h3_rl_jetpt_weight_comb_wohf->Fill(rl_info[vector_index], jet_pt, weight_info[vector_index], event_wohf_weight * bkg_weight);
+                                                h3_rl_jetpt_weight_comb_nobkgweight_wohf->Fill(rl_info[vector_index], jet_pt, weight_info[vector_index], event_wohf_weight);
                                         }
                                 }
                         }
@@ -695,24 +723,35 @@ void SimpleObservables(bool isData = true,
                                 float *rl_info         = pair_rl->data();
                                 float *weight_info     = pair_weight->data();
                                 float *chargeprod_info = pair_chargeprod->data();
+                                float *has_hf_info     = pair_has_hf->data();
                                 
                                 for(int vector_index = 0 ; vector_index < vector_size ; vector_index++) {
-                                        h3_rl_jetpt_weight->Fill(rl_info[vector_index],jet_pt, weight_info[vector_index], event_weight);
-                                        h3_rl_jetpt_weight_nobgsub->Fill(rl_info[vector_index],jet_pt, weight_info[vector_index], event_weight);
+                                        h3_rl_jetpt_weight->Fill(rl_info[vector_index],jet_pt, weight_info[vector_index], event_whf_weight);
+                                        h3_rl_jetpt_weight_nobgsub->Fill(rl_info[vector_index],jet_pt, weight_info[vector_index], event_whf_weight);
                                         h3_rl_jetpt_weight_uncorrected->Fill(rl_info[vector_index],jet_pt, weight_info[vector_index]);
 
-                                        h3_rl_jetpt_HFpt->Fill(rl_info[vector_index],jet_pt, HFmeson.Pt(), event_weight);
+                                        h3_rl_jetpt_HFpt->Fill(rl_info[vector_index],jet_pt, HFmeson.Pt(), event_whf_weight);
 
-                                        h_rl_jetptHFpt_weight->Fill(rl_info[vector_index], map_jetpt_HFpt(jet_pt, HFmeson.Pt()), weight_info[vector_index], event_weight);
+                                        h_rl_jetptHFpt_weight->Fill(rl_info[vector_index], map_jetpt_HFpt(jet_pt, HFmeson.Pt()), weight_info[vector_index], event_whf_weight);
 
                                         if (chargeprod_info[vector_index] > 0) {
-                                                h3_rl_jetpt_weight_eqch->Fill(rl_info[vector_index], jet_pt, weight_info[vector_index], event_weight);
-                                                h3_rl_jetpt_weight_nobgsub_eqch->Fill(rl_info[vector_index], jet_pt, weight_info[vector_index], event_weight);
+                                                h3_rl_jetpt_weight_eqch->Fill(rl_info[vector_index], jet_pt, weight_info[vector_index], event_whf_weight);
+                                                h3_rl_jetpt_weight_nobgsub_eqch->Fill(rl_info[vector_index], jet_pt, weight_info[vector_index], event_whf_weight);
                                                 h3_rl_jetpt_weight_uncorrected_eqch->Fill(rl_info[vector_index], jet_pt, weight_info[vector_index]);
                                         } else if (chargeprod_info[vector_index] < 0) {
-                                                h3_rl_jetpt_weight_neqch->Fill(rl_info[vector_index], jet_pt, weight_info[vector_index], event_weight);
-                                                h3_rl_jetpt_weight_nobgsub_neqch->Fill(rl_info[vector_index], jet_pt, weight_info[vector_index], event_weight);
+                                                h3_rl_jetpt_weight_neqch->Fill(rl_info[vector_index], jet_pt, weight_info[vector_index], event_whf_weight);
+                                                h3_rl_jetpt_weight_nobgsub_neqch->Fill(rl_info[vector_index], jet_pt, weight_info[vector_index], event_whf_weight);
                                                 h3_rl_jetpt_weight_uncorrected_neqch->Fill(rl_info[vector_index], jet_pt, weight_info[vector_index]);
+                                        }
+
+                                        if (has_hf_info[vector_index] == 1) {
+                                                h3_rl_jetpt_weight_whf->Fill(rl_info[vector_index], jet_pt, weight_info[vector_index], event_whf_weight);
+                                                h3_rl_jetpt_weight_nobgsub_whf->Fill(rl_info[vector_index], jet_pt, weight_info[vector_index], event_whf_weight);
+                                                h3_rl_jetpt_weight_uncorrected_whf->Fill(rl_info[vector_index], jet_pt, weight_info[vector_index]);
+                                        } else {
+                                                h3_rl_jetpt_weight_wohf->Fill(rl_info[vector_index], jet_pt, weight_info[vector_index], event_wohf_weight);
+                                                h3_rl_jetpt_weight_nobgsub_wohf->Fill(rl_info[vector_index], jet_pt, weight_info[vector_index], event_wohf_weight);
+                                                h3_rl_jetpt_weight_uncorrected_wohf->Fill(rl_info[vector_index], jet_pt, weight_info[vector_index]);
                                         }
                                 }
                         }
@@ -734,6 +773,7 @@ void SimpleObservables(bool isData = true,
                                 float *rl_info         = pair_rl->data();
                                 float *weight_info     = pair_weight->data();
                                 float *chargeprod_info = pair_chargeprod->data();
+                                float *has_hf_info     = pair_has_hf->data();
                                 
                                 for(int vector_index = 0 ; vector_index < vector_size ; vector_index++) {
                                         h3_rl_jetpt_weight_uncorrected_nomasscond->Fill(rl_info[vector_index],jet_pt, weight_info[vector_index]);
@@ -742,6 +782,12 @@ void SimpleObservables(bool isData = true,
                                                 h3_rl_jetpt_weight_uncorrected_nomasscond_eqch->Fill(rl_info[vector_index], jet_pt, weight_info[vector_index]);
                                         } else if (chargeprod_info[vector_index] < 0) {
                                                 h3_rl_jetpt_weight_uncorrected_nomasscond_neqch->Fill(rl_info[vector_index], jet_pt, weight_info[vector_index]);
+                                        }
+
+                                        if (has_hf_info[vector_index] == 1) {
+                                                h3_rl_jetpt_weight_uncorrected_nomasscond_whf->Fill(rl_info[vector_index], jet_pt, weight_info[vector_index]);
+                                        } else {
+                                                h3_rl_jetpt_weight_uncorrected_nomasscond_wohf->Fill(rl_info[vector_index], jet_pt, weight_info[vector_index]);
                                         }
                                 }
                         }
@@ -770,6 +816,10 @@ void SimpleObservables(bool isData = true,
 
                 h3_rl_jetpt_weight_neqch->Add(h3_rl_jetpt_weight_comb_neqch, -1);
                 // MakeHistPositive(h3_ptjtr);
+
+                h3_rl_jetpt_weight_whf->Add(h3_rl_jetpt_weight_comb_whf, -1);
+
+                h3_rl_jetpt_weight_wohf->Add(h3_rl_jetpt_weight_comb_wohf, -1);
         }
 
         cout << "After sub: " << endl;

@@ -126,6 +126,12 @@ void SimpleUnfold(int NumEvts = -1,
         
         RooUnfoldResponse *response_rl     = new RooUnfoldResponse(h1_form_rl    , h1_form_rl    , "response_rl");
         RooUnfoldResponse *response_weight = new RooUnfoldResponse(h1_form_weight, h1_form_weight, "response_weight");
+
+        RooUnfoldResponse *response_rl_whf     = new RooUnfoldResponse(h1_form_rl    , h1_form_rl    , "response_rl_whf");
+        RooUnfoldResponse *response_weight_whf = new RooUnfoldResponse(h1_form_weight, h1_form_weight, "response_weight_whf");
+
+        RooUnfoldResponse *response_rl_wohf     = new RooUnfoldResponse(h1_form_rl    , h1_form_rl    , "response_rl_wohf");
+        RooUnfoldResponse *response_weight_wohf = new RooUnfoldResponse(h1_form_weight, h1_form_weight, "response_weight_wohf");
         
         // 3D RM
         TH3D *h3_meas_rl_jetpt_weight = new TH3D("h3_meas_rl_jetpt_weight", "", nbin_rl_nominal_unfolding, unfolding_rl_nominal_binning, ptbinsize, pt_binedges, nbin_weight, weight_binning);
@@ -142,6 +148,16 @@ void SimpleUnfold(int NumEvts = -1,
         TH3D *h3_true_rl_jetpt_weight_neqch = new TH3D("h3_true_rl_jetpt_weight_neqch", "", nbin_rl_nominal_unfolding, unfolding_rl_nominal_binning, ptbinsize, pt_binedges, nbin_weight, weight_binning);
         
         RooUnfoldResponse *response_npair_neqch = new RooUnfoldResponse(h3_meas_rl_jetpt_weight_neqch, h3_true_rl_jetpt_weight_neqch, "response_npair_neqch");
+
+        TH3D *h3_meas_rl_jetpt_weight_whf = new TH3D("h3_meas_rl_jetpt_weight_whf", "", nbin_rl_nominal_unfolding, unfolding_rl_nominal_binning, ptbinsize, pt_binedges, nbin_weight, weight_binning);
+        TH3D *h3_true_rl_jetpt_weight_whf = new TH3D("h3_true_rl_jetpt_weight_whf", "", nbin_rl_nominal_unfolding, unfolding_rl_nominal_binning, ptbinsize, pt_binedges, nbin_weight, weight_binning);
+        
+        RooUnfoldResponse *response_npair_whf = new RooUnfoldResponse(h3_meas_rl_jetpt_weight_whf, h3_true_rl_jetpt_weight_whf, "response_npair_whf");
+
+        TH3D *h3_meas_rl_jetpt_weight_wohf = new TH3D("h3_meas_rl_jetpt_weight_wohf", "", nbin_rl_nominal_unfolding, unfolding_rl_nominal_binning, ptbinsize, pt_binedges, nbin_weight, weight_binning);
+        TH3D *h3_true_rl_jetpt_weight_wohf = new TH3D("h3_true_rl_jetpt_weight_wohf", "", nbin_rl_nominal_unfolding, unfolding_rl_nominal_binning, ptbinsize, pt_binedges, nbin_weight, weight_binning);
+        
+        RooUnfoldResponse *response_npair_wohf = new RooUnfoldResponse(h3_meas_rl_jetpt_weight_wohf, h3_true_rl_jetpt_weight_wohf, "response_npair_wohf");
         
         // 3D RM alternative
         TH3D *h3_meas_rl_jetpt_HFpt = new TH3D("h3_meas_rl_jetpt_HFpt", "", nbin_rl_nominal_unfolding, unfolding_rl_nominal_binning, ptbinsize, pt_binedges, ptHFbinsize, ptHF_binedges);
@@ -152,20 +168,33 @@ void SimpleUnfold(int NumEvts = -1,
         // 3D Efficiencies
         TH3D *h3_denom_efficiency_rl_jetpt_weight       = new TH3D("h3_denom_efficiency_rl_jetpt_weight"      , "", nbin_rl_nominal_unfolding, unfolding_rl_nominal_binning, ptbinsize, pt_binedges, nbin_weight, weight_binning);
         TH3D *h3_denom_efficiency_rl_jetpt_weight_eqch  = new TH3D("h3_denom_efficiency_rl_jetpt_weight_eqch" , "", nbin_rl_nominal_unfolding, unfolding_rl_nominal_binning, ptbinsize, pt_binedges, nbin_weight, weight_binning);
-        TH3D *h3_denom_efficiency_rl_jetpt_weight_neqch = new TH3D("h3_denom_efficiency_rl_jetpt_weight_neqch", "", nbin_rl_nominal_unfolding, unfolding_rl_nominal_binning, ptbinsize, pt_binedges, nbin_weight, weight_binning);  
+        TH3D *h3_denom_efficiency_rl_jetpt_weight_neqch = new TH3D("h3_denom_efficiency_rl_jetpt_weight_neqch", "", nbin_rl_nominal_unfolding, unfolding_rl_nominal_binning, ptbinsize, pt_binedges, nbin_weight, weight_binning);
+        TH3D *h3_denom_efficiency_rl_jetpt_weight_whf   = new TH3D("h3_denom_efficiency_rl_jetpt_weight_whf"  , "", nbin_rl_nominal_unfolding, unfolding_rl_nominal_binning, ptbinsize, pt_binedges, nbin_weight, weight_binning);
+        TH3D *h3_denom_efficiency_rl_jetpt_weight_wohf  = new TH3D("h3_denom_efficiency_rl_jetpt_weight_wohf" , "", nbin_rl_nominal_unfolding, unfolding_rl_nominal_binning, ptbinsize, pt_binedges, nbin_weight, weight_binning);  
 
-        TH3D* h3_num_efficiency_rl_jetpt_weight = new TH3D("h3_num_efficiency_rl_jetpt_weight", "", nbin_rl_nominal_unfolding, unfolding_rl_nominal_binning, ptbinsize, pt_binedges, nbin_weight, weight_binning);
-        TH3D* h3_efficiency_rl_jetpt_weight     = new TH3D("h3_efficiency_rl_jetpt_weight"    , "", nbin_rl_nominal_unfolding, unfolding_rl_nominal_binning, ptbinsize, pt_binedges, nbin_weight, weight_binning);
-        
-        TH3D* h3_num_efficiency_rl_jetpt_weight_eqch = new TH3D("h3_num_efficiency_rl_jetpt_weight_eqch", "", nbin_rl_nominal_unfolding, unfolding_rl_nominal_binning, ptbinsize, pt_binedges, nbin_weight, weight_binning);
-        TH3D* h3_efficiency_rl_jetpt_weight_eqch     = new TH3D("h3_efficiency_rl_jetpt_weight_eqch"    , "", nbin_rl_nominal_unfolding, unfolding_rl_nominal_binning, ptbinsize, pt_binedges, nbin_weight, weight_binning);
-        
+        TH3D* h3_num_efficiency_rl_jetpt_weight       = new TH3D("h3_num_efficiency_rl_jetpt_weight"      , "", nbin_rl_nominal_unfolding, unfolding_rl_nominal_binning, ptbinsize, pt_binedges, nbin_weight, weight_binning);
+        TH3D* h3_num_efficiency_rl_jetpt_weight_eqch  = new TH3D("h3_num_efficiency_rl_jetpt_weight_eqch" , "", nbin_rl_nominal_unfolding, unfolding_rl_nominal_binning, ptbinsize, pt_binedges, nbin_weight, weight_binning);
         TH3D* h3_num_efficiency_rl_jetpt_weight_neqch = new TH3D("h3_num_efficiency_rl_jetpt_weight_neqch", "", nbin_rl_nominal_unfolding, unfolding_rl_nominal_binning, ptbinsize, pt_binedges, nbin_weight, weight_binning);
-        TH3D* h3_efficiency_rl_jetpt_weight_neqch     = new TH3D("h3_efficiency_rl_jetpt_weight_neqch"    , "", nbin_rl_nominal_unfolding, unfolding_rl_nominal_binning, ptbinsize, pt_binedges, nbin_weight, weight_binning);
+        TH3D* h3_num_efficiency_rl_jetpt_weight_whf   = new TH3D("h3_num_efficiency_rl_jetpt_weight_whf" , "", nbin_rl_nominal_unfolding, unfolding_rl_nominal_binning, ptbinsize, pt_binedges, nbin_weight, weight_binning);
+        TH3D* h3_num_efficiency_rl_jetpt_weight_wohf  = new TH3D("h3_num_efficiency_rl_jetpt_weight_wohf", "", nbin_rl_nominal_unfolding, unfolding_rl_nominal_binning, ptbinsize, pt_binedges, nbin_weight, weight_binning);
         
-        TH2D* h2_num_efficiency_rl_jetpt   = new TH2D("h2_num_efficiency_rl_jetpt", "", nbin_rl_nominal_unfolding, unfolding_rl_nominal_binning, ptbinsize, pt_binedges);
+        TH3D* h3_efficiency_rl_jetpt_weight       = new TH3D("h3_efficiency_rl_jetpt_weight"      , "", nbin_rl_nominal_unfolding, unfolding_rl_nominal_binning, ptbinsize, pt_binedges, nbin_weight, weight_binning);
+        TH3D* h3_efficiency_rl_jetpt_weight_eqch  = new TH3D("h3_efficiency_rl_jetpt_weight_eqch" , "", nbin_rl_nominal_unfolding, unfolding_rl_nominal_binning, ptbinsize, pt_binedges, nbin_weight, weight_binning);
+        TH3D* h3_efficiency_rl_jetpt_weight_neqch = new TH3D("h3_efficiency_rl_jetpt_weight_neqch", "", nbin_rl_nominal_unfolding, unfolding_rl_nominal_binning, ptbinsize, pt_binedges, nbin_weight, weight_binning);
+        TH3D* h3_efficiency_rl_jetpt_weight_whf   = new TH3D("h3_efficiency_rl_jetpt_weight_whf"  , "", nbin_rl_nominal_unfolding, unfolding_rl_nominal_binning, ptbinsize, pt_binedges, nbin_weight, weight_binning);
+        TH3D* h3_efficiency_rl_jetpt_weight_wohf  = new TH3D("h3_efficiency_rl_jetpt_weight_wohf" , "", nbin_rl_nominal_unfolding, unfolding_rl_nominal_binning, ptbinsize, pt_binedges, nbin_weight, weight_binning);
+        
+        TH2D* h2_num_efficiency_rl_jetpt   = new TH2D("h2_num_efficiency_rl_jetpt"  , "", nbin_rl_nominal_unfolding, unfolding_rl_nominal_binning, ptbinsize, pt_binedges);
         TH2D* h2_denom_efficiency_rl_jetpt = new TH2D("h2_denom_efficiency_rl_jetpt", "", nbin_rl_nominal_unfolding, unfolding_rl_nominal_binning, ptbinsize, pt_binedges);
-        TH2D* h2_efficiency_rl_jetpt       = new TH2D("h2_efficiency_rl_jetpt"    , "", nbin_rl_nominal_unfolding, unfolding_rl_nominal_binning, ptbinsize, pt_binedges);
+        TH2D* h2_efficiency_rl_jetpt       = new TH2D("h2_efficiency_rl_jetpt"      , "", nbin_rl_nominal_unfolding, unfolding_rl_nominal_binning, ptbinsize, pt_binedges);
+        
+        TH2D* h2_num_efficiency_rl_jetpt_whf   = new TH2D("h2_num_efficiency_rl_jetpt_whf"  , "", nbin_rl_nominal_unfolding, unfolding_rl_nominal_binning, ptbinsize, pt_binedges);
+        TH2D* h2_denom_efficiency_rl_jetpt_whf = new TH2D("h2_denom_efficiency_rl_jetpt_whf", "", nbin_rl_nominal_unfolding, unfolding_rl_nominal_binning, ptbinsize, pt_binedges);
+        TH2D* h2_efficiency_rl_jetpt_whf       = new TH2D("h2_efficiency_rl_jetpt_whf"      , "", nbin_rl_nominal_unfolding, unfolding_rl_nominal_binning, ptbinsize, pt_binedges);
+
+        TH2D* h2_num_efficiency_rl_jetpt_wohf   = new TH2D("h2_num_efficiency_rl_jetpt_wohf"  , "", nbin_rl_nominal_unfolding, unfolding_rl_nominal_binning, ptbinsize, pt_binedges);
+        TH2D* h2_denom_efficiency_rl_jetpt_wohf = new TH2D("h2_denom_efficiency_rl_jetpt_wohf", "", nbin_rl_nominal_unfolding, unfolding_rl_nominal_binning, ptbinsize, pt_binedges);
+        TH2D* h2_efficiency_rl_jetpt_wohf       = new TH2D("h2_efficiency_rl_jetpt_wohf"      , "", nbin_rl_nominal_unfolding, unfolding_rl_nominal_binning, ptbinsize, pt_binedges);
         
         TH3D *h3_denom_efficiency_rl_jetpt_HFpt = new TH3D("h3_denom_efficiency_rl_jetpt_HFpt", "", nbin_rl_nominal_unfolding, unfolding_rl_nominal_binning, ptbinsize, pt_binedges, ptHFbinsize, ptHF_binedges);
         TH3D* h3_num_efficiency_rl_jetpt_HFpt   = new TH3D("h3_num_efficiency_rl_jetpt_HFpt"  , "", nbin_rl_nominal_unfolding, unfolding_rl_nominal_binning, ptbinsize, pt_binedges, ptHFbinsize, ptHF_binedges);
@@ -188,9 +217,25 @@ void SimpleUnfold(int NumEvts = -1,
         TH3D* h3_denom_purity_rl_jetpt_weight_neqch = new TH3D("h3_denom_purity_rl_jetpt_weight_neqch" , "", nbin_rl_nominal_unfolding, unfolding_rl_nominal_binning, ptbinsize, pt_binedges, nbin_weight, weight_binning);
         TH3D* h3_purity_rl_jetpt_weight_neqch       = new TH3D("h3_purity_rl_jetpt_weight_neqch"       , "", nbin_rl_nominal_unfolding, unfolding_rl_nominal_binning, ptbinsize, pt_binedges, nbin_weight, weight_binning);
         
-        TH2D* h2_num_purity_rl_jetpt     = new TH2D("h2_num_purity_rl_jetpt"   , "", nbin_rl_nominal_unfolding, unfolding_rl_nominal_binning, ptbinsize, pt_binedges);
-        TH2D* h2_denom_purity_rl_jetpt   = new TH2D("h2_denom_purity_rl_jetpt" , "", nbin_rl_nominal_unfolding, unfolding_rl_nominal_binning, ptbinsize, pt_binedges);
-        TH2D* h2_purity_rl_jetpt         = new TH2D("h2_purity_rl_jetpt"       , "", nbin_rl_nominal_unfolding, unfolding_rl_nominal_binning, ptbinsize, pt_binedges);
+        TH3D* h3_num_purity_rl_jetpt_weight_whf     = new TH3D("h3_num_purity_rl_jetpt_weight_whf"   , "", nbin_rl_nominal_unfolding, unfolding_rl_nominal_binning, ptbinsize, pt_binedges, nbin_weight, weight_binning);
+        TH3D* h3_denom_purity_rl_jetpt_weight_whf   = new TH3D("h3_denom_purity_rl_jetpt_weight_whf" , "", nbin_rl_nominal_unfolding, unfolding_rl_nominal_binning, ptbinsize, pt_binedges, nbin_weight, weight_binning);
+        TH3D* h3_purity_rl_jetpt_weight_whf         = new TH3D("h3_purity_rl_jetpt_weight_whf"       , "", nbin_rl_nominal_unfolding, unfolding_rl_nominal_binning, ptbinsize, pt_binedges, nbin_weight, weight_binning);
+        
+        TH3D* h3_num_purity_rl_jetpt_weight_wohf     = new TH3D("h3_num_purity_rl_jetpt_weight_wohf"   , "", nbin_rl_nominal_unfolding, unfolding_rl_nominal_binning, ptbinsize, pt_binedges, nbin_weight, weight_binning);
+        TH3D* h3_denom_purity_rl_jetpt_weight_wohf   = new TH3D("h3_denom_purity_rl_jetpt_weight_wohf" , "", nbin_rl_nominal_unfolding, unfolding_rl_nominal_binning, ptbinsize, pt_binedges, nbin_weight, weight_binning);
+        TH3D* h3_purity_rl_jetpt_weight_wohf         = new TH3D("h3_purity_rl_jetpt_weight_wohf"       , "", nbin_rl_nominal_unfolding, unfolding_rl_nominal_binning, ptbinsize, pt_binedges, nbin_weight, weight_binning);
+        
+        TH2D* h2_num_purity_rl_jetpt   = new TH2D("h2_num_purity_rl_jetpt"   , "", nbin_rl_nominal_unfolding, unfolding_rl_nominal_binning, ptbinsize, pt_binedges);
+        TH2D* h2_denom_purity_rl_jetpt = new TH2D("h2_denom_purity_rl_jetpt" , "", nbin_rl_nominal_unfolding, unfolding_rl_nominal_binning, ptbinsize, pt_binedges);
+        TH2D* h2_purity_rl_jetpt       = new TH2D("h2_purity_rl_jetpt"       , "", nbin_rl_nominal_unfolding, unfolding_rl_nominal_binning, ptbinsize, pt_binedges);
+
+        TH2D* h2_num_purity_rl_jetpt_whf   = new TH2D("h2_num_purity_rl_jetpt_whf"   , "", nbin_rl_nominal_unfolding, unfolding_rl_nominal_binning, ptbinsize, pt_binedges);
+        TH2D* h2_denom_purity_rl_jetpt_whf = new TH2D("h2_denom_purity_rl_jetpt_whf" , "", nbin_rl_nominal_unfolding, unfolding_rl_nominal_binning, ptbinsize, pt_binedges);
+        TH2D* h2_purity_rl_jetpt_whf       = new TH2D("h2_purity_rl_jetpt_whf"       , "", nbin_rl_nominal_unfolding, unfolding_rl_nominal_binning, ptbinsize, pt_binedges);
+
+        TH2D* h2_num_purity_rl_jetpt_wohf   = new TH2D("h2_num_purity_rl_jetpt_wohf"   , "", nbin_rl_nominal_unfolding, unfolding_rl_nominal_binning, ptbinsize, pt_binedges);
+        TH2D* h2_denom_purity_rl_jetpt_wohf = new TH2D("h2_denom_purity_rl_jetpt_wohf" , "", nbin_rl_nominal_unfolding, unfolding_rl_nominal_binning, ptbinsize, pt_binedges);
+        TH2D* h2_purity_rl_jetpt_wohf       = new TH2D("h2_purity_rl_jetpt_wohf"       , "", nbin_rl_nominal_unfolding, unfolding_rl_nominal_binning, ptbinsize, pt_binedges);
 
         TH3D* h3_num_purity_rl_jetpt_HFpt     = new TH3D("h3_num_purity_rl_jetpt_HFpt"   , "", nbin_rl_nominal_unfolding, unfolding_rl_nominal_binning, ptbinsize, pt_binedges, ptHFbinsize, ptHF_binedges);
         TH3D* h3_denom_purity_rl_jetpt_HFpt   = new TH3D("h3_denom_purity_rl_jetpt_HFpt" , "", nbin_rl_nominal_unfolding, unfolding_rl_nominal_binning, ptbinsize, pt_binedges, ptHFbinsize, ptHF_binedges);
@@ -231,21 +276,24 @@ void SimpleUnfold(int NumEvts = -1,
 
         double WTA_reco_dist, WTA_true_dist;
         
-        vector<float> *pair_rl = 0, *pair_weight = 0, *pair_chargeprod = 0;
-        vector<float> *truthmatched_pair_rl = 0, *truthmatched_pair_weight = 0;
-        vector<float> *true_pair_rl = 0, *true_pair_weight = 0, *true_pair_chargeprod = 0;        
+        vector<float> *pair_rl = 0, *pair_weight = 0, *pair_chargeprod = 0, *pair_has_hf = 0;
+        vector<float> *truthmatched_pair_rl = 0, *truthmatched_pair_weight = 0, *truthmatched_pair_has_hf = 0;
+        vector<float> *true_pair_rl = 0, *true_pair_weight = 0, *true_pair_chargeprod = 0, *true_pair_has_hf = 0;
         
         BTree->SetBranchAddress("pair_rl"        , &pair_rl);
         BTree->SetBranchAddress("pair_weight"    , &pair_weight);
         BTree->SetBranchAddress("pair_chargeprod", &pair_chargeprod);
+        BTree->SetBranchAddress("pair_has_hf"    , &pair_has_hf);
         
         BTree->SetBranchAddress("truthmatched_pair_rl"    , &truthmatched_pair_rl);
         BTree->SetBranchAddress("truthmatched_pair_weight", &truthmatched_pair_weight);
+        BTree->SetBranchAddress("truthmatched_pair_has_hf", &truthmatched_pair_has_hf);
 
         BTree->SetBranchAddress("true_pair_rl"        , &true_pair_rl);
         BTree->SetBranchAddress("true_pair_weight"    , &true_pair_weight);
         BTree->SetBranchAddress("true_pair_chargeprod", &true_pair_chargeprod);
-        
+        BTree->SetBranchAddress("true_pair_has_hf"    , &true_pair_has_hf);
+
         BTree->SetBranchAddress("WTA_reco_dist", &WTA_reco_dist);
         BTree->SetBranchAddress("WTA_true_dist", &WTA_true_dist);
         
@@ -403,6 +451,7 @@ void SimpleUnfold(int NumEvts = -1,
                                 float *rl_info         = truthmatched_pair_rl->data();
                                 float *weight_info     = truthmatched_pair_weight->data();
                                 float *chargeprod_info = pair_chargeprod->data();
+                                float *has_hf_info     = truthmatched_pair_has_hf->data();
                                 
                                 for(int vector_index = 0 ; vector_index < vector_size ; vector_index++) {
                                         if (rl_info[vector_index] == -999)
@@ -420,6 +469,14 @@ void SimpleUnfold(int NumEvts = -1,
                                                 h3_num_efficiency_rl_jetpt_weight_eqch->Fill(rl_info[vector_index], tr_jet_pt, weight_info[vector_index]);
                                         else if (chargeprod_info[vector_index] < 0)
                                                 h3_num_efficiency_rl_jetpt_weight_neqch->Fill(rl_info[vector_index], tr_jet_pt, weight_info[vector_index]);
+
+                                        if (has_hf_info[vector_index] == 1) {
+                                                h3_num_efficiency_rl_jetpt_weight_whf->Fill(rl_info[vector_index], tr_jet_pt, weight_info[vector_index]);
+                                                h2_num_efficiency_rl_jetpt_whf->Fill(rl_info[vector_index], tr_jet_pt);
+                                        } else if (has_hf_info[vector_index] == 0 ) {
+                                                h3_num_efficiency_rl_jetpt_weight_wohf->Fill(rl_info[vector_index], tr_jet_pt, weight_info[vector_index]);
+                                                h2_num_efficiency_rl_jetpt_wohf->Fill(rl_info[vector_index], tr_jet_pt);
+                                        }
                                 }
                         }
 
@@ -431,6 +488,7 @@ void SimpleUnfold(int NumEvts = -1,
                                 float *rl_info         = true_pair_rl->data();
                                 float *weight_info     = true_pair_weight->data();
                                 float *chargeprod_info = true_pair_chargeprod->data();
+                                float *has_hf_info     = true_pair_has_hf->data();
                                 
                                 for(int vector_index = 0 ; vector_index < vector_size ; vector_index++) {
                                         h3_denom_efficiency_rl_jetpt_weight->Fill(rl_info[vector_index], tr_jet_pt, weight_info[vector_index]);
@@ -445,6 +503,14 @@ void SimpleUnfold(int NumEvts = -1,
                                                 h3_denom_efficiency_rl_jetpt_weight_eqch->Fill(rl_info[vector_index], tr_jet_pt, weight_info[vector_index]);
                                         else if (chargeprod_info[vector_index] < 0)
                                                 h3_denom_efficiency_rl_jetpt_weight_neqch->Fill(rl_info[vector_index], tr_jet_pt, weight_info[vector_index]);
+
+                                        if (has_hf_info[vector_index] == 1) {
+                                                h3_denom_efficiency_rl_jetpt_weight_whf->Fill(rl_info[vector_index], tr_jet_pt, weight_info[vector_index]);
+                                                h2_denom_efficiency_rl_jetpt_whf->Fill(rl_info[vector_index], tr_jet_pt);
+                                        } else if (has_hf_info[vector_index] == 0) {
+                                                h3_denom_efficiency_rl_jetpt_weight_wohf->Fill(rl_info[vector_index], tr_jet_pt, weight_info[vector_index]);
+                                                h2_denom_efficiency_rl_jetpt_wohf->Fill(rl_info[vector_index], tr_jet_pt);
+                                        }
                                 }
                         }
                 
@@ -465,9 +531,11 @@ void SimpleUnfold(int NumEvts = -1,
                                 float *rl_info         = pair_rl->data();
                                 float *weight_info     = pair_weight->data();
                                 float *chargeprod_info = pair_chargeprod->data();
+                                float *has_hf_info     = pair_has_hf->data();
 
                                 float *truthmatched_rl_info     = truthmatched_pair_rl->data();
                                 float *truthmatched_weight_info = truthmatched_pair_weight->data();
+                                float *truthmatched_has_hf_info = truthmatched_pair_has_hf->data();
 
                                 if (pair_rl->size() != truthmatched_pair_rl->size())
                                         std::cout<<"AAAAAAAAAAAAAAAAAAAAAA"<<std::endl;
@@ -501,6 +569,24 @@ void SimpleUnfold(int NumEvts = -1,
 
                                                         response_npair_neqch->Fill(rl_info[vector_index], jet_pt, weight_info[vector_index], truthmatched_rl_info[vector_index], tr_jet_pt, truthmatched_weight_info[vector_index]);
                                                 }
+
+                                                if (has_hf_info[vector_index] == 1) {
+                                                        h3_num_purity_rl_jetpt_weight_whf->Fill(rl_info[vector_index], jet_pt, weight_info[vector_index]);
+                                                        h2_num_purity_rl_jetpt_whf->Fill(rl_info[vector_index], jet_pt);
+
+                                                        response_npair_whf->Fill(rl_info[vector_index], jet_pt, weight_info[vector_index], truthmatched_rl_info[vector_index], tr_jet_pt, truthmatched_weight_info[vector_index]);
+
+                                                        response_rl_whf->Fill(rl_info[vector_index], truthmatched_rl_info[vector_index]);
+                                                        response_weight_whf->Fill(weight_info[vector_index], truthmatched_weight_info[vector_index]);
+
+                                                } else if (has_hf_info[vector_index] == 0) {
+                                                        h3_num_purity_rl_jetpt_weight_wohf->Fill(rl_info[vector_index], jet_pt, weight_info[vector_index]);
+                                                        h2_num_purity_rl_jetpt_wohf->Fill(rl_info[vector_index], jet_pt);
+
+                                                        response_npair_wohf->Fill(rl_info[vector_index], jet_pt, weight_info[vector_index], truthmatched_rl_info[vector_index], tr_jet_pt, truthmatched_weight_info[vector_index]);
+                                                        response_rl_wohf->Fill(rl_info[vector_index], truthmatched_rl_info[vector_index]);
+                                                        response_weight_wohf->Fill(weight_info[vector_index], truthmatched_weight_info[vector_index]);
+                                                }
                                         }
 
                                         h3_denom_purity_rl_jetpt_weight->Fill(rl_info[vector_index], jet_pt, weight_info[vector_index]);
@@ -515,6 +601,15 @@ void SimpleUnfold(int NumEvts = -1,
                                                 h3_denom_purity_rl_jetpt_weight_eqch->Fill(rl_info[vector_index], jet_pt, weight_info[vector_index]);
                                         else if (chargeprod_info[vector_index] < 0)
                                                 h3_denom_purity_rl_jetpt_weight_neqch->Fill(rl_info[vector_index], jet_pt, weight_info[vector_index]);
+
+                                        if (has_hf_info[vector_index] == 1) {
+                                                h3_denom_purity_rl_jetpt_weight_whf->Fill(rl_info[vector_index], jet_pt, weight_info[vector_index]);
+                                                h2_denom_purity_rl_jetpt_whf->Fill(rl_info[vector_index], jet_pt);
+
+                                        } else if (has_hf_info[vector_index] == 0) {
+                                                h3_denom_purity_rl_jetpt_weight_wohf->Fill(rl_info[vector_index], jet_pt, weight_info[vector_index]);
+                                                h2_denom_purity_rl_jetpt_wohf->Fill(rl_info[vector_index], jet_pt);
+                                        }
                                 }
                         }
 
@@ -535,12 +630,18 @@ void SimpleUnfold(int NumEvts = -1,
 
         RooUnfoldResponse *response_jetpt = new RooUnfoldResponse(h1_jetpt, h1_jetpt_truth, h2_response_jetpt, "response_jetpt");
         // TH2 *h2_response_jetpt  = response_jetpt->Hresponse();
-        TH2 *h2_response_rl     = response_rl->Hresponse();
-        TH2 *h2_response_weight = response_weight->Hresponse();
+        TH2 *h2_response_rl          = response_rl->Hresponse();
+        TH2 *h2_response_weight      = response_weight->Hresponse();
+        TH2 *h2_response_rl_whf      = response_rl_whf->Hresponse();
+        TH2 *h2_response_weight_whf  = response_weight_whf->Hresponse();
+        TH2 *h2_response_rl_wohf     = response_rl_wohf->Hresponse();
+        TH2 *h2_response_weight_wohf = response_weight_wohf->Hresponse();
         
         TH2 *h3_response_npair       = response_npair->Hresponse();        
         TH2 *h3_response_npair_eqch  = response_npair_eqch->Hresponse();
         TH2 *h3_response_npair_neqch = response_npair_neqch->Hresponse();
+        TH2 *h3_response_npair_whf   = response_npair_whf->Hresponse();
+        TH2 *h3_response_npair_wohf  = response_npair_wohf->Hresponse();
         TH2 *h3_response_npair_HFpt  = response_npair_HFpt->Hresponse();
                 
         h2_response_jetpt->GetXaxis()->SetTitle("reco p_{T, jet} [GeV/c]");
@@ -549,27 +650,48 @@ void SimpleUnfold(int NumEvts = -1,
         h2_response_rl->GetYaxis()->SetTitle("truth R_{L}");
         h2_response_weight->GetXaxis()->SetTitle("reco w");
         h2_response_weight->GetYaxis()->SetTitle("truth w");
+        h2_response_rl_whf->GetXaxis()->SetTitle("reco R_{L}");
+        h2_response_rl_whf->GetYaxis()->SetTitle("truth R_{L}");
+        h2_response_weight_whf->GetXaxis()->SetTitle("reco w");
+        h2_response_weight_whf->GetYaxis()->SetTitle("truth w");
+        h2_response_rl_wohf->GetXaxis()->SetTitle("reco R_{L}");
+        h2_response_rl_wohf->GetYaxis()->SetTitle("truth R_{L}");
+        h2_response_weight_wohf->GetXaxis()->SetTitle("reco w");
+        h2_response_weight_wohf->GetYaxis()->SetTitle("truth w");
                 
         f->cd();
 
         h2_response_jetpt->Write("h2_response_jetpt");
         h2_response_rl->Write("response_rl");
         h2_response_weight->Write("response_weight");
+        h2_response_rl_whf->Write("response_rl_whf");
+        h2_response_weight_whf->Write("response_weight_whf");
+        h2_response_rl_wohf->Write("response_rl_wohf");
+        h2_response_weight_wohf->Write("response_weight_wohf");
         
         h3_response_npair->Write("response_npair");
         h3_response_npair_eqch->Write("response_npair_eqch");
         h3_response_npair_neqch->Write("response_npair_neqch");    
+        h3_response_npair_whf->Write("response_npair_whf");
+        h3_response_npair_wohf->Write("response_npair_wohf");
 
         h3_response_npair_HFpt->Write("response_npair_HFpt");
         
         response_HFptetajetpt->Write("Roo_response_HFptetajetpt");
         response_jetpt->Write("Roo_response_jetpt");
         response_rl->Write("Roo_response_rl");
-        response_weight->Write("Roo_response_weigh");
+        response_weight->Write("Roo_response_weight");
+        response_rl_whf->Write("Roo_response_rl_whf");
+        response_weight_whf->Write("Roo_response_weight_whf");
+        response_rl_wohf->Write("Roo_response_rl_wohf");
+        response_weight_wohf->Write("Roo_response_weight_wohf");
         
         response_npair->Write("Roo_response_npair" );  
         response_npair_eqch->Write("Roo_response_npair_eqch" );
         response_npair_neqch->Write( "Roo_response_npair_neqch");
+        response_npair_whf->Write("Roo_response_npair_whf" );
+        response_npair_wohf->Write( "Roo_response_npair_wohf");
+        
                 
         response_npair_HFpt->Write("Roo_response_npair_HFpt");  
         
@@ -600,22 +722,30 @@ void SimpleUnfold(int NumEvts = -1,
         h3_efficiency_rl_jetpt_weight->Divide(h3_num_efficiency_rl_jetpt_weight, h3_denom_efficiency_rl_jetpt_weight, 1, 1, "B");
         h3_efficiency_rl_jetpt_weight_eqch->Divide(h3_num_efficiency_rl_jetpt_weight_eqch, h3_denom_efficiency_rl_jetpt_weight_eqch, 1, 1, "B");
         h3_efficiency_rl_jetpt_weight_neqch->Divide(h3_num_efficiency_rl_jetpt_weight_neqch, h3_denom_efficiency_rl_jetpt_weight_neqch, 1, 1, "B");    
+        h3_efficiency_rl_jetpt_weight_whf->Divide(h3_num_efficiency_rl_jetpt_weight_whf, h3_denom_efficiency_rl_jetpt_weight_whf, 1, 1, "B");
+        h3_efficiency_rl_jetpt_weight_wohf->Divide(h3_num_efficiency_rl_jetpt_weight_wohf, h3_denom_efficiency_rl_jetpt_weight_wohf, 1, 1, "B");
         
         h3_efficiency_rl_jetpt_HFpt->Divide(h3_num_efficiency_rl_jetpt_HFpt, h3_denom_efficiency_rl_jetpt_HFpt, 1, 1, "B");
         
         h_efficiency_rl_jetptHFpt_weight->Divide(h_num_efficiency_rl_jetptHFpt_weight, h_denom_efficiency_rl_jetptHFpt_weight, 1, 1, "B");
         
         h2_efficiency_rl_jetpt->Divide(h2_num_efficiency_rl_jetpt, h2_denom_efficiency_rl_jetpt, 1, 1, "B");
+        h2_efficiency_rl_jetpt_whf->Divide(h2_num_efficiency_rl_jetpt_whf, h2_denom_efficiency_rl_jetpt_whf, 1, 1, "B");
+        h2_efficiency_rl_jetpt_wohf->Divide(h2_num_efficiency_rl_jetpt_wohf, h2_denom_efficiency_rl_jetpt_wohf, 1, 1, "B");
 
         h3_purity_rl_jetpt_weight->Divide(h3_num_purity_rl_jetpt_weight, h3_denom_purity_rl_jetpt_weight, 1, 1, "B");
         h3_purity_rl_jetpt_weight_eqch->Divide(h3_num_purity_rl_jetpt_weight_eqch, h3_denom_purity_rl_jetpt_weight_eqch, 1, 1, "B");
         h3_purity_rl_jetpt_weight_neqch->Divide(h3_num_purity_rl_jetpt_weight_neqch, h3_denom_purity_rl_jetpt_weight_neqch, 1, 1, "B");
+        h3_purity_rl_jetpt_weight_whf->Divide(h3_num_purity_rl_jetpt_weight_whf, h3_denom_purity_rl_jetpt_weight_whf, 1, 1, "B");
+        h3_purity_rl_jetpt_weight_wohf->Divide(h3_num_purity_rl_jetpt_weight_wohf, h3_denom_purity_rl_jetpt_weight_wohf, 1, 1, "B");
         
         h3_purity_rl_jetpt_HFpt->Divide(h3_num_purity_rl_jetpt_HFpt, h3_denom_purity_rl_jetpt_HFpt, 1, 1, "B");
 
         h_purity_rl_jetptHFpt_weight->Divide(h_num_purity_rl_jetptHFpt_weight, h_denom_purity_rl_jetptHFpt_weight, 1, 1, "B");
         
         h2_purity_rl_jetpt->Divide(h2_num_purity_rl_jetpt, h2_denom_purity_rl_jetpt, 1, 1, "B");
+        h2_purity_rl_jetpt_whf->Divide(h2_num_purity_rl_jetpt_whf, h2_denom_purity_rl_jetpt_whf, 1, 1, "B");
+        h2_purity_rl_jetpt_wohf->Divide(h2_num_purity_rl_jetpt_wohf, h2_denom_purity_rl_jetpt_wohf, 1, 1, "B");
                
         h3_efficiency_HFptetajetpt->Write("efficiency_HFptetajetpt");
         h3_purity_HFptetajetpt->Write("purity_HFptetajetpt");
@@ -630,7 +760,12 @@ void SimpleUnfold(int NumEvts = -1,
         h1_purity_jetpt->Write("purity_jetpt");
         
         h2_efficiency_rl_jetpt->Write("efficiency_rl_jetpt");
+        h2_efficiency_rl_jetpt_whf->Write("efficiency_rl_jetpt_whf");
+        h2_efficiency_rl_jetpt_wohf->Write("efficiency_rl_jetpt_wohf");
+
         h3_efficiency_rl_jetpt_weight->Write("efficiency_rl_jetpt_weight");
+        h3_efficiency_rl_jetpt_weight_whf->Write("efficiency_rl_jetpt_weight_whf");
+        h3_efficiency_rl_jetpt_weight_wohf->Write("efficiency_rl_jetpt_weight_wohf");
         h3_efficiency_rl_jetpt_weight_eqch->Write("efficiency_rl_jetpt_weight_eqch");
         h3_efficiency_rl_jetpt_weight_neqch->Write("efficiency_rl_jetpt_weight_neqch");    
         
@@ -639,7 +774,12 @@ void SimpleUnfold(int NumEvts = -1,
         h_efficiency_rl_jetptHFpt_weight->Write("efficiency_rl_jetptHFpt_weight");
         
         h2_purity_rl_jetpt->Write("purity_rl_jetpt");
+        h2_purity_rl_jetpt_whf->Write("purity_rl_jetpt_whf");
+        h2_purity_rl_jetpt_wohf->Write("purity_rl_jetpt_wohf");
+
         h3_purity_rl_jetpt_weight->Write("purity_rl_jetpt_weight");
+        h3_purity_rl_jetpt_weight_whf->Write("purity_rl_jetpt_weight_whf");
+        h3_purity_rl_jetpt_weight_wohf->Write("purity_rl_jetpt_weight_wohf");
         h3_purity_rl_jetpt_weight_eqch->Write("purity_rl_jetpt_weight_eqch");
         h3_purity_rl_jetpt_weight_neqch->Write("purity_rl_jetpt_weight_neqch");    
         
