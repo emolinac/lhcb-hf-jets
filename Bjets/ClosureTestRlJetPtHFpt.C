@@ -19,7 +19,7 @@
 
 using namespace std;
 
-int niter_npair = 8;
+int niter_npair = 2;
 
 void ClosureTestRlJetPtHFpt(int NumEvts = -1,
                  int NumIters = 4,  
