@@ -21,7 +21,7 @@
 using namespace std;
 
 void SimpleObservables(bool isData = true,
-                       int DoTrackEff = 2,
+                       int DoTrackEff = 0,
                        int DoTrigEff = 0,
                        int DoPIDEff = 0,
                        bool DoRecSelEff = false,

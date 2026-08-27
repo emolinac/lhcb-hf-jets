@@ -19,7 +19,7 @@
 using namespace fastjet;
 using namespace std;
 
-void MakeVarTreeData2018MD(bool DoJESJER = false, bool DoJetID = false)
+void MakeVarTreeData2018MD(bool DoJetID = false)
 {
         TBenchmark* benchmark = new TBenchmark();
         benchmark->Start("MakeVarTreeData");
@@ -357,26 +357,6 @@ void MakeVarTreeData2018MD(bool DoJESJER = false, bool DoJetID = false)
                                 Tree.Jpsi_PE / 1000.);
                 
                 HFmeson = mup + mum + Kmeson;
-
-                if (DoJESJER) {
-                        const int n_iters = n_smearing_iter;
-                        
-                        for (int i_iter = 0; i_iter < n_iters; i_iter++) {
-                                double rand = get_JES_JER(HFjet.Pt(), myRNG);  // Standard inclusive Z+jet values
-                                // double rand = get_JES_JER(HFjet.Pt(), myRNG, DoJESJER);  // Low-multiplicity Z+jet values
-                                
-                                // Temp subtraction of HFmeson to perform JESJER.
-                                HFjet -= HFmeson;
-                                
-                                //double newE2 = HFjet.E()*HFjet.E() + (rand*rand - 1) * HFjet.Pt()*HFjet.Pt();
-                                double newE2 = HFjet.E()*HFjet.E() + (rand*rand - 1) * HFjet.P()*HFjet.P();
-                                double newE = (newE2 < 0) ? 0 : std::sqrt(newE2);
-
-                                HFjet.SetPxPyPzE(HFjet.Px()*rand, HFjet.Py()*rand, HFjet.Pz()*rand, newE);
-                                
-                                HFjet += HFmeson;
-                        }
-                }
 
                 if (DoJetID) {
                         double mpt = 0;
