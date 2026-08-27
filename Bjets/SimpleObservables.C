@@ -14,27 +14,83 @@
 #include "../include/analysis-cuts.cpp"
 #include "../include/analysis-cuts.h"
 #include "../include/directories.h"
+#include "../include/names.h"
 
 #include "../include/utils.cpp"
 #include "../include/utils.h"
 
 using namespace std;
 
-void SimpleObservables(bool isData = true,
-                       int DoTrackEff = 0,
-                       int DoTrigEff = 0,
-                       int DoPIDEff = 0,
-                       bool DoRecSelEff = false,
-                       int DoMassFit = 0,
-                       bool DoSignalSys = false,
-                       bool DoJetID = false,                                
-                       bool SubtractGS = false,
-                       bool sPlotFit = false,
-                       bool L0MuonDiMuon = false,
-                       bool DoTrackEff_SysCrossCheck = false)
+void SimpleObservables(bool isData = true, std::string variation = "nominal")
 {
+        if(gSystem->AccessPathName((output_folder + namef_corrections[variation]).c_str())) {
+                std::cout<<"Correction file does not exist!"<<std::endl;
+                std::cout<<"Check existence of corrections file or variations name."<<std::endl;
+
+                return;
+        }
+
+        if(gSystem->AccessPathName((output_folder + Form("mass-fits/results_mass_fit_%s.root",((isData) ? "data" : "mcreco"))).c_str())) {
+                std::cout<<"Mass fit file does not exist!"<<std::endl;
+                std::cout<<"Check existence of mass fits or locations."<<std::endl;
+
+                return;
+        }
+
+        std::string input_file_name = (isData) ? namef_data_variations[variation] : namef_mcreco_variations[variation];
+        if(gSystem->AccessPathName((output_folder + input_file_name).c_str())) {
+                std::cout<<"Input file does not exist!"<<std::endl;
+                std::cout<<"Check existence of mass fits or locations."<<std::endl;
+
+                return;
+        }
+        
+        // Parameter initialization
+        bool DoJetID                  = false;
+        bool DoJESJER                 = false;
+        bool DoUnfoldPrior            = false;
+        bool DoRecSelEff              = false;
+        bool DoTrackEff_SysCrossCheck = false; 
+
+        int DoTrackEff = 0;
+        int DoTrigEff  = 0;
+        int DoPIDEff   = 0; 
+        int DoMassFit  = 0;
+
+        if (variation == "jetid")
+                DoJetID = true;
+        if (variation == "jesjer")
+                DoJESJER = true;
+        if (variation == "prior")
+                DoUnfoldPrior = true;
+        if (variation == "recseleff")
+                DoRecSelEff = true;
+        if (variation == "trackeff-hi")
+                DoTrackEff = 1;
+        if (variation == "trackeff-lo")
+                DoTrackEff = 2; 
+        if (variation == "trigeff-hi")
+                DoTrigEff = 1;
+        if (variation == "trigeff-lo")
+                DoTrigEff = 2;
+        if (variation == "pideff-hi")
+                DoPIDEff = 1; 
+        if (variation == "pideff-lo")
+                DoPIDEff = 2;
+        if (variation == "massfit-near")
+                DoMassFit = 1;
+        if (variation == "massfit-far")
+                DoMassFit = 2; 
+        if (variation == "massfit-lower")
+                DoMassFit = 3;
+        if (variation == "massfit-upper")
+                DoMassFit = 4;
+        if (variation == "trackeff-cc")
+                DoTrackEff_SysCrossCheck = true; 
+
         // Open correction files to apply jet reconstruction associated weights
-        TFile* f_corrections = new TFile((output_folder + "bjets_corrections.root").c_str());
+        TFile* f_corrections = new TFile((output_folder + namef_corrections[variation]).c_str());
+
         TH1D* h1_jet_eff = (TH1D*) f_corrections->Get("efficiency_jetpt");
         TH1D* h1_jet_pur = (TH1D*) f_corrections->Get("purity_jetpt");
 
@@ -45,9 +101,7 @@ void SimpleObservables(bool isData = true,
         TH3D* h3_HF_jet_pur = (TH3D*) f_corrections->Get("purity_HFptetajetpt");
         
         // Open mass fit results
-        std::string mass_fit_extension = (isData) ? "mass-fits/results_mass_fit_data.root" : "mass-fits/results_mass_fit_mcreco.root";
-
-        TFile f_massfit((output_folder + mass_fit_extension).c_str(), "READ"); 
+        TFile f_massfit((output_folder + Form("mass-fits/results_mass_fit_%s.root",((isData) ? "data" : "mcreco"))).c_str(), "READ"); 
         
         TH1D *h1_MassMin = (TH1D *)f_massfit.Get("h1_MassMin");
         TH1D *h1_MassMax = (TH1D *)f_massfit.Get("h1_MassMax");
@@ -63,10 +117,6 @@ void SimpleObservables(bool isData = true,
         TH1D *h1_BkgScale_forSysLower = (TH1D *)f_massfit.Get("h1_BkgScale_forSysLower");
         TH1D *h1_BkgScale_forSysUpper = (TH1D *)f_massfit.Get("h1_BkgScale_forSysUpper");
 
-        TTree *sWeightTree;
-        if (sPlotFit)
-                sWeightTree = (TTree *)f_massfit.Get("sWeightTree");
-        
         //  Triggers
         TString extension_trig_MC = "PhotonHadronElectronTIS_jpsieff_reco_ev_-1_b_PID_91599.root";
         TString extension_trig_Data = "PhotonHadronElectronTIS_jpsieff_data_ev_-1_b_PID_91599.root";
@@ -82,16 +132,16 @@ void SimpleObservables(bool isData = true,
 
         TH2D *h2_trig_ratio = (TH2D *)file_trigeffMC.Get("h2_eff_ratio");
 
-        TChain *BTree = new TChain("BTree", "B-jets Tree Variables");
-        BTree->Add((output_folder + Form("ntuple_bjets_%s.root/BTree",(isData)?"data":"mcreco")).c_str());
+        TFile* f_input = new TFile((output_folder + input_file_name).c_str());
+        
+        TTree* BTree = (TTree*) f_input->Get("BTree");
 
-        cout << BTree->GetTreeNumber() << endl;
+        double NumEvts = BTree->GetEntries();\
 
-        double NumEvts = BTree->GetEntries();
-
-        cout << BTree->GetEntries() << endl;
-
-        TFile f((output_folder + Form("bjets_simpleobservable_%s.root",(isData)?"data":"mcreco")).c_str(), "RECREATE");
+        // Determine name of file depending on type
+        std::string output_file_name = (isData) ? namef_simpleobservable_data[variation] : namef_simpleobservable_mcreco[variation];
+        
+        TFile f((output_folder + output_file_name).c_str(), "RECREATE");
 
         TH3D *h3_rl_jetpt_weight       = new TH3D("h3_rl_jetpt_weight"      , "", nbin_rl_nominal_unfolding, unfolding_rl_nominal_binning, ptbinsize, pt_binedges, nbin_weight, weight_binning);
         TH3D *h3_rl_jetpt_weight_eqch  = new TH3D("h3_rl_jetpt_weight_eqch" , "", nbin_rl_nominal_unfolding, unfolding_rl_nominal_binning, ptbinsize, pt_binedges, nbin_weight, weight_binning);
@@ -361,23 +411,10 @@ void SimpleObservables(bool isData = true,
         //BTree->SetBranchAddress("trigeff_ratio", &trigeff_ratio);
         BTree->SetBranchAddress("TOS", &TOS);
         BTree->SetBranchAddress("nSPDHits", &nSPDHits);
-
-        float sweight;
-        if (sPlotFit)
-                sWeightTree->SetBranchAddress("sweight", &sweight);
         
         int eventNum;
 
         cout << "Requested # of events : " << NumEvts << endl;
-        
-        if (sPlotFit) {
-                cout << "NumEvents in the sweight tree : " << sWeightTree->GetEntries() << std::endl; 
-                
-                if (isData && !DoJetID && NumEvts != sWeightTree->GetEntries()) {
-                        std::cout << "Different number of entries in sWeightTree vs. Data tree is different!" << std::endl;
-                        return;
-                }
-        }
 
         int nan_counter = 0;
         
@@ -392,11 +429,6 @@ void SimpleObservables(bool isData = true,
                         double percentage = 100.*ev/NumEvts;
                         std::cout<<"\r"<<percentage<<"\% jets processed."<< std::flush;
                 }
-
-                if (isData && sPlotFit)
-                        sWeightTree->GetEntry(ev);
-                else
-                        sweight = 1.0;
                 
                 HFjet.SetPxPyPzE(jet_px, jet_py, jet_pz, jet_e);
                 mup.SetPxPyPzE(mup_px, mup_py, mup_pz, mup_e);
@@ -429,13 +461,6 @@ void SimpleObservables(bool isData = true,
                         if (mup_GHOSTPROB > 0.4 || mum_GHOSTPROB > 0.4 || K_GHOSTPROB > 0.4)
                                 continue;
                         if (mup_IPCHI2 < 25 || mum_IPCHI2 < 25 || K_IPCHI2 < 25)
-                                continue;
-                }
-
-                if (sPlotFit) {
-                        float mass_low = 5.15;
-                        float mass_high = 5.55;
-                        if (bmass_dtf < mass_low || bmass_dtf > mass_high)
                                 continue;
                 }
 
@@ -795,7 +820,7 @@ void SimpleObservables(bool isData = true,
                         for (int i = 0; i < ptHFbinsize; i++) {
                                 if (HFmeson.Pt() > ptHF_binedges[i] && HFmeson.Pt() < ptHF_binedges[i + 1]) {
                                         h1_mass_HFpt[i]->Fill(bmass_dtf);
-                                        h1_mass_HFpt_sweight[i]->Fill(bmass_dtf, sweight);
+                                        h1_mass_HFpt_sweight[i]->Fill(bmass_dtf, 1);
                                         break;
                                 }
                         }

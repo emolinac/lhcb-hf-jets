@@ -18,29 +18,43 @@
 #include "../include/analysis-cuts.cpp"
 #include "../include/analysis-cuts.h"
 #include "../include/directories.h"
+#include "../include/names.h"
 
 #include "../include/utils.cpp"
 #include "../include/utils.h"
 
 using namespace std;
 
-void SimpleUnfold(int NumEvts = -1,
-                  bool SubtractGS = false,                  
-                  bool DoJESJER = false,
-                  bool DoRecSelEff = false,
-                  bool DoSignalSys = false,
-                  bool DoUnfoldPrior = false,
-                  bool sPlotFit = false)
+void SimpleUnfold(std::string variation = "nominal")
 {
+        bool SubtractGS    = false;
+        bool DoJESJER      = false;
+        bool DoJetID       = false;
+        bool DoRecSelEff   = false;
+        bool DoSignalSys   = false;
+        bool DoUnfoldPrior = false;
+        
+        if (variation == "jesjer")
+                DoJESJER = true;
+        if (variation == "jetid")
+                DoJetID = true;
+        if (variation == "rmreweight")
+                DoUnfoldPrior = true;
+        if (variation == "recseleff")
+                DoRecSelEff = true;
+
+        if(gSystem->AccessPathName((output_folder + namef_mcreco_variations[variation]).c_str())) {
+                std::cout<<"MCReco file does not exist. Check file or variation given as input."<<std::endl;
+
+                return;
+        }
+
+        TFile* f_mcreco = new TFile((output_folder + namef_mcreco_variations[variation]).c_str());
+
+        TTree* BTree = (TTree*) f_mcreco->Get("BTree");
+        
+        // Get denominators of the efficiencies
         TFile *file_eff = new TFile((output_folder + "bjets_efficiencies.root").c_str(), "READ");
-        
-        TChain *BTree = new TChain("BTree", "");
-        BTree->Add((output_folder + "ntuple_bjets_mcreco.root/BTree").c_str());
-        
-        if (NumEvts > BTree->GetEntries())
-                NumEvts = BTree->GetEntries();
-        if (NumEvts == -1)
-                NumEvts = BTree->GetEntries();
         
         TH1D *h1_denom_efficiency_HFpt   = (TH1D*) file_eff->Get("denom_efficiency_HFpt");
         TH1D *h1_denom_efficiency_jetpt  = (TH1D*) file_eff->Get("denom_efficiency_jetpt");
@@ -53,10 +67,6 @@ void SimpleUnfold(int NumEvts = -1,
         
         //    /////////////////// Mass Fit Parameters /////////////////////////////////
         // TString extension_mass("");
-        // if (sPlotFit)
-        //         extension_mass = TString("splotfit_data_ev_-1") + Form("_ptj_%d%d", int(pTLow), int(250.)) + "_eta_2.54.0_ghost_0.4_b" + str_PID + str_L0 + "_91599.root";
-        // else
-        //         extension_mass = TString("massfit_data_ev_-1") + Form("_ptj_%d%d", int(pTLow), int(250.)) + "_eta_2.54.0_ghost_0.4_b" + str_PID + str_L0 + "_91599.root";
         
         // if (DoRecSelEff)
         //         extension_mass = "recselsys_" + extension_mass;
@@ -74,7 +84,6 @@ void SimpleUnfold(int NumEvts = -1,
         TH1D *h1_BkgScaleNear = (TH1D*) f_massfit.Get("h1_BkgScale_forSysNear");
         TH1D *h1_BkgScaleFar  = (TH1D*) f_massfit.Get("h1_BkgScale_forSysFar");
         
-        
         if (h1_BkgScaleNear == NULL)
                 cout << "NULL NEAR!" << endl;
         if (h1_BkgScaleFar == NULL)
@@ -89,7 +98,7 @@ void SimpleUnfold(int NumEvts = -1,
                 h3_ptzjt_ratio = (TH3D *) file_reco_weights->Get("ptzjt_ratio");
         }
         
-        TFile *f = TFile::Open((output_folder + "bjets_corrections.root").c_str(), "RECREATE");
+        TFile *f = TFile::Open((output_folder + namef_corrections[variation]).c_str(), "RECREATE");
         gDirectory->cd();
         
         // 1D Denom Efficiencies and Purities of Observables (237 - 246)
@@ -354,20 +363,17 @@ void SimpleUnfold(int NumEvts = -1,
 
         BTree->SetBranchAddress("truthmatched_jet_passed", &truthmatched_jet_passed);
         
-        cout << "Requested # of events" << NumEvts << endl;
-        
-        
         int eventNum;
         int NumBjets = 0;
         int NumTrueBjets = 0;
 
         TLorentzVector HFmeson, HFjet, tr_HFjet, tr_HFmeson;
         
-        for (int ev = 0; ev < NumEvts; ev++) {
+        for (int ev = 0; ev < BTree->GetEntries(); ev++) {
                 BTree->GetEntry(ev);
                 
                 if (ev%10000 == 0) {
-                        double percentage = 100.*ev/NumEvts;
+                        double percentage = 100.*ev/BTree->GetEntries();
                         std::cout<<"\r"<<percentage<<"\% jets processed."<< std::flush;
                 }
                 

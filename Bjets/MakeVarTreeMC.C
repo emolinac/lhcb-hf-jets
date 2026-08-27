@@ -17,6 +17,7 @@
 #include "../include/analysis-cuts.cpp"
 #include "../include/analysis-cuts.h"
 #include "../include/directories.h"
+#include "../include/names.h"
 #include "../include/TBJetsMC.h"
 #include "../include/TBJetsMC.C"
 
@@ -67,7 +68,7 @@ void MakeVarTreeMC(int NumEvts_user = -1)
         if (NumEvts == -1)
                 NumEvts = Tree.fChain->GetEntries();
 
-        TFile f((output_folder + "ntuple_bjets_mc.root").c_str(), "RECREATE");
+        TFile f((output_folder + namef_ntuple_mc).c_str(), "RECREATE");
         
         // FF(z) Histograms 
         TH1D *h1_z_truth   = new TH1D("z_truth"  , "", 80, 0.0, 1.01);

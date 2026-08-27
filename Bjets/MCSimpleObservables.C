@@ -22,13 +22,6 @@ using namespace std;
 
 void MCSimpleObservables(int NumEvts = -1)
 {
-        // This should be the file from MCMakeVarTree
-        std::string extension = "simpleobservable_mc_";
-        
-        std::string extension_RootFilesMC = output_folder + "bjets-mc/";
-        std::cout<<"Starting"<<std::endl;
-
-
         TFile fread((output_folder + "ntuple_bjets_mc.root").c_str(), "READ");
         TTree *BTree = (TTree *)fread.Get("BTree");
         
