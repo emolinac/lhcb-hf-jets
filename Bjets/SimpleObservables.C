@@ -24,14 +24,15 @@ using namespace std;
 void SimpleObservables(bool isData = true, std::string variation = "nominal")
 {
         if(gSystem->AccessPathName((output_folder + namef_corrections[variation]).c_str())) {
-                std::cout<<"Correction file does not exist!"<<std::endl;
+                std::cout<<"Correction file not found!"<<std::endl;
                 std::cout<<"Check existence of corrections file or variations name."<<std::endl;
 
                 return;
         }
 
-        if(gSystem->AccessPathName((output_folder + Form("mass-fits/results_mass_fit_%s.root",((isData) ? "data" : "mcreco"))).c_str())) {
-                std::cout<<"Mass fit file does not exist!"<<std::endl;
+        std::string input_massfits_file_name = (isData) ? namef_massfits_results_data[variation] : namef_massfits_results_mcreco[variation];
+        if(gSystem->AccessPathName((output_folder_massfits + input_massfits_file_name).c_str())) {
+                std::cout<<"Mass fit file not found!"<<std::endl;
                 std::cout<<"Check existence of mass fits or locations."<<std::endl;
 
                 return;
@@ -39,8 +40,8 @@ void SimpleObservables(bool isData = true, std::string variation = "nominal")
 
         std::string input_file_name = (isData) ? namef_data_variations[variation] : namef_mcreco_variations[variation];
         if(gSystem->AccessPathName((output_folder + input_file_name).c_str())) {
-                std::cout<<"Input file does not exist!"<<std::endl;
-                std::cout<<"Check existence of mass fits or locations."<<std::endl;
+                std::cout<<"Input file not found!"<<std::endl;
+                std::cout<<"Check existence of input file or locations."<<std::endl;
 
                 return;
         }
@@ -50,6 +51,7 @@ void SimpleObservables(bool isData = true, std::string variation = "nominal")
         bool DoJESJER                 = false;
         bool DoUnfoldPrior            = false;
         bool DoRecSelEff              = false;
+        bool DoSignalSys              = false;
         bool DoTrackEff_SysCrossCheck = false; 
 
         int DoTrackEff = 0;
@@ -65,6 +67,8 @@ void SimpleObservables(bool isData = true, std::string variation = "nominal")
                 DoUnfoldPrior = true;
         if (variation == "recseleff")
                 DoRecSelEff = true;
+        if (variation == "fitsignal")
+                DoSignalSys = true;
         if (variation == "trackeff-hi")
                 DoTrackEff = 1;
         if (variation == "trackeff-lo")
@@ -101,7 +105,7 @@ void SimpleObservables(bool isData = true, std::string variation = "nominal")
         TH3D* h3_HF_jet_pur = (TH3D*) f_corrections->Get("purity_HFptetajetpt");
         
         // Open mass fit results
-        TFile f_massfit((output_folder + Form("mass-fits/results_mass_fit_%s.root",((isData) ? "data" : "mcreco"))).c_str(), "READ"); 
+        TFile f_massfit((output_folder_massfits + input_massfits_file_name).c_str(), "READ"); 
         
         TH1D *h1_MassMin = (TH1D *)f_massfit.Get("h1_MassMin");
         TH1D *h1_MassMax = (TH1D *)f_massfit.Get("h1_MassMax");

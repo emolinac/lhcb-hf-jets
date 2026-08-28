@@ -24,8 +24,8 @@ TString str_eta;
 TString str_Nevts;
 TString str_PID = "";
 
-//const int n_smearing_iter = 25;
-const int n_smearing_iter = 1;
+const int n_smearing_iter = 25;
+// const int n_smearing_iter = 1;
 
 
 bool followHardest = true;

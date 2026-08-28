@@ -22,35 +22,40 @@
 #include "../include/analysis-cuts.cpp"
 #include "../include/analysis-cuts.h"
 #include "../include/directories.h"
+#include "../include/names.h"
 #include "../include/TBJetsMCReco.h"
 #include "../include/TBJetsMCReco.C"
 
 using namespace RooFit;
 
-void MassFit(bool isData = true,
-             bool UseDTF = true,
-             bool DoRecSelEff = 0,
-             bool DoSystematic = 0,             
-             float ptmin_user = pTLow,
-             float ptmax_user = 250.)
+double ptMin_user = pTLow;
+double ptMax_user = 250;
+
+void MassFit(bool isData = true, std::string variation = "nominal")
 {
-        ptMin = ptmin_user;
-        ptMax = ptmax_user;
-        
-        int flavor = 5;
-        
-        // Setup Tree
-        TChain *BTree = new TChain("BTree", "B-jets Tree Variables");
+        ptMin = ptMin_user;
+        ptMax = ptMax_user;
 
-        if (isData)
-                BTree->Add((output_folder + "ntuple_bjets_data.root/BTree").c_str());
-        else
-                BTree->Add((output_folder + "ntuple_bjets_mcreco.root/BTree").c_str());
-        
-        double NumEvts = BTree->GetEntries();
+        std::string input_file_name = (isData) ? namef_data_variations[variation] : namef_mcreco_variations[variation];
+        if(gSystem->AccessPathName((output_folder + input_file_name).c_str())) {
+                std::cout<<"Input file not found!"<<std::endl;
+                std::cout<<"Check existence of input file or locations."<<std::endl;
 
-        cout << "Number of entries : " << BTree->GetEntries() << endl;
+                return;
+        }
+
+        bool DoRecSelEff = false;
+        bool DoSignalSys = false;
+
+        if (variation == "recseleff")
+                DoRecSelEff = true;
+        if (variation == "fitsignal")
+                DoSignalSys = true;
         
+        TFile* f_input = new TFile((output_folder + input_file_name).c_str());
+
+        TTree* BTree = (TTree*) f_input->Get("BTree");
+                
         float mup_px, mup_py, mup_pz, mup_e;
         float mum_px, mum_py, mum_pz, mum_e;
         float K_px, K_py, K_pz, K_e, K_PIDK;
@@ -113,14 +118,14 @@ void MassFit(bool isData = true,
                 BTree->SetBranchAddress("tr_HF_e", &tr_HF_e);
         }
         
-        float mass_low = 5.15;
+        float mass_low  = 5.15;
         float mass_high = 5.55;
 
         vector<TH1D *> h1_mass_HFpt;
         vector<float> vec_bkg_frac, vec_res_frac, vec_bkg_yield, vec_sig_yield;
 
-        std::string type_of_event = (isData) ? "data" : "mcreco";
-        TFile f((output_folder + "mass-fits/results_mass_fit_" + type_of_event + ".root").c_str(), "RECREATE");
+        std::string output_file_name = (isData) ? namef_massfits_results_data[variation] : namef_massfits_results_mcreco[variation];
+        TFile f((output_folder_massfits + output_file_name).c_str(), "RECREATE");
 
         int nBins = 80;
         float binsize;
@@ -169,11 +174,11 @@ void MassFit(bool isData = true,
         TLorentzVector HFmeson, HFjet, mum, mup, Kmeson, Jpsi, tr_HFmeson;
 
         // Fill the mass plots
-        for (int ev = 0; ev < NumEvts; ev++) {
+        for (int ev = 0; ev < BTree->GetEntries(); ev++) {
                 BTree->GetEntry(ev);
 
                 if (ev%10000 == 0) {
-                        double percentage = 100.*ev/NumEvts;
+                        double percentage = 100.*ev/BTree->GetEntries();
                         std::cout<<"\r"<<percentage<<"\% jets processed."<< std::flush;
                 }
 
@@ -193,7 +198,6 @@ void MassFit(bool isData = true,
                         continue;
 
                 if (DoRecSelEff) {
-                        // cout << Bu_IPCHI2 << ", " << Bu_CHI2 << ", " << Jpsi_CHI2 << ", " << Jpsi_CHI2NDOF << ", " << sqrt(Jpsi_FDCHI2) << endl;
                         if (Bu_IPCHI2 > 22)
                                 continue;
                         if (Bu_CHI2 > 42)
@@ -235,10 +239,7 @@ void MassFit(bool isData = true,
 
                 // if(dtf_chi2ndf > 5) continue;
                 // cout<<bmass_dtf<<endl;
-                float bmass = HFmeson.M();
-                
-                if (UseDTF)
-                        bmass = bmass_dtf;
+                float bmass = bmass_dtf;
                 
                 bool PID_cond = (K_PIDK > 0);
                 
@@ -312,7 +313,7 @@ void MassFit(bool isData = true,
         TString plotfileO;
         TString plotfileC;
         
-        plotfilePDF = Form("./plots/massfit_%s.pdf",(isData)?"data":"mcreco");
+        plotfilePDF = Form(("./plots/massfit_%s_" + variation + ".pdf").c_str(),(isData)?"data":"mcreco");
 
         plotfileO = plotfilePDF + TString("(");
         plotfileC = plotfilePDF + TString("]");
@@ -344,7 +345,7 @@ void MassFit(bool isData = true,
         std::ofstream BkgParams("csv/bkg_" + extension + ".csv");
         std::ofstream ResonantParams("csv/res_" + extension + ".csv");
 
-        if (DoSystematic)
+        if (DoSignalSys)
                 SigParams << "m,t,n,nsig,fraction" << endl;
         else
                 SigParams << "mu,sigma1,sigma2,alpha1,n1,n1_2,alpha2,n2,n2_2,nsig" << endl;
@@ -370,10 +371,23 @@ void MassFit(bool isData = true,
                 
                 binsize = (mass_high - mass_low) / (float)nBins;
 
-                // file_workspace works when the mass fits are executed for the MCReco first!
+                if (gSystem->AccessPathName((output_folder_massfits + Form("workspace%d_", i) + "massfits_missid.root").c_str())) {
+                        std::cout<<"MisID workspace has not been found!"<<std::endl;
+                        std::cout<<"Check existance or location."<<std::endl;
 
-                file_workspace       = new TFile((output_folder + Form("mass-fits/workspace%d_", i) + "testing_massfitsmcreco.root").c_str(), "READ");
-                file_workspace_misid = new TFile((output_folder + Form("mass-fits/workspace%d_", i) + "testing_massfits.root").c_str(), "READ");
+                        continue;
+                }
+
+                if (isData && gSystem->AccessPathName((output_folder_massfits + Form("workspace%d_", i) + "massfits_mcreco_" + variation + ".root").c_str())) {
+                        std::cout<<"Running for data: MCreco workspace has not been found!"<<std::endl;
+                        std::cout<<"Check existance or location."<<std::endl;
+
+                        continue;
+                }
+
+                // file_workspace works when the mass fits are executed for the MCReco first!
+                file_workspace       = new TFile((output_folder_massfits + Form("workspace%d_", i) + "massfits_mcreco_" + variation + ".root").c_str(), "READ");
+                file_workspace_misid = new TFile((output_folder_massfits + Form("workspace%d_", i) + "massfits_missid.root").c_str(), "READ");
                 
                 if (file_workspace == NULL) {
                         std::cout<<"First execute the massfits for mcreco!"<<std::endl;
@@ -389,10 +403,8 @@ void MassFit(bool isData = true,
 
                 RooWorkspace *w_read = (RooWorkspace *)file_workspace->Get(Form("w%d", i));
                 RooWorkspace *w_read_misid = (RooWorkspace *)file_workspace_misid->Get(Form("w%d", i));
-                RooRealVar *sigma_ratio, *mean, *sigma1, *sigma2;
-                RooRealVar *mu_sig, *alpha1_sig, *alpha2_sig, *p1_sig, *p2_sig;
-                RooRealVar *mu_sig2, *alpha1_sig2, *alpha2_sig2, *p1_sig2, *p2_sig2;        
-                RooRealVar *mu, *width, *alpha1, *alpha2, *p1, *p2;
+                RooRealVar *sigma1, *sigma2;
+                RooRealVar *mu_sig2, *p1_sig2, *p2_sig2;        
 
                 RooRealVar HFMass("HFMass", "HFMass", mass_low, mass_high);
                 RooDataHist B_mass("B_mass", "B_mass", RooArgList(HFMass), h1_mass_HFpt[i], 1.);
@@ -403,45 +415,32 @@ void MassFit(bool isData = true,
                 ////////////////////////////////////////////////////
                 // build siganl
                 ///////////////////////////////////////////////////
-
-                if (UseDTF) {
-                        sigma_ratio = new RooRealVar("sigma_ratio", "sigma_ratio", 1.52571 / 0.856549);
-                        mean        = new RooRealVar("mean", "mean of gaussians", 5.27966, 5.27, 5.282);
-                        
-                        if (isData) {
-                                sigma1 = new RooRealVar("sigma1", "width of gaussians", 0.011, 0.001, 0.03);
-                                sigma2 = new RooRealVar("sigma2", "width of gaussians", 0.007, 0.001, 0.03); // CHANGE
-                        } else {
-                                sigma1 = new RooRealVar("sigma1", "width of gaussians", 0.011, 0.001, 0.03);
-                                sigma2 = new RooRealVar("sigma2", "width of gaussians", 0.007, 0.001, 0.03); // CHANGE
-                        }     
+                RooRealVar* sigma_ratio = new RooRealVar("sigma_ratio", "sigma_ratio", 1.52571 / 0.856549);
+                RooRealVar* mean        = new RooRealVar("mean", "mean of gaussians", 5.27966, 5.27, 5.282);
+                
+                if (isData) {
+                        sigma1 = new RooRealVar("sigma1", "width of gaussians", 0.011, 0.001, 0.03);
+                        sigma2 = new RooRealVar("sigma2", "width of gaussians", 0.007, 0.001, 0.03); // CHANGE
                 } else {
-                        sigma_ratio = new RooRealVar("sigma_ratio", "sigma_ratio", 1.78528 / 3.15958);
-                        mean        = new RooRealVar("mean", "mean of gaussians", 5.279, 5.27, 5.282);
-                        sigma1      = new RooRealVar("sigma1", "width of gaussians", 0.002, 0.001, 0.05);
-                        sigma2      = new RooRealVar("sigma2", "width of gaussians", 0.003, 0.001, 0.05); // CHANGE
-                }
-
+                        sigma1 = new RooRealVar("sigma1", "width of gaussians", 0.011, 0.001, 0.03);
+                        sigma2 = new RooRealVar("sigma2", "width of gaussians", 0.007, 0.001, 0.03); // CHANGE
+                }     
+ 
                 RooGaussian gauss1("gauss_sig1", "Signal component 1", HFMass, *mean, *sigma1);
                 RooGaussian gauss2("gauss_sig2", "Signal component 2", HFMass, *mean, *sigma2);
 
-                mu_sig     = new RooRealVar("mu_sig", "mu", 5.279, 5.27, 5.282);
-                alpha1_sig = new RooRealVar("alpha1_sig", "alpha1", 2., 0.01, 10.);
-                alpha2_sig = new RooRealVar("alpha2_sig", "alpha2", 2., 0.01, 10.);
+                RooRealVar* mu_sig     = new RooRealVar("mu_sig", "mu", 5.279, 5.27, 5.282);
+                RooRealVar* alpha1_sig = new RooRealVar("alpha1_sig", "alpha1", 2., 0.01, 10.);
+                RooRealVar* alpha2_sig = new RooRealVar("alpha2_sig", "alpha2", 2., 0.01, 10.);
 
-                alpha1_sig2 = new RooRealVar("alpha1_sig2", "alpha1", 2., 0.01, 10.);
-                alpha2_sig2 = new RooRealVar("alpha2_sig2", "alpha2", 2., 0.01, 10.);
+                RooRealVar* alpha1_sig2 = new RooRealVar("alpha1_sig2", "alpha1", 2., 0.01, 10.);
+                RooRealVar* alpha2_sig2 = new RooRealVar("alpha2_sig2", "alpha2", 2., 0.01, 10.);
                 
-                // p1_sig = RooRealVar("p1_sig", "p1", 1., 0.6, 4.);
-                // p2_sig = RooRealVar("p2_sig", "p2", 1., 0.6, 4.);
-                
-                p1_sig = new RooRealVar("p1_sig", "p1", 2., 1., 6.);
-                p2_sig = new RooRealVar("p2_sig", "p2", 3., 1., 6.);
+                RooRealVar* p1_sig = new RooRealVar("p1_sig", "p1", 2., 1., 6.);
+                RooRealVar* p2_sig = new RooRealVar("p2_sig", "p2", 3., 1., 6.);
 
                 // Or, Create signal from two Crystal Ball functions
                 // These parameters have been derived from simulation
-
-
                 if (isData && w_read != NULL) {
                         mu_sig = (RooRealVar *)w_read->obj("mu_sig");
                         alpha1_sig = (RooRealVar *)w_read->obj("alpha1_sig");
@@ -466,9 +465,6 @@ void MassFit(bool isData = true,
 
                 RooRealVar *nsig1 = new RooRealVar("nsig1", "fraction of component 1 in signal", 0.3, 0., 1.);
 
-                // Choose if you want two CB functions as signal, or two Gaussians.
-
-                //RooAddPdf sig("sig", "Signal", RooArgList(gauss1, gauss2), RooArgList(nsig1));
                 RooAddPdf sig("sig", "Signal", RooArgList(dcbPdf_sig1, dcbPdf_sig2), RooArgList(*nsig1));
                 
                 RooRealVar *sig2_m = new RooRealVar("sig2_m", "sig2_m", 5.279, 5.27, 5.282);
@@ -478,28 +474,18 @@ void MassFit(bool isData = true,
 
                 RooGenericPdf sig2("student-t", "", "tgamma((sig2_n+1)/2)/(tgamma(sig2_n/2)*sqrt(TMath::Pi()*sig2_n)*sig2_t) * pow(1+(1/sig2_n * pow((HFMass-sig2_m)/sig2_t, 2)), (-1-sig2_n)/2)", RooArgList(HFMass, *sig2_m, *sig2_n, *sig2_t));
 
-                if (UseDTF && w_read_misid != NULL) {
-                        mu = (RooRealVar *)w_read_misid->obj("mu");
-                        width = (RooRealVar *)w_read_misid->obj("width");
-                        alpha1 = (RooRealVar *)w_read_misid->obj("alpha1");
-                        alpha2 = (RooRealVar *)w_read_misid->obj("alpha2");
-                        p1 = (RooRealVar *)w_read_misid->obj("p1");
-                        p2 = (RooRealVar *)w_read_misid->obj("p2");
-                        mu->setConstant(kTRUE);
-                        width->setConstant(kTRUE);
-                        alpha1->setConstant(kTRUE);
-                        alpha2->setConstant(kTRUE);
-                        p1->setConstant(kTRUE);
-                        p2->setConstant(kTRUE);
-                } else {
-                        return; // EFMC: sorry, but wtf
-                        mu = new RooRealVar("mu", "mu", 5.33183e+00);
-                        width = new RooRealVar("width", "width", 2.62897e-02);
-                        alpha1 = new RooRealVar("alpha1", "alpha1", 1.72233e+00);
-                        alpha2 = new RooRealVar("alpha2", "alpha2", 7.67677e-01);
-                        p1 = new RooRealVar("p1", "p1", 1.73799e+00);
-                        p2 = new RooRealVar("p2", "p2", 2.09840e+00);
-                }
+                RooRealVar* mu     = (RooRealVar*) w_read_misid->obj("mu");
+                RooRealVar* width  = (RooRealVar*) w_read_misid->obj("width");
+                RooRealVar* alpha1 = (RooRealVar*) w_read_misid->obj("alpha1");
+                RooRealVar* alpha2 = (RooRealVar*) w_read_misid->obj("alpha2");
+                RooRealVar* p1     = (RooRealVar*) w_read_misid->obj("p1");
+                RooRealVar* p2     = (RooRealVar*) w_read_misid->obj("p2");
+                mu->setConstant(kTRUE);
+                width->setConstant(kTRUE);
+                alpha1->setConstant(kTRUE);
+                alpha2->setConstant(kTRUE);
+                p1->setConstant(kTRUE);
+                p2->setConstant(kTRUE);
 
                 RooCrystalBall dcbPdf("dcbPdf", "floatSidedCB", HFMass, *mu, *width, *alpha1, *p1, *alpha2, *p2);
 
@@ -511,14 +497,9 @@ void MassFit(bool isData = true,
                 RooRealVar *a1 = new RooRealVar("exp_c", "exp_c", -2., -4, -0.1);
                 RooExponential bkg("bkg", "bkg", HFMass, *a1);
 
-                //  RooRealVar * a2("a2", "a2", -1, -2, -0.1);
-                // RooRealVar * a1("a1", "a1", 2, 0., 9.);
-                // RooPolynomial bkg("bkg", "Background", HFMass, RooArgList(a1, a2));
-
                 RooRealVar *a0_cheb = new RooRealVar("a0_cheb", "a0_cheb", -0.5, -3, -0.0001);
                 RooRealVar *a1_cheb = new RooRealVar("a1_cheb", "a1_cheb", -0.2, -3, -0.0001);
                 RooRealVar *a2_cheb = new RooRealVar("a2_cheb", "a2_cheb", -0.2, -3, -0.0001);
-                // RooChebychev bkg_cheb("bkg_cheb", "Background_cheb", HFMass, RooArgSet(*a0_cheb, *a1_cheb, *a2_cheb));
                 RooChebychev bkg_cheb("bkg_cheb", "Background_cheb", HFMass, RooArgSet(*a0_cheb, *a1_cheb));
 
                 /////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -539,17 +520,12 @@ void MassFit(bool isData = true,
                 RooAddPdf *model;
                 if (isData)
                 {
-                        if (UseDTF){
-                                if (DoSystematic)
-                                        model = new RooAddPdf("model", "g1+g2+a", RooArgList(bkg_cheb, sig2, dcbPdf), RooArgList(*nbkg, *nsig, *nres));
-                                else
-                                        model = new RooAddPdf("model", "g1+g2+a", RooArgList(bkg_cheb, sig, dcbPdf), RooArgList(*nbkg, *nsig, *nres));
-                        } else {
-                                model = new RooAddPdf("model", "g1+g2+a", RooArgList(bkg, sig, dcbPdf), RooArgList(*nbkg, *nsig, *nres));
-                        }
+                        if (DoSignalSys)
+                                model = new RooAddPdf("model", "g1+g2+a", RooArgList(bkg_cheb, sig2, dcbPdf), RooArgList(*nbkg, *nsig, *nres));
+                        else
+                                model = new RooAddPdf("model", "g1+g2+a", RooArgList(bkg_cheb, sig, dcbPdf), RooArgList(*nbkg, *nsig, *nres));
                 } else {
-                model = new RooAddPdf("model", "g1+g2+a", RooArgList(sig), RooArgList(*nsig));
-                // model = new RooAddPdf("model", "g1+g2+a", RooArgList(sig2), RooArgList(*nsig));
+                        model = new RooAddPdf("model", "g1+g2+a", RooArgList(sig), RooArgList(*nsig));
                 }
 
                 // Capture LaTeX output
@@ -641,9 +617,9 @@ void MassFit(bool isData = true,
                 w->Print();
 
                 if (isData)
-                        w->writeToFile((output_folder + Form("mass-fits/workspace%d_", i) + "testing_massfitsdata.root").c_str());
+                        w->writeToFile((output_folder_massfits + Form("workspace%d_", i) + "massfits_data_" + variation + ".root").c_str());
                 else
-                        w->writeToFile((output_folder + Form("mass-fits/workspace%d_", i) + "testing_massfitsmcreco.root").c_str());
+                        w->writeToFile((output_folder_massfits + Form("workspace%d_", i) + "massfits_mcreco_" + variation + ".root").c_str());
 
                 cout << "Chi2/dof = " << chi2 << endl;
                 cout << "a1 = " << a1->getVal() << endl;
@@ -659,7 +635,7 @@ void MassFit(bool isData = true,
                 else
                         MassSigma = sigma2->getVal();     
                 
-                if (DoSystematic) {
+                if (DoSignalSys) {
                         MassMu = sig2_m->getVal();
                         MassSigma = sig2_t->getVal();
                         cout << "MassMu = " << sig2_m->getVal() << endl;
@@ -796,10 +772,7 @@ void MassFit(bool isData = true,
                 std::cout << "Area_Sig / Area_Sideband (bkg_scale) = " << bkg_scale << std::endl;
                 std::cout << "Area left side / Area right side = " << intbkgSideLeft->getVal() / intbkgSideRight->getVal() << std::endl;
 
-
-
                 // Add a vertical dashed line at x = 2
-
                 if (isData)
                 {
                         double x_linelow = MassDown;
@@ -955,7 +928,7 @@ void MassFit(bool isData = true,
                         }
                 }
                 
-                if (!DoSystematic)
+                if (!DoSignalSys)
                         SigParams << mu_sig->getVal() << "," << sigma1->getVal() << "," << sigma2->getVal() << \
                          "," << alpha1_sig->getVal() << "," << p1_sig->getVal() << "," << alpha2_sig->getVal() << \
                          "," << p2_sig->getVal() << "," << nsig->getVal() << ", " << sig_frac << endl;

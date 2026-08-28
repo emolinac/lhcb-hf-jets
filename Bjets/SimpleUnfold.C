@@ -42,9 +42,11 @@ void SimpleUnfold(std::string variation = "nominal")
                 DoUnfoldPrior = true;
         if (variation == "recseleff")
                 DoRecSelEff = true;
+        if (variation == "fitsignal")
+                DoSignalSys = true;
 
         if(gSystem->AccessPathName((output_folder + namef_mcreco_variations[variation]).c_str())) {
-                std::cout<<"MCReco file does not exist. Check file or variation given as input."<<std::endl;
+                std::cout<<"MCReco file not found. Check file or variation given as input."<<std::endl;
 
                 return;
         }
@@ -66,17 +68,7 @@ void SimpleUnfold(std::string variation = "nominal")
         TH3D *h3_denom_efficiency_HFptetajetpt = (TH3D*) file_eff->Get("denom_efficiency_HFptetajetpt");
         
         //    /////////////////// Mass Fit Parameters /////////////////////////////////
-        // TString extension_mass("");
-        
-        // if (DoRecSelEff)
-        //         extension_mass = "recselsys_" + extension_mass;
-
-        // if (DoSignalSys)
-        //         extension_mass = "sys_" + extension_mass;
-
-        // extension_mass = extension_RootFilesData + extension_mass; // EFMC: currently, not in use
-        
-        TFile f_massfit((output_folder + "mass-fits/results_mass_fit_mcreco.root").c_str(), "READ");
+        TFile f_massfit((output_folder_massfits + namef_massfits_results_mcreco[variation]).c_str(), "READ");
         
         TH1D *h1_MassMin      = (TH1D*) f_massfit.Get("h1_MassMin");
         TH1D *h1_MassMax      = (TH1D*) f_massfit.Get("h1_MassMax");

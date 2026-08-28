@@ -196,5 +196,5 @@ void draw_three_pads_eec(THStack* h_jetpt_0, THStack* h_jetpt_1, THStack* h_jetp
 
         c->Update();
 
-        c->Print("../plots/eec-b-jet-data-corr.pdf");
+        c->Print("../plots/eec-b-jet-data-fixedmassfits.pdf");
 }
