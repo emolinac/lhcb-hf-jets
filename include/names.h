@@ -122,8 +122,8 @@ std::map<std::string, std::string> namef_simpleobservable_mcreco = {
 
 std::map<std::string, std::string> namef_massfits_results_data = {
         {"nominal"      , "results_mass_fit_data.root"},
-        {"jetid"        , "results_mass_fit_data_jetid.root"},
-        {"jesjer"       , "results_mass_fit_data_jesjer.root"},
+        {"jetid"        , "results_mass_fit_data.root"},
+        {"jesjer"       , "results_mass_fit_data.root"},
         {"prior"        , "results_mass_fit_data.root"},
         {"recseleff"    , "results_mass_fit_data_recseleff.root"},
         {"fitsignal"    , "results_mass_fit_data_fitsignal.root"},
@@ -142,8 +142,8 @@ std::map<std::string, std::string> namef_massfits_results_data = {
 
 std::map<std::string, std::string> namef_massfits_results_mcreco = {
         {"nominal"      , "results_mass_fit_mcreco.root"},
-        {"jetid"        , "results_mass_fit_mcreco_jetid.root"},
-        {"jesjer"       , "results_mass_fit_mcreco_jesjer.root"},
+        {"jetid"        , "results_mass_fit_mcreco.root"},
+        {"jesjer"       , "results_mass_fit_mcreco.root"},
         {"prior"        , "results_mass_fit_mcreco.root"},
         {"recseleff"    , "results_mass_fit_mcreco_recseleff.root"},
         {"fitsignal"    , "results_mass_fit_mcreco_fitsignal.root"},

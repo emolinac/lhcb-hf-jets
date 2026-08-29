@@ -47,6 +47,14 @@ void MassFit(bool isData = true, std::string variation = "nominal")
         bool DoRecSelEff = false;
         bool DoSignalSys = false;
 
+        if (variation != "nominal" && variation != "recseleff" && variation != "fitsignal") {
+                std::cout<<"Invalid systematic variation!"<<std::endl;
+
+                std::cout<<"Valid options: nominal, recseleff, fitsignal"<<std::endl;
+
+                return;
+        }
+
         if (variation == "recseleff")
                 DoRecSelEff = true;
         if (variation == "fitsignal")
