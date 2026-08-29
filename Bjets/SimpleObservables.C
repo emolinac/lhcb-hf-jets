@@ -176,6 +176,8 @@ void SimpleObservables(bool isData = true, std::string variation = "nominal")
         
         TH3D *h3_HFptetajetpt = new TH3D("h3_HFptetajetpt", "", ptHFbinsize, ptHF_binedges, HFetabinsize, HFeta_binedges, ptbinsize, pt_binedges);
 
+        TH3D *h3_HFptetajetpt_uncorrected = new TH3D("h3_HFptetajetpt_uncorrected", "", ptHFbinsize, ptHF_binedges, HFetabinsize, HFeta_binedges, ptbinsize, pt_binedges);
+
         TH3D *h3_rl_jetpt_HFpt = new TH3D("h3_rl_jetpt_HFpt", "", nbin_rl_nominal_unfolding, unfolding_rl_nominal_binning, ptbinsize, pt_binedges, ptHFbinsize, ptHF_binedges);
 
         TH3D *h_rl_jetptHFpt_weight = new TH3D("h_rl_jetptHFpt_weight", "",nbin_rl_nominal_unfolding, unfolding_rl_nominal_binning, nbin_jetpt_HFpt_1dim, jetpt_HFpt_1dim, nbin_weight, weight_binning);
@@ -204,6 +206,7 @@ void SimpleObservables(bool isData = true, std::string variation = "nominal")
         TH2D *h2_jetpt_HFpt = new TH2D("jetpt_HFpt", "", 50, 0, 100, 50, 0, 100);
 
         TH1D *h1_jet_pt = new TH1D("Jet_pT", "", ptbinsize, pt_binedges);
+        TH1D *h1_jet_pt_uncorrected = new TH1D("Jet_pT_uncorrected", "", ptbinsize, pt_binedges);
         TH1D *h1_jet_eta = new TH1D("Jet_eta", "", 12, etaMin, etaMax);
         TH1D *h1_jet_rap = new TH1D("Jet_rap", "", 12, etaMin, etaMax);
         TH1D *h1_jet_phi = new TH1D("Jet_phi", "", 20, -3.14, 3.14);
@@ -743,7 +746,9 @@ void SimpleObservables(bool isData = true, std::string variation = "nominal")
                         h1_jet_phi->Fill(HFjet.Phi());
 
                         // HISTS FOR ANALYSIS //
+                        h1_jet_pt_uncorrected->Fill(jet_pt);
                         h1_jet_pt->Fill(jet_pt, jet_weight);
+                        h3_HFptetajetpt_uncorrected->Fill(HFmeson.Pt(), HFmeson.Rapidity(), jet_pt);
                         h3_HFptetajetpt->Fill(HFmeson.Pt(), HFmeson.Rapidity(), jet_pt, jet_weight);
 
                         if (!pair_rl->empty()) {

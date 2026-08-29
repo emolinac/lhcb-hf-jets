@@ -14,6 +14,12 @@ std::string namef_ntuple_mcreco_jesjer = "ntuple_bjets_mcreco_jesjer.root";
 std::string namef_ntuple_mc            = "ntuple_bjets_mc.root";
 std::string namef_ntuple_bjets_misid   = "ntuple_bjets_misid.root";
 
+std::string namef_data2mcreco_ratio = "data2mcreco_rl_jetpt_weight.root";
+std::string name_histo_data2mcreco_rl_jetpt_weight = "data2mcreco_rl_jetpt_weight_ratio";
+std::string name_histo_data2mcreco_HFpt_eta_jetpt  = "data2mcreco_HFpt_eta_jetpt_ratio";
+std::string name_histo_data2mcreco_jetpt           = "data2mcreco_jetpt_ratio";
+
+
 std::map<std::string, std::string> namef_data_variations = {
         {"nominal"      , namef_ntuple_data},
         {"jetid"        , namef_ntuple_data_jetid},
@@ -60,7 +66,7 @@ std::map<std::string, std::string> namef_corrections = {
         {"jesjer"       , "bjets_corrections_jesjer.root"},
         {"prior"        , "bjets_corrections_prior.root"},
         {"recseleff"    , "bjets_corrections_recseleff.root"},
-        {"fitsignal"    , "bjets_corrections.root"},
+        {"fitsignal"    , "bjets_corrections_recseleff.root"},
         {"trackeff-hi"  , "bjets_corrections.root"},
         {"trackeff-lo"  , "bjets_corrections.root"},
         {"trigeff-hi"   , "bjets_corrections.root"},
@@ -74,15 +80,11 @@ std::map<std::string, std::string> namef_corrections = {
         {"trackeff_cc"  , "bjets_corrections.root"},
 };
 
-// int DoMassFit = 0,
-// bool DoSignalSys = false,
-// bool DoTrackEff_SysCrossCheck = false
-
 std::map<std::string, std::string> namef_simpleobservable_data = {
         {"nominal"      , "bjets_simpleobservable_data.root"},
         {"jetid"        , "bjets_simpleobservable_data_jetid.root"},
         {"jesjer"       , "bjets_simpleobservable_data_jesjer.root"},
-        {"prior"        , "bjets_simpleobservable_data.root"},
+        {"prior"        , "bjets_simpleobservable_data_prior.root"},
         {"recseleff"    , "bjets_simpleobservable_data_recseleff.root"},
         {"fitsignal"    , "bjets_simpleobservable_data_fitsignal.root"},
         {"trackeff-hi"  , "bjets_simpleobservable_data_trackeff_hi.root"},
@@ -102,7 +104,7 @@ std::map<std::string, std::string> namef_simpleobservable_mcreco = {
         {"nominal"      , "bjets_simpleobservable_mcreco.root"},
         {"jetid"        , "bjets_simpleobservable_mcreco_jetid.root"},
         {"jesjer"       , "bjets_simpleobservable_mcreco_jesjer.root"},
-        {"prior"        , "bjets_simpleobservable_mcreco.root"},
+        {"prior"        , "bjets_simpleobservable_mcreco_prior.root"},
         {"recseleff"    , "bjets_simpleobservable_mcreco_recseleff.root"},
         {"fitsignal"    , "bjets_simpleobservable_mcreco_fitsignal.root"},
         {"trackeff-hi"  , "bjets_simpleobservable_mcreco.root"},
@@ -120,8 +122,8 @@ std::map<std::string, std::string> namef_simpleobservable_mcreco = {
 
 std::map<std::string, std::string> namef_massfits_results_data = {
         {"nominal"      , "results_mass_fit_data.root"},
-        {"jetid"        , "results_mass_fit_data.root"},
-        {"jesjer"       , "results_mass_fit_data.root"},
+        {"jetid"        , "results_mass_fit_data_jetid.root"},
+        {"jesjer"       , "results_mass_fit_data_jesjer.root"},
         {"prior"        , "results_mass_fit_data.root"},
         {"recseleff"    , "results_mass_fit_data_recseleff.root"},
         {"fitsignal"    , "results_mass_fit_data_fitsignal.root"},
@@ -140,8 +142,8 @@ std::map<std::string, std::string> namef_massfits_results_data = {
 
 std::map<std::string, std::string> namef_massfits_results_mcreco = {
         {"nominal"      , "results_mass_fit_mcreco.root"},
-        {"jetid"        , "results_mass_fit_mcreco.root"},
-        {"jesjer"       , "results_mass_fit_mcreco.root"},
+        {"jetid"        , "results_mass_fit_mcreco_jetid.root"},
+        {"jesjer"       , "results_mass_fit_mcreco_jesjer.root"},
         {"prior"        , "results_mass_fit_mcreco.root"},
         {"recseleff"    , "results_mass_fit_mcreco_recseleff.root"},
         {"fitsignal"    , "results_mass_fit_mcreco_fitsignal.root"},
@@ -160,40 +162,56 @@ std::map<std::string, std::string> namef_massfits_results_mcreco = {
 
 // About systematics
 std::string available_systematics[] = {
-        "ct-stat", "ct-shape", "jes-jer", "prior", "regpar", "muon", "jetid", "probnnghost"
+        "nominal"      ,
+        "jetid"        ,
+        "jesjer"       ,
+        "prior"        ,
+        "recseleff"    ,
+        "fitsignal"    ,
+        "trackeff-hi"  ,
+        "trackeff-lo"  ,
+        "trigeff-hi"   ,
+        "trigeff-lo"   ,
+        "pideff-hi"    ,
+        "pideff-lo"    ,
+        "massfit-far"  ,
+        "massfit-near" ,
+        "massfit-upper",
+        "massfit-lower",
+        "trackeff-cc"  ,
 };
 
-std::map<std::string, std::string> systematic_name  = {
-        {available_systematics[0],"Closure test n.c."},
-        {available_systematics[1],"Shape closure test n.c."},
-        {available_systematics[2],"JES-JER"},
-        {available_systematics[3],"Prior variation"},
-        {available_systematics[4],"Regularization parameter"},
-        {available_systematics[5],"Muon eff"},
-        {available_systematics[6],"Jet ID"},
-        {available_systematics[7],"ProbNNghost"}
-};
+// std::map<std::string, std::string> systematic_name  = {
+//         {available_systematics[0],"Closure test n.c."},
+//         {available_systematics[1],"Shape closure test n.c."},
+//         {available_systematics[2],"JES-JER"},
+//         {available_systematics[3],"Prior variation"},
+//         {available_systematics[4],"Regularization parameter"},
+//         {available_systematics[5],"Muon eff"},
+//         {available_systematics[6],"Jet ID"},
+//         {available_systematics[7],"ProbNNghost"}
+// };
 
-std::map<std::string, std::string> systematic_namef = {
-        {available_systematics[0],"histos_eec_3dcorr_rl_jetpt_weightpt_niter4_niterjet4_statct_niterct1.root"},
-        {available_systematics[1],"histos_eec_3dcorr_rl_jetpt_weightpt_niter4_niterjet4_shapect.root"},
-        {available_systematics[2],"histos_eec_3dcorr_rl_jetpt_weightpt_niter4_niterjet4--get-jes-jer.root"},
-        {available_systematics[3],"histos_eec_3dcorr_rl_jetpt_weightpt_niter4_niterjet4--get-prior.root"},
-        {available_systematics[4],"histos_eec_3dcorr_rl_jetpt_weightpt_niterjet4--get-regpar.root"},
-        {available_systematics[5],"histos_eec_3dcorr_rl_jetpt_weightpt_niter4_niterjet4--get-muon.root"},
-        {available_systematics[6],"histos_eec_3dcorr_rl_jetpt_weightpt_niter4_niterjet4--get-jetid.root"},
-        {available_systematics[7],"histos_eec_3dcorr_rl_jetpt_weightpt_niter4_niterjet4--get-probnnghost.root"}
-};
+// std::map<std::string, std::string> systematic_namef = {
+//         {available_systematics[0],"histos_eec_3dcorr_rl_jetpt_weightpt_niter4_niterjet4_statct_niterct1.root"},
+//         {available_systematics[1],"histos_eec_3dcorr_rl_jetpt_weightpt_niter4_niterjet4_shapect.root"},
+//         {available_systematics[2],"histos_eec_3dcorr_rl_jetpt_weightpt_niter4_niterjet4--get-jes-jer.root"},
+//         {available_systematics[3],"histos_eec_3dcorr_rl_jetpt_weightpt_niter4_niterjet4--get-prior.root"},
+//         {available_systematics[4],"histos_eec_3dcorr_rl_jetpt_weightpt_niterjet4--get-regpar.root"},
+//         {available_systematics[5],"histos_eec_3dcorr_rl_jetpt_weightpt_niter4_niterjet4--get-muon.root"},
+//         {available_systematics[6],"histos_eec_3dcorr_rl_jetpt_weightpt_niter4_niterjet4--get-jetid.root"},
+//         {available_systematics[7],"histos_eec_3dcorr_rl_jetpt_weightpt_niter4_niterjet4--get-probnnghost.root"}
+// };
 
-std::map<std::string, std::string> systematic_errtype = {
-        {available_systematics[0],"normal"},
-        {available_systematics[1],"normal"},
-        {available_systematics[2],"normal"},
-        {available_systematics[3],"normal"},
-        {available_systematics[4],"normal"},
-        {available_systematics[5],"normal"},
-        {available_systematics[6],"normal"},
-        {available_systematics[7],"normal"}
-};
+// std::map<std::string, std::string> systematic_errtype = {
+//         {available_systematics[0],"normal"},
+//         {available_systematics[1],"normal"},
+//         {available_systematics[2],"normal"},
+//         {available_systematics[3],"normal"},
+//         {available_systematics[4],"normal"},
+//         {available_systematics[5],"normal"},
+//         {available_systematics[6],"normal"},
+//         {available_systematics[7],"normal"}
+// };
 
 #endif

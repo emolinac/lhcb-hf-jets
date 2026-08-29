@@ -27,6 +27,24 @@ using namespace std;
 
 void SimpleUnfold(std::string variation = "nominal")
 {
+        if(gSystem->AccessPathName((output_folder + namef_mcreco_variations[variation]).c_str())) {
+                std::cout<<"MCReco file not found. Check file or variation given as input."<<std::endl;
+
+                return;
+        }
+
+        if(gSystem->AccessPathName((output_folder + "bjets_efficiencies.root").c_str())) {
+                std::cout<<"Eff denominator file not found. Check file or variation given as input."<<std::endl;
+
+                return;
+        }
+
+        if(gSystem->AccessPathName((output_folder_massfits + namef_massfits_results_mcreco[variation]).c_str())) {
+                std::cout<<"Massfit file not found. Check file or variation given as input."<<std::endl;
+
+                return;
+        }
+
         bool SubtractGS    = false;
         bool DoJESJER      = false;
         bool DoJetID       = false;
@@ -38,25 +56,19 @@ void SimpleUnfold(std::string variation = "nominal")
                 DoJESJER = true;
         if (variation == "jetid")
                 DoJetID = true;
-        if (variation == "rmreweight")
+        if (variation == "prior")
                 DoUnfoldPrior = true;
         if (variation == "recseleff")
                 DoRecSelEff = true;
         if (variation == "fitsignal")
                 DoSignalSys = true;
 
-        if(gSystem->AccessPathName((output_folder + namef_mcreco_variations[variation]).c_str())) {
-                std::cout<<"MCReco file not found. Check file or variation given as input."<<std::endl;
-
-                return;
-        }
-
         TFile* f_mcreco = new TFile((output_folder + namef_mcreco_variations[variation]).c_str());
 
         TTree* BTree = (TTree*) f_mcreco->Get("BTree");
         
         // Get denominators of the efficiencies
-        TFile *file_eff = new TFile((output_folder + "bjets_efficiencies.root").c_str(), "READ");
+        TFile *file_eff = new TFile((output_folder + "bjets_efficiencies.root").c_str());
         
         TH1D *h1_denom_efficiency_HFpt   = (TH1D*) file_eff->Get("denom_efficiency_HFpt");
         TH1D *h1_denom_efficiency_jetpt  = (TH1D*) file_eff->Get("denom_efficiency_jetpt");
@@ -82,12 +94,16 @@ void SimpleUnfold(std::string variation = "nominal")
                 cout << "NULL FAR!" << endl;
 
         TFile* file_reco_weights;
-        TH3D*  h3_ptzjt_ratio;
+        TH3D*  h3_rl_jetpt_weight_data2mc_ratio;
+        TH3D*  h3_HFpt_eta_jetpt_data2mc_ratio;
+        TH1D*  h1_jetpt_data2mc_ratio;
 
         if (DoUnfoldPrior) {
-                file_reco_weights = new TFile((output_folder + "MC_DATA_WEIGHTS.root").c_str(), "READ"); 
+                file_reco_weights = new TFile((output_folder + namef_data2mcreco_ratio).c_str(), "READ"); 
 
-                h3_ptzjt_ratio = (TH3D *) file_reco_weights->Get("ptzjt_ratio");
+                h3_rl_jetpt_weight_data2mc_ratio = (TH3D*) file_reco_weights->Get(name_histo_data2mcreco_rl_jetpt_weight.c_str());
+                h3_HFpt_eta_jetpt_data2mc_ratio  = (TH3D*) file_reco_weights->Get(name_histo_data2mcreco_HFpt_eta_jetpt.c_str());
+                h1_jetpt_data2mc_ratio           = (TH1D*) file_reco_weights->Get(name_histo_data2mcreco_jetpt.c_str());
         }
         
         TFile *f = TFile::Open((output_folder + namef_corrections[variation]).c_str(), "RECREATE");
@@ -375,12 +391,9 @@ void SimpleUnfold(std::string variation = "nominal")
                 tr_HFmeson.SetPxPyPzE(tr_HF_px, tr_HF_py, tr_HF_pz, tr_HF_e);
                 
                 float eff_weight = 1.0;
-                float prior_weight = 1.0;
-                
-                // if (DoUnfoldPrior)
-                //         prior_weight = h3_ptzjt_ratio->GetBinContent(h3_ptzjt_ratio->GetXaxis()->FindBin(z),
-                //                                                      h3_ptzjt_ratio->GetYaxis()->FindBin(jt),
-                //                                                      h3_ptzjt_ratio->GetZaxis()->FindBin(jet_pt));
+                float prior_rescale_rl_jetpt_weight = 1.0;
+                float prior_rescale_HFpt_eta_jetpt = 1.0;
+                float prior_rescale_jetpt = 1.0;
                 
                 // Reweight by inverse of (number of smearing trials)
                 if (DoJESJER)
@@ -439,7 +452,23 @@ void SimpleUnfold(std::string variation = "nominal")
 
                         h3_num_efficiency_HFptetajetpt->Fill(tr_HF_pt, tr_HFmeson.Rapidity(), tr_jet_pt, eff_weight);
 
-                        response_HFptetajetpt->Fill(HF_pt, HFmeson.Rapidity(), jet_pt, tr_HF_pt, tr_HFmeson.Rapidity(), tr_jet_pt);
+                        h1_num_purity_jetpt->Fill(jet_pt, eff_weight);
+                        h1_num_purity_HFpt->Fill(HF_pt, eff_weight);
+
+                        h2_num_purity_HFptjetpt->Fill(HF_pt, jet_pt, eff_weight);
+
+                        h3_num_purity_HFptetajetpt->Fill(HF_pt, HFmeson.Rapidity(), jet_pt, eff_weight);
+
+                        if (DoUnfoldPrior) {
+                                prior_rescale_jetpt = h1_jetpt_data2mc_ratio->GetBinContent(h1_jetpt_data2mc_ratio->FindBin(jet_pt));
+                                prior_rescale_HFpt_eta_jetpt = h3_HFpt_eta_jetpt_data2mc_ratio->GetBinContent(
+                                        h3_HFpt_eta_jetpt_data2mc_ratio->FindBin(HF_pt, HFmeson.Rapidity(), jet_pt)
+                                );
+                        }
+
+                        h2_response_jetpt->Fill(jet_pt, tr_jet_pt, prior_rescale_jetpt);
+                        
+                        response_HFptetajetpt->Fill(HF_pt, HFmeson.Rapidity(), jet_pt, tr_HF_pt, tr_HFmeson.Rapidity(), tr_jet_pt, prior_rescale_HFpt_eta_jetpt);
 
                         // Numerator of the in-jet pair efficiency
                         if (!truthmatched_pair_rl->empty()) {
@@ -512,15 +541,6 @@ void SimpleUnfold(std::string variation = "nominal")
                                 }
                         }
                 
-                        h1_num_purity_jetpt->Fill(jet_pt, eff_weight);
-                        h1_num_purity_HFpt->Fill(HF_pt, eff_weight);
-
-                        h2_num_purity_HFptjetpt->Fill(HF_pt, jet_pt, eff_weight);
-
-                        h3_num_purity_HFptetajetpt->Fill(HF_pt, HFmeson.Rapidity(), jet_pt, eff_weight);
-
-                        h2_response_jetpt->Fill(jet_pt, tr_jet_pt, prior_weight);
-                        
                         // In-jet pair purity
                         if (!pair_rl->empty()) {
                                 ULong_t vector_size = pair_rl->size();
@@ -540,6 +560,12 @@ void SimpleUnfold(std::string variation = "nominal")
 
                                 for(int vector_index = 0 ; vector_index < vector_size ; vector_index++) {
                                         if (truthmatched_rl_info[vector_index] != -999){
+
+                                                if (DoUnfoldPrior) {
+                                                        prior_rescale_rl_jetpt_weight = h3_rl_jetpt_weight_data2mc_ratio->GetBinContent(
+                                                                h3_rl_jetpt_weight_data2mc_ratio->FindBin(rl_info[vector_index], jet_pt, weight_info[vector_index])
+                                                        );
+                                                }
                                         
                                                 h3_num_purity_rl_jetpt_weight->Fill(rl_info[vector_index], jet_pt, weight_info[vector_index]);
 
@@ -549,7 +575,8 @@ void SimpleUnfold(std::string variation = "nominal")
 
                                                 h2_num_purity_rl_jetpt->Fill(rl_info[vector_index], jet_pt);
 
-                                                response_npair->Fill(rl_info[vector_index], jet_pt, weight_info[vector_index], truthmatched_rl_info[vector_index], tr_jet_pt, truthmatched_weight_info[vector_index]);
+                                                response_npair->Fill(rl_info[vector_index], jet_pt, weight_info[vector_index], 
+                                                        truthmatched_rl_info[vector_index], tr_jet_pt, truthmatched_weight_info[vector_index], prior_rescale_rl_jetpt_weight);
 
                                                 response_npair_HFpt->Fill(rl_info[vector_index], jet_pt, HF_pt, truthmatched_rl_info[vector_index], tr_jet_pt, tr_HF_pt);
                                       
