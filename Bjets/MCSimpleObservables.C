@@ -20,7 +20,7 @@
 //using namespace fastjet;
 using namespace std;
 
-void MCMakeObservable(int NumEvts = -1)
+void MCMake3DUncorrDistributions(int NumEvts = -1)
 {
         TFile fread((output_folder + "ntuple_bjets_mc.root").c_str(), "READ");
         TTree *BTree = (TTree *)fread.Get("BTree");
@@ -35,7 +35,7 @@ void MCMakeObservable(int NumEvts = -1)
         
         cout<<BTree->GetEntries()<<endl;
 
-        TFile f((output_folder + "bjets_simpleobservable_mc.root").c_str(), "RECREATE");
+        TFile f((output_folder + "bjets_3duncorrecteddistributions_mc.root").c_str(), "RECREATE");
 
         // 2D Truth-Reco Correspondence (219 - 224)
         TH1D *h1_jet_pt   = new TH1D("Jet_pT", "", ptbinsize, pt_binedges);

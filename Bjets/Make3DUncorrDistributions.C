@@ -21,7 +21,7 @@
 
 using namespace std;
 
-void MakeObservable(bool isData = true, std::string variation = "nominal")
+void Make3DUncorrDistributions(bool isData = true, std::string variation = "nominal")
 {
         if(gSystem->AccessPathName((output_folder + namef_corrections[variation]).c_str())) {
                 std::cout<<"Correction file not found!"<<std::endl;
@@ -143,7 +143,7 @@ void MakeObservable(bool isData = true, std::string variation = "nominal")
         double NumEvts = BTree->GetEntries();\
 
         // Determine name of file depending on type
-        std::string output_file_name = (isData) ? namef_simpleobservable_data[variation] : namef_simpleobservable_mcreco[variation];
+        std::string output_file_name = (isData) ? namef_3duncorrecteddistributions_data[variation] : namef_3duncorrecteddistributions_mcreco[variation];
         
         TFile f((output_folder + output_file_name).c_str(), "RECREATE");
 
@@ -453,12 +453,6 @@ void MakeObservable(bool isData = true, std::string variation = "nominal")
 
                 if (WTA_dist > WTA_dist_max)
                         continue;
-
-                // NOTE : DELETEEEEE!!!!!
-                // if (!isTrueBjet&&!isData)
-                //         continue;
-                // NOTE : DELETEEEEE!!!!!
-
 
                 bool StrippingCuts = false; // EFMC: what?
 

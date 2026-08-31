@@ -37,6 +37,8 @@ std::map<std::string, std::string> namef_data_variations = {
         {"massfit-near" , namef_ntuple_data},
         {"massfit-upper", namef_ntuple_data},
         {"massfit-lower", namef_ntuple_data},
+        {"regpar-upper" , namef_ntuple_data},
+        {"regpar-lower" , namef_ntuple_data},
         {"trackeff_cc"  , namef_ntuple_data},
 };
 
@@ -57,6 +59,8 @@ std::map<std::string, std::string> namef_mcreco_variations = {
         {"massfit-near" , namef_ntuple_mcreco},
         {"massfit-upper", namef_ntuple_mcreco},
         {"massfit-lower", namef_ntuple_mcreco},
+        {"regpar-upper" , namef_ntuple_mcreco},
+        {"regpar-lower" , namef_ntuple_mcreco},
         {"trackeff_cc"  , namef_ntuple_mcreco},
 };
 
@@ -77,47 +81,9 @@ std::map<std::string, std::string> namef_corrections = {
         {"massfit-near" , "bjets_corrections.root"},
         {"massfit-upper", "bjets_corrections.root"},
         {"massfit-lower", "bjets_corrections.root"},
+        {"regpar-upper" , "bjets_corrections.root"},
+        {"regpar-lower" , "bjets_corrections.root"},
         {"trackeff_cc"  , "bjets_corrections.root"},
-};
-
-std::map<std::string, std::string> namef_simpleobservable_data = {
-        {"nominal"      , "bjets_simpleobservable_data.root"},
-        {"jetid"        , "bjets_simpleobservable_data_jetid.root"},
-        {"jesjer"       , "bjets_simpleobservable_data_jesjer.root"},
-        {"prior"        , "bjets_simpleobservable_data_prior.root"},
-        {"recseleff"    , "bjets_simpleobservable_data_recseleff.root"},
-        {"fitsignal"    , "bjets_simpleobservable_data_fitsignal.root"},
-        {"trackeff-hi"  , "bjets_simpleobservable_data_trackeff_hi.root"},
-        {"trackeff-lo"  , "bjets_simpleobservable_data_trackeff_lo.root"},
-        {"trigeff-hi"   , "bjets_simpleobservable_data_trigeff_hi.root"},
-        {"trigeff-lo"   , "bjets_simpleobservable_data_trigeff_lo.root"},
-        {"pideff-hi"    , "bjets_simpleobservable_data_pideff_hi.root"},
-        {"pideff-lo"    , "bjets_simpleobservable_data_pideff_lo.root"},
-        {"massfit-far"  , "bjets_simpleobservable_data_massfit_far.root"},
-        {"massfit-near" , "bjets_simpleobservable_data_massfit_near.root"},
-        {"massfit-upper", "bjets_simpleobservable_data_massfit_upper.root"},
-        {"massfit-lower", "bjets_simpleobservable_data_massfit_lower.root"},
-        {"trackeff-cc"  , "bjets_simpleobservable_data_trackeff_cc.root"},
-};
-
-std::map<std::string, std::string> namef_simpleobservable_mcreco = {
-        {"nominal"      , "bjets_simpleobservable_mcreco.root"},
-        {"jetid"        , "bjets_simpleobservable_mcreco_jetid.root"},
-        {"jesjer"       , "bjets_simpleobservable_mcreco_jesjer.root"},
-        {"prior"        , "bjets_simpleobservable_mcreco_prior.root"},
-        {"recseleff"    , "bjets_simpleobservable_mcreco_recseleff.root"},
-        {"fitsignal"    , "bjets_simpleobservable_mcreco_fitsignal.root"},
-        {"trackeff-hi"  , "bjets_simpleobservable_mcreco.root"},
-        {"trackeff-lo"  , "bjets_simpleobservable_mcreco.root"},
-        {"trigeff-hi"   , "bjets_simpleobservable_mcreco.root"},
-        {"trigeff-lo"   , "bjets_simpleobservable_mcreco.root"},
-        {"pideff-hi"    , "bjets_simpleobservable_mcreco.root"},
-        {"pideff-lo"    , "bjets_simpleobservable_mcreco.root"},
-        {"massfit-far"  , "bjets_simpleobservable_mcreco.root"},
-        {"massfit-near" , "bjets_simpleobservable_mcreco.root"},
-        {"massfit-upper", "bjets_simpleobservable_mcreco.root"},
-        {"massfit-lower", "bjets_simpleobservable_mcreco.root"},
-        {"trackeff-cc"  , "bjets_simpleobservable_mcreco.root"},
 };
 
 std::map<std::string, std::string> namef_massfits_results_data = {
@@ -137,6 +103,8 @@ std::map<std::string, std::string> namef_massfits_results_data = {
         {"massfit-near" , "results_mass_fit_data.root"},
         {"massfit-upper", "results_mass_fit_data.root"},
         {"massfit-lower", "results_mass_fit_data.root"},
+        {"regpar-upper" , "results_mass_fit_data.root"},
+        {"regpar-lower" , "results_mass_fit_data.root"},
         {"trackeff-cc"  , "results_mass_fit_data.root"},
 };
 
@@ -157,12 +125,79 @@ std::map<std::string, std::string> namef_massfits_results_mcreco = {
         {"massfit-near" , "results_mass_fit_mcreco.root"},
         {"massfit-upper", "results_mass_fit_mcreco.root"},
         {"massfit-lower", "results_mass_fit_mcreco.root"},
+        {"regpar-upper" , "results_mass_fit_mcreco.root"},
+        {"regpar-lower" , "results_mass_fit_mcreco.root"},
         {"trackeff-cc"  , "results_mass_fit_mcreco.root"},
+};
+
+std::map<std::string, std::string> namef_3duncorrecteddistributions_data = {
+        {"nominal"      , "bjets_3duncorrecteddistributions_data.root"},
+        {"jetid"        , "bjets_3duncorrecteddistributions_data_jetid.root"},
+        {"jesjer"       , "bjets_3duncorrecteddistributions_data_jesjer.root"},
+        {"prior"        , "bjets_3duncorrecteddistributions_data_prior.root"},
+        {"recseleff"    , "bjets_3duncorrecteddistributions_data_recseleff.root"},
+        {"fitsignal"    , "bjets_3duncorrecteddistributions_data_fitsignal.root"},
+        {"trackeff-hi"  , "bjets_3duncorrecteddistributions_data_trackeff_hi.root"},
+        {"trackeff-lo"  , "bjets_3duncorrecteddistributions_data_trackeff_lo.root"},
+        {"trigeff-hi"   , "bjets_3duncorrecteddistributions_data_trigeff_hi.root"},
+        {"trigeff-lo"   , "bjets_3duncorrecteddistributions_data_trigeff_lo.root"},
+        {"pideff-hi"    , "bjets_3duncorrecteddistributions_data_pideff_hi.root"},
+        {"pideff-lo"    , "bjets_3duncorrecteddistributions_data_pideff_lo.root"},
+        {"massfit-far"  , "bjets_3duncorrecteddistributions_data_massfit_far.root"},
+        {"massfit-near" , "bjets_3duncorrecteddistributions_data_massfit_near.root"},
+        {"massfit-upper", "bjets_3duncorrecteddistributions_data_massfit_upper.root"},
+        {"massfit-lower", "bjets_3duncorrecteddistributions_data_massfit_lower.root"},
+        {"regpar-upper" , "bjets_3duncorrecteddistributions_data_regpar_upper.root"},
+        {"regpar-lower" , "bjets_3duncorrecteddistributions_data_regpar_lower.root"},
+        {"trackeff-cc"  , "bjets_3duncorrecteddistributions_data_trackeff_cc.root"},
+};
+
+std::map<std::string, std::string> namef_3duncorrecteddistributions_mcreco = {
+        {"nominal"      , "bjets_3duncorrecteddistributions_mcreco.root"},
+        {"jetid"        , "bjets_3duncorrecteddistributions_mcreco_jetid.root"},
+        {"jesjer"       , "bjets_3duncorrecteddistributions_mcreco_jesjer.root"},
+        {"prior"        , "bjets_3duncorrecteddistributions_mcreco_prior.root"},
+        {"recseleff"    , "bjets_3duncorrecteddistributions_mcreco_recseleff.root"},
+        {"fitsignal"    , "bjets_3duncorrecteddistributions_mcreco_fitsignal.root"},
+        {"trackeff-hi"  , "bjets_3duncorrecteddistributions_mcreco.root"},
+        {"trackeff-lo"  , "bjets_3duncorrecteddistributions_mcreco.root"},
+        {"trigeff-hi"   , "bjets_3duncorrecteddistributions_mcreco.root"},
+        {"trigeff-lo"   , "bjets_3duncorrecteddistributions_mcreco.root"},
+        {"pideff-hi"    , "bjets_3duncorrecteddistributions_mcreco.root"},
+        {"pideff-lo"    , "bjets_3duncorrecteddistributions_mcreco.root"},
+        {"massfit-far"  , "bjets_3duncorrecteddistributions_mcreco.root"},
+        {"massfit-near" , "bjets_3duncorrecteddistributions_mcreco.root"},
+        {"massfit-upper", "bjets_3duncorrecteddistributions_mcreco.root"},
+        {"massfit-lower", "bjets_3duncorrecteddistributions_mcreco.root"},
+        {"regpar-upper" , "bjets_3duncorrecteddistributions_mcreco_regpar_upper.root"},
+        {"regpar-lower" , "bjets_3duncorrecteddistributions_mcreco_regpar_lower.root"},
+        {"trackeff-cc"  , "bjets_3duncorrecteddistributions_mcreco.root"},
+};
+
+std::map<std::string, std::string> namef_correctedobservable_data = {
+        {"nominal"      , "bjets_correctedobservable_data.root"},
+        {"jetid"        , "bjets_correctedobservable_data_jetid.root"},
+        {"jesjer"       , "bjets_correctedobservable_data_jesjer.root"},
+        {"prior"        , "bjets_correctedobservable_data_prior.root"},
+        {"recseleff"    , "bjets_correctedobservable_data_recseleff.root"},
+        {"fitsignal"    , "bjets_correctedobservable_data_fitsignal.root"},
+        {"trackeff-hi"  , "bjets_correctedobservable_data_trackeff_hi.root"},
+        {"trackeff-lo"  , "bjets_correctedobservable_data_trackeff_lo.root"},
+        {"trigeff-hi"   , "bjets_correctedobservable_data_trigeff_hi.root"},
+        {"trigeff-lo"   , "bjets_correctedobservable_data_trigeff_lo.root"},
+        {"pideff-hi"    , "bjets_correctedobservable_data_pideff_hi.root"},
+        {"pideff-lo"    , "bjets_correctedobservable_data_pideff_lo.root"},
+        {"massfit-far"  , "bjets_correctedobservable_data_massfit_far.root"},
+        {"massfit-near" , "bjets_correctedobservable_data_massfit_near.root"},
+        {"massfit-upper", "bjets_correctedobservable_data_massfit_upper.root"},
+        {"massfit-lower", "bjets_correctedobservable_data_massfit_lower.root"},
+        {"regpar-upper" , "bjets_correctedobservable_data_regpar_upper.root"},
+        {"regpar-lower" , "bjets_correctedobservable_data_regpar_lower.root"},
+        {"trackeff-cc"  , "bjets_correctedobservable_data_trackeff_cc.root"},
 };
 
 // About systematics
 std::string available_systematics[] = {
-        "nominal"      ,
         "jetid"        ,
         "jesjer"       ,
         "prior"        ,
@@ -178,6 +213,29 @@ std::string available_systematics[] = {
         "massfit-near" ,
         "massfit-upper",
         "massfit-lower",
-        "trackeff-cc"  ,
+        "regpar-upper" ,
+        "regpar-lower" ,
 };
+
+// 
+std::map<std::string, double> available_systematics_scale = {
+        {"jetid"        , 1.},
+        {"jesjer"       , 1.},
+        {"prior"        , 1.},
+        {"recseleff"    , 1.},
+        {"fitsignal"    , 1.},
+        {"trackeff-hi"  , 2.},
+        {"trackeff-lo"  , 2.},
+        {"trigeff-hi"   , 2.},
+        {"trigeff-lo"   , 2.},
+        {"pideff-hi"    , 2.},
+        {"pideff-lo"    , 2.},
+        {"massfit-far"  , 4.},
+        {"massfit-near" , 4.},
+        {"massfit-upper", 4.},
+        {"massfit-lower", 4.},
+        {"regpar-upper" , 2.},
+        {"regpar-lower" , 2.},
+};
+
 #endif

@@ -30,13 +30,13 @@ void ClosureTest(int niter_njet = 4, int niter_npair = 4, std::string variation 
         if (prior_variation == "prior")
                 DoShapeClosure = true;
 
-        if(DoShapeClosure && gSystem->AccessPathName((output_folder + namef_simpleobservable_data[variation]).c_str())) {
+        if(DoShapeClosure && gSystem->AccessPathName((output_folder + namef_3duncorrecteddistributions_data[variation]).c_str())) {
                 std::cout<<"Data file not found for smearing. Check file or variation given as input."<<std::endl;
 
                 return;
         }
 
-        if(gSystem->AccessPathName((output_folder + namef_simpleobservable_mcreco[variation]).c_str())) {
+        if(gSystem->AccessPathName((output_folder + namef_3duncorrecteddistributions_mcreco[variation]).c_str())) {
                 std::cout<<"MCReco file not found. Check file or variation given as input."<<std::endl;
 
                 return;
@@ -51,9 +51,9 @@ void ClosureTest(int niter_njet = 4, int niter_npair = 4, std::string variation 
         const int niter_ct =  DoShapeClosure ? 1 : 10;
         
         // Necessary files
-        TFile *file_reco   = new TFile((output_folder + namef_simpleobservable_mcreco[variation]).c_str(), "READ"); 
-        TFile *file_data   = new TFile((output_folder + namef_simpleobservable_data[variation]).c_str(), "READ");
-        TFile *file_truth  = new TFile((output_folder + "bjets_simpleobservable_mc.root").c_str(), "READ"); 
+        TFile *file_reco   = new TFile((output_folder + namef_3duncorrecteddistributions_mcreco[variation]).c_str(), "READ"); 
+        TFile *file_data   = new TFile((output_folder + namef_3duncorrecteddistributions_data[variation]).c_str(), "READ");
+        TFile *file_truth  = new TFile((output_folder + "bjets_3duncorrecteddistributions_mc.root").c_str(), "READ"); 
         TFile *file_unfold = new TFile((output_folder + namef_corrections[prior_variation]).c_str(), "READ"); 
 
         std::string output_file_name = (DoShapeClosure) ? "bjets_shapeclosuretest_eec.root" : "bjets_closuretest_eec.root";

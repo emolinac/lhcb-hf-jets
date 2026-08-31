@@ -390,14 +390,9 @@ void MakeCorrections(std::string variation = "nominal")
                 tr_HFjet.SetPxPyPzE(tr_jet_px, tr_jet_py, tr_jet_pz, tr_jet_e);
                 tr_HFmeson.SetPxPyPzE(tr_HF_px, tr_HF_py, tr_HF_pz, tr_HF_e);
                 
-                float eff_weight = 1.0;
                 float prior_rescale_rl_jetpt_weight = 1.0;
                 float prior_rescale_HFpt_eta_jetpt = 1.0;
                 float prior_rescale_jetpt = 1.0;
-                
-                // Reweight by inverse of (number of smearing trials)
-                if (DoJESJER)
-                        eff_weight = 1. / n_smearing_iter;
                 
                 float bkg_weight = h1_BkgScale != NULL ? h1_BkgScale->GetBinContent(h1_BkgScale->FindBin(HFmeson.Pt())) : 1.0;
                 float MassHigh   = h1_MassMax != NULL ? h1_MassMax->GetBinContent(h1_MassMax->FindBin(HFmeson.Pt())) : 5.31;
@@ -445,19 +440,19 @@ void MakeCorrections(std::string variation = "nominal")
                 bool is_recojet_nominal      = pt_cond && rap_cond && (WTA_reco_dist < WTA_dist_max);
                 
                 if (is_recojet_truthmatched) {
-                        h1_num_efficiency_jetpt->Fill(tr_jet_pt, eff_weight);
-                        h1_num_efficiency_HFpt->Fill(tr_HF_pt, eff_weight);
+                        h1_num_efficiency_jetpt->Fill(tr_jet_pt);
+                        h1_num_efficiency_HFpt->Fill(tr_HF_pt);
 
-                        h2_num_efficiency_HFptjetpt->Fill(tr_HF_pt, tr_jet_pt, eff_weight);
+                        h2_num_efficiency_HFptjetpt->Fill(tr_HF_pt, tr_jet_pt);
 
-                        h3_num_efficiency_HFptetajetpt->Fill(tr_HF_pt, tr_HFmeson.Rapidity(), tr_jet_pt, eff_weight);
+                        h3_num_efficiency_HFptetajetpt->Fill(tr_HF_pt, tr_HFmeson.Rapidity(), tr_jet_pt);
 
-                        h1_num_purity_jetpt->Fill(jet_pt, eff_weight);
-                        h1_num_purity_HFpt->Fill(HF_pt, eff_weight);
+                        h1_num_purity_jetpt->Fill(jet_pt);
+                        h1_num_purity_HFpt->Fill(HF_pt);
 
-                        h2_num_purity_HFptjetpt->Fill(HF_pt, jet_pt, eff_weight);
+                        h2_num_purity_HFptjetpt->Fill(HF_pt, jet_pt);
 
-                        h3_num_purity_HFptetajetpt->Fill(HF_pt, HFmeson.Rapidity(), jet_pt, eff_weight);
+                        h3_num_purity_HFptetajetpt->Fill(HF_pt, HFmeson.Rapidity(), jet_pt);
 
                         if (DoUnfoldPrior) {
                                 prior_rescale_jetpt = h1_jetpt_data2mc_ratio->GetBinContent(h1_jetpt_data2mc_ratio->FindBin(jet_pt));
@@ -642,12 +637,12 @@ void MakeCorrections(std::string variation = "nominal")
                 }
                 
                 if (is_recojet_nominal) {
-                        h1_denom_purity_jetpt->Fill(jet_pt, eff_weight);
-                        h1_denom_purity_HFpt->Fill(HF_pt, eff_weight);
+                        h1_denom_purity_jetpt->Fill(jet_pt);
+                        h1_denom_purity_HFpt->Fill(HF_pt);
 
-                        h2_denom_purity_HFptjetpt->Fill(HF_pt, jet_pt, eff_weight);
+                        h2_denom_purity_HFptjetpt->Fill(HF_pt, jet_pt);
 
-                        h3_denom_purity_HFptetajetpt->Fill(HF_pt, HFmeson.Rapidity(), jet_pt, eff_weight);
+                        h3_denom_purity_HFptetajetpt->Fill(HF_pt, HFmeson.Rapidity(), jet_pt);
                 }    
                 
                 event_counter++;

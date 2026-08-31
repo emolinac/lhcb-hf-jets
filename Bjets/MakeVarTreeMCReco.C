@@ -21,8 +21,7 @@ using namespace fastjet;
 using namespace std;
 
 void MakeVarTreeMCReco(bool DoJESJER = false,
-                       bool DoJetID = false,
-                       bool L0MuonDiMuon = false)
+                       bool DoJetID = false)
 {
         if (DoJESJER && DoJetID)
                 return;
@@ -443,21 +442,41 @@ void MakeVarTreeMCReco(bool DoJESJER = false,
                 if (DoJESJER) {
                         const int n_iters = n_smearing_iter;
                         
+                        double effective_iterations = 0;
+
+                        double total_E  = 0;
+                        double total_px = 0;
+                        double total_py = 0;
+                        double total_pz = 0;
+
+                        // Temp subtraction of HFmeson to perform JESJER.
+                        HFjet -= HFmeson;
+
                         for (int i_iter = 0; i_iter < n_iters; i_iter++) {
                                 double rand = get_JES_JER(HFjet.Pt(), myRNG);  // Standard inclusive Z+jet values
-                                // double rand = get_JES_JER(HFjet.Pt(), myRNG, DoJESJER);  // Low-multiplicity Z+jet values
                                 
-                                // Temp subtraction of HFmeson to perform JESJER.
-                                HFjet -= HFmeson;
-                                
-                                //double newE2 = HFjet.E()*HFjet.E() + (rand*rand - 1) * HFjet.Pt()*HFjet.Pt();
                                 double newE2 = HFjet.E()*HFjet.E() + (rand*rand - 1) * HFjet.P()*HFjet.P();
                                 double newE = (newE2 < 0) ? 0 : std::sqrt(newE2);
 
-                                HFjet.SetPxPyPzE(HFjet.Px()*rand, HFjet.Py()*rand, HFjet.Pz()*rand, newE);
-                                
-                                HFjet += HFmeson;
+                                if (newE == 0)
+                                        continue;
+
+                                total_E  += newE;
+                                total_px += HFjet.Px()*rand;
+                                total_py += HFjet.Py()*rand;
+                                total_pz += HFjet.Pz()*rand;
+
+                                effective_iterations++;
                         }
+
+                        total_E  /= effective_iterations;
+                        total_px /= effective_iterations;
+                        total_py /= effective_iterations;
+                        total_pz /= effective_iterations;
+
+                        HFjet.SetPxPyPzE(total_px, total_py, total_pz, total_E);
+
+                        HFjet += HFmeson;
                 }
 
                 if (DoJetID) {

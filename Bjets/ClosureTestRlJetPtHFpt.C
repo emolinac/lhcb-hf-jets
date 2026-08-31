@@ -42,9 +42,9 @@ void ClosureTestRlJetPtHFpt(int NumEvts = -1,
 
         /////////////////////   Get Files /////////////////////////////////
 
-        TFile *file_reco = new TFile((output_folder + "bjets_simpleobservable_mcreco.root").c_str(), "READ"); 
-        TFile *file_data = new TFile((output_folder + "bjets_simpleobservable_data.root").c_str(), "READ");
-        TFile *file_truth = new TFile((output_folder + "bjets_simpleobservable_mc.root").c_str(), "READ"); 
+        TFile *file_reco = new TFile((output_folder + "bjets_3duncorrecteddistributions_mcreco.root").c_str(), "READ"); 
+        TFile *file_data = new TFile((output_folder + "bjets_3duncorrecteddistributions_data.root").c_str(), "READ");
+        TFile *file_truth = new TFile((output_folder + "bjets_3duncorrecteddistributions_mc.root").c_str(), "READ"); 
         TFile *file_unfold = new TFile((output_folder + "bjets_corrections.root").c_str(), "READ"); 
 
         TFile *file_write = new TFile((output_folder + "bjets_closuretest_npairs_rljetpthfpt.root").c_str(), "RECREATE");

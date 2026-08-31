@@ -15,22 +15,22 @@ using namespace std;
 
 void MakeRMReweightFactors(std::string variation = "nominal")
 {
-        if(gSystem->AccessPathName((output_folder + namef_simpleobservable_data[variation]).c_str())) {
+        if(gSystem->AccessPathName((output_folder + namef_3duncorrecteddistributions_data[variation]).c_str())) {
                 std::cout<<"Data file not found!"<<std::endl;
                 std::cout<<"Check existence of input file or locations."<<std::endl;
 
                 return;
         }
 
-        if(gSystem->AccessPathName((output_folder + namef_simpleobservable_mcreco[variation]).c_str())) {
+        if(gSystem->AccessPathName((output_folder + namef_3duncorrecteddistributions_mcreco[variation]).c_str())) {
                 std::cout<<"MCreco file not found!"<<std::endl;
                 std::cout<<"Check existence of input file or locations."<<std::endl;
 
                 return;
         }
 
-        TFile f_data((output_folder + namef_simpleobservable_data[variation]).c_str());
-        TFile f_mcreco((output_folder + namef_simpleobservable_mcreco[variation]).c_str());
+        TFile f_data((output_folder + namef_3duncorrecteddistributions_data[variation]).c_str());
+        TFile f_mcreco((output_folder + namef_3duncorrecteddistributions_mcreco[variation]).c_str());
 
         TFile f_output((output_folder + namef_data2mcreco_ratio).c_str(), "RECREATE");
 
