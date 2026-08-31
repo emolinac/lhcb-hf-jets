@@ -10,6 +10,7 @@
 #include "../include/analysis-cuts.cpp"
 #include "../include/analysis-cuts.h"
 #include "../include/directories.h"
+#include "../include/names.h"
 #include "../include/TBJetsMC.h"
 #include "../include/TBJetsMC.C"
 #include "../include/utils.cpp"
@@ -19,87 +20,82 @@
 
 using namespace std;
 
-int niter_npair = 3;
-
-void ClosureTest(int NumEvts = -1,
-                 int NumIters = 4,  
-                 bool DoShapeClosure = false)
+void ClosureTest(int niter_njet = 4, int niter_npair = 4, std::string variation = "nominal", std::string prior_variation = "nominal")
 {
-        gStyle->SetPaintTextFormat("3.3f");
-        gROOT->ForceStyle();
-        gStyle->SetOptStat(0);
+        if (prior_variation !=  "nominal" && prior_variation != "prior") {
+                std::cout<<"Invalid variation of the prior. Options are: nominal and prior."<<std::endl;
+        }
 
-        TRandom3 *myRNG = new TRandom3(0);
+        bool DoShapeClosure = false;
+        if (prior_variation == "prior")
+                DoShapeClosure = true;
 
-        const int nRuns =  DoShapeClosure ? 1 : 1;
+        if(DoShapeClosure && gSystem->AccessPathName((output_folder + namef_simpleobservable_data[variation]).c_str())) {
+                std::cout<<"Data file not found for smearing. Check file or variation given as input."<<std::endl;
 
-        bool smear_by_data = (!DoShapeClosure);  
+                return;
+        }
+
+        if(gSystem->AccessPathName((output_folder + namef_simpleobservable_mcreco[variation]).c_str())) {
+                std::cout<<"MCReco file not found. Check file or variation given as input."<<std::endl;
+
+                return;
+        }
+
+        if(gSystem->AccessPathName((output_folder + namef_corrections[variation]).c_str())) {
+                std::cout<<"Corrections file not found. Check file or variation given as input."<<std::endl;
+
+                return;
+        }
+
+        const int niter_ct =  DoShapeClosure ? 1 : 10;
         
-        const int fixSmear = 42;
+        // Necessary files
+        TFile *file_reco   = new TFile((output_folder + namef_simpleobservable_mcreco[variation]).c_str(), "READ"); 
+        TFile *file_data   = new TFile((output_folder + namef_simpleobservable_data[variation]).c_str(), "READ");
+        TFile *file_truth  = new TFile((output_folder + "bjets_simpleobservable_mc.root").c_str(), "READ"); 
+        TFile *file_unfold = new TFile((output_folder + namef_corrections[prior_variation]).c_str(), "READ"); 
 
-        // int NumIters = 1;
-        // int RegIDS = 5;
-
-        /////////////////////   Get Files /////////////////////////////////
-
-        TFile *file_reco = new TFile((output_folder + "bjets_simpleobservable_mcreco.root").c_str(), "READ"); 
-        TFile *file_data = new TFile((output_folder + "bjets_simpleobservable_data.root").c_str(), "READ");
-        TFile *file_truth = new TFile((output_folder + "bjets_simpleobservable_mc.root").c_str(), "READ"); 
-        TFile *file_unfold = new TFile((output_folder + "bjets_corrections.root").c_str(), "READ"); 
-
-        TFile *file_write = new TFile((output_folder + "bjets_closuretest_eec.root").c_str(), "RECREATE");
+        std::string output_file_name = (DoShapeClosure) ? "bjets_shapeclosuretest_eec.root" : "bjets_closuretest_eec.root";
+        TFile *file_write = new TFile((output_folder + output_file_name).c_str(), "RECREATE");
 
         std::cout << "############################## Unfolding 1D Jet distribution ##############################" << std::endl;
 
-        // 1D JET CORRECTION
-        /////////////////////   Get histograms /////////////////////////////////
-
+        // 1D jet correction
         TH1D *h1_jetpt_reco = (TH1D *)file_reco->Get("Jet_pT");
         TH1D *h1_jetpt_data = (TH1D *)file_data->Get("Jet_pT");  
 
         std::cout<<"MCReco jet pt entries = "<<h1_jetpt_reco->Integral()<<std::endl;
         std::cout<<"Data   jet pt entries = "<<h1_jetpt_data->Integral()<<std::endl;
 
-        // h1_jetpt_reco->Draw();
-        TH1D *h1_jetpt_pseudodata = (TH1D *)h1_jetpt_reco->Clone("jetpt_pseudodata");
+        TH1D *h1_jetpt_pseudodata = (TH1D*) h1_jetpt_reco->Clone("jetpt_pseudodata");
+        TH1D *h1_jetpt_truth      = (TH1D*) file_truth->Get("Jet_pT");
+        TH1F *h1_purity_jetpt     = (TH1F*) file_unfold->Get("purity_jetpt");
+        TH1F *h1_efficiency_jetpt = (TH1F*) file_unfold->Get("efficiency_jetpt");
+        TH1F *h1_purity_HFpt      = (TH1F*) file_unfold->Get("purity_HFpt");
+        TH1F *h1_efficiency_HFpt  = (TH1F*) file_unfold->Get("efficiency_HFpt");
 
-        /////////////////////   Get Truth histograms /////////////////////////////////
-        TH1D *h1_jetpt_truth = (TH1D *)file_truth->Get("Jet_pT");
+        RooUnfoldResponse* response_jetpt = (RooUnfoldResponse*) file_unfold->Get("Roo_response_jetpt");
 
-        /////////////////////   Get Purity & Efficiency Hists /////////////////////////////////
-        TH1F *h1_purity_jetpt     = (TH1F *)file_unfold->Get("purity_jetpt");
-        TH1F *h1_efficiency_jetpt = (TH1F *)file_unfold->Get("efficiency_jetpt");
-
-        TH1F *h1_purity_HFpt     = (TH1F *)file_unfold->Get("purity_HFpt");
-        TH1F *h1_efficiency_HFpt = (TH1F *)file_unfold->Get("efficiency_HFpt");
-
-        /////////////////////   Get Response Matrices /////////////////////////////////
-        RooUnfoldResponse *response_jetpt = (RooUnfoldResponse *)file_unfold->Get("Roo_response_jetpt");
-
-        TH2 *h2_response_jetpt = (TH2 *)response_jetpt->Hresponse();
-
-        // response_jetpt->UseOverflow();
+        TH2 *h2_response_jetpt = (TH2*) response_jetpt->Hresponse();
 
         h1_jetpt_pseudodata->Write("jetpt_uncorr");
 
-        // Multiply by purity
         h1_jetpt_pseudodata->Multiply(h1_purity_jetpt);
 
         h1_jetpt_pseudodata->Write("jetpt_pur");
         
-        // Unfold
-        RooUnfoldBayes unfold_jetpt(response_jetpt, h1_jetpt_pseudodata, NumIters);
+        RooUnfoldBayes unfold_jetpt(response_jetpt, h1_jetpt_pseudodata, niter_njet);
         
         h1_jetpt_pseudodata = (TH1D *)unfold_jetpt.Hreco();
 
         h1_jetpt_pseudodata->Write("jetpt_pur_unf");
 
-        // Divide by efficiency
         h1_jetpt_pseudodata->Divide(h1_efficiency_jetpt);
 
         h1_jetpt_pseudodata->Write("jetpt_pur_unf_eff");
 
-        TH1D *h1_jetpt_pseudodata_ratio = (TH1D *)h1_jetpt_pseudodata->Clone("h1_jetpt_pseudodata_ratio");
+        TH1D* h1_jetpt_pseudodata_ratio = (TH1D*) h1_jetpt_pseudodata->Clone("h1_jetpt_pseudodata_ratio");
         
         h1_jetpt_pseudodata_ratio->Divide(h1_jetpt_truth);
 
@@ -115,61 +111,51 @@ void ClosureTest(int NumEvts = -1,
         std::cout<<"Njets_truth      = "<<h1_jetpt_truth->Integral()<<std::endl;
         std::cout<<"Njets_pseudodata = "<<h1_jetpt_pseudodata->Integral()<<std::endl;
                 
-        // ////////////////////////////////////
-        // // Smearing the jet pt distribution
-        // ///////////////////////////////////
-        // TH1D *h1_jetpt_closure_error;
-        // for (int i = 0; i < nRuns; i++) {
-        //         TH1D *h1_jetpt_smear = (TH1D *)h1_jetpt_reco->Clone(Form("jetpt_smear%d", i));
-                
-        //         if (smear_by_data)
-        //                 SmearObservables(h1_jetpt_smear, h1_jetpt_data, myRNG);
-                
-        //         // Multiply by purity
-        //         h1_jetpt_smear->Multiply(h1_purity_jetpt);
-                
-        //         RooUnfoldBayes unfold_jetpt_smear(response_jetpt, h1_jetpt_smear, NumIters);      
-                
-        //         h1_jetpt_smear = (TH1D *)unfold_jetpt_smear.Hreco();
+        // Smear observables if necessary
+        TRandom3* myRNG = new TRandom3(0);
+        
+        if (!DoShapeClosure) {
+                for (int i = 0; i < niter_ct; i++) {
+                        TH1D *h1_jetpt_smear = (TH1D *)h1_jetpt_reco->Clone(Form("jetpt_smear%d", i));
+                        
+                        if (!DoShapeClosure)
+                                SmearObservables(h1_jetpt_smear, h1_jetpt_data, myRNG);
+                        
+                        // Multiply by purity
+                        h1_jetpt_smear->Multiply(h1_purity_jetpt);
+                        
+                        RooUnfoldBayes unfold_jetpt_smear(response_jetpt, h1_jetpt_smear, niter_njet);      
+                        
+                        h1_jetpt_smear = (TH1D *)unfold_jetpt_smear.Hreco();
 
-        //         // Divide by efficiency
-        //         h1_jetpt_smear->Divide(h1_efficiency_jetpt);
-                
-        //         TH1D *h1_jetpt_ratio_smear = (TH1D *)h1_jetpt_reco->Clone(Form("h1_jetpt_ratio_smear%d", i));
+                        // Divide by efficiency
+                        h1_jetpt_smear->Divide(h1_efficiency_jetpt);
+                        
+                        TH1D *h1_jetpt_ratio_smear = (TH1D *)h1_jetpt_reco->Clone(Form("h1_jetpt_ratio_smear%d", i));
 
-        //         h1_jetpt_ratio_smear->Divide(h1_jetpt_smear, h1_jetpt_truth);
-        //         h1_jetpt_ratio_smear->Write();
-        // }
-
+                        h1_jetpt_ratio_smear->Divide(h1_jetpt_smear, h1_jetpt_truth);
+                        h1_jetpt_ratio_smear->Write();
+                }
+        }
         std::cout << "############################## Unfolding 3D Jet distribution ##############################" << std::endl;
 
-        // 3D JET CORRECTION
-        /////////////////////   Get histograms /////////////////////////////////
-
-        TH3D *h3_jet_reco = (TH3D *)file_reco->Get("h3_HFptetajetpt");
-        TH3D *h3_jet_data = (TH3D *)file_data->Get("h3_HFptetajetpt");  
+        // 3D jet corrections
+        TH3D* h3_jet_reco = (TH3D*) file_reco->Get("h3_HFptetajetpt");
+        TH3D* h3_jet_data = (TH3D*) file_data->Get("h3_HFptetajetpt");  
 
         std::cout<<"MCReco jet pt entries = "<<h3_jet_reco->Integral()<<std::endl;
         std::cout<<"Data   jet pt entries = "<<h3_jet_data->Integral()<<std::endl;
 
-        // h1_jetpt_reco->Draw();
-        TH3D *h3_jet_pseudodata = (TH3D *)h3_jet_reco->Clone("h3_jet_pseudodata");
+        TH3D* h3_jet_pseudodata          = (TH3D*) h3_jet_reco->Clone("h3_jet_pseudodata");
+        TH3D* h3_jet_truth               = (TH3D*) file_truth->Get("h3_HFptetajetpt");
+        TH3F* h3_purity_HFptetajetpt     = (TH3F*) file_unfold->Get("purity_HFptetajetpt");
+        TH3F* h3_efficiency_HFptetajetpt = (TH3F*) file_unfold->Get("efficiency_HFptetajetpt");
 
-        /////////////////////   Get Truth histograms /////////////////////////////////
-        TH3D *h3_jet_truth = (TH3D *)file_truth->Get("h3_HFptetajetpt");
-
-        /////////////////////   Get Purity & Efficiency Hists /////////////////////////////////
-        TH3F *h3_purity_HFptetajetpt     = (TH3F *)file_unfold->Get("purity_HFptetajetpt");
-        TH3F *h3_efficiency_HFptetajetpt = (TH3F *)file_unfold->Get("efficiency_HFptetajetpt");
-
-        /////////////////////   Get Response Matrices /////////////////////////////////
         RooUnfoldResponse *response_jet = (RooUnfoldResponse *)file_unfold->Get("Roo_response_HFptetajetpt");
-
-        // response_jetpt->UseOverflow();
 
         h3_jet_pseudodata->Multiply(h3_purity_HFptetajetpt);
 
-        RooUnfoldBayes unfold_jet(response_jet, h3_jet_pseudodata, NumIters);
+        RooUnfoldBayes unfold_jet(response_jet, h3_jet_pseudodata, niter_njet);
         
         h3_jet_pseudodata = (TH3D *)unfold_jet.Hreco();
 
@@ -189,18 +175,16 @@ void ClosureTest(int NumEvts = -1,
 
         std::cout << "############################## Unfolding 3D Npair distribution ##############################" << std::endl;
         
-        // Get all the necessary histograms
-        TH3D *h3_rl_jetpt_weight_truth = (TH3D*) file_truth->Get("h_npair_mc");
-        TH3D *h3_rl_jetpt_weight       = (TH3D*) file_reco->Get("h3_rl_jetpt_weight");
-        TH3D *h3_rl_jetpt_weight_data  = (TH3D*) file_data->Get("h3_rl_jetpt_weight");
-        TH3D *h3_rl_jetpt_weight_pseudodata = (TH3D*) h3_rl_jetpt_weight->Clone("h3_rl_jetpt_weight_pseudodata");
+        TH3D* h3_rl_jetpt_weight_truth      = (TH3D*) file_truth->Get("h_npair_mc");
+        TH3D* h3_rl_jetpt_weight            = (TH3D*) file_reco->Get("h3_rl_jetpt_weight");
+        TH3D* h3_rl_jetpt_weight_data       = (TH3D*) file_data->Get("h3_rl_jetpt_weight");
+        TH3D* h3_rl_jetpt_weight_pseudodata = (TH3D*) h3_rl_jetpt_weight->Clone("h3_rl_jetpt_weight_pseudodata");
         
-        TH3D *h3_eff_rl_jetpt_weight    = (TH3D *)file_unfold->Get("efficiency_rl_jetpt_weight");
-        TH3D *h3_purity_rl_jetpt_weight = (TH3D *)file_unfold->Get("purity_rl_jetpt_weight");
+        TH3D* h3_eff_rl_jetpt_weight    = (TH3D*) file_unfold->Get("efficiency_rl_jetpt_weight");
+        TH3D* h3_purity_rl_jetpt_weight = (TH3D*) file_unfold->Get("purity_rl_jetpt_weight");
         
         RooUnfoldResponse *response_rl_jetpt_weight = (RooUnfoldResponse *)file_unfold->Get("Roo_response_npair");
         
-        // Correct the distributions
         h3_rl_jetpt_weight_pseudodata->Multiply(h3_purity_rl_jetpt_weight);
         
         RooUnfoldBayes unfold_rl_jetpt_weight(response_rl_jetpt_weight, h3_rl_jetpt_weight_pseudodata, niter_npair);
@@ -210,8 +194,6 @@ void ClosureTest(int NumEvts = -1,
         h3_rl_jetpt_weight_pseudodata->Divide(h3_eff_rl_jetpt_weight);
 
         std::cout << "############################## Unfolding 3D Npair with HF distribution ##############################" << std::endl;
-        
-        // Get all the necessary histograms
         TH3D *h3_rl_jetpt_weight_truth_whf      = (TH3D*) file_truth->Get("h_npair_whf_mc");
         TH3D *h3_rl_jetpt_weight_whf            = (TH3D*) file_reco->Get("h3_rl_jetpt_weight_whf");
         TH3D *h3_rl_jetpt_weight_data_whf       = (TH3D*) file_data->Get("h3_rl_jetpt_weight_whf");
@@ -222,7 +204,6 @@ void ClosureTest(int NumEvts = -1,
         
         RooUnfoldResponse *response_rl_jetpt_weight_whf = (RooUnfoldResponse *)file_unfold->Get("Roo_response_npair_whf");
         
-        // Correct the distributions
         h3_rl_jetpt_weight_pseudodata_whf->Multiply(h3_purity_rl_jetpt_weight_whf);
         
         RooUnfoldBayes unfold_rl_jetpt_weight_whf(response_rl_jetpt_weight_whf, h3_rl_jetpt_weight_pseudodata_whf, niter_npair);
@@ -233,7 +214,6 @@ void ClosureTest(int NumEvts = -1,
 
         std::cout << "############################## Unfolding 3D Npair without HF distribution ##############################" << std::endl;
         
-        // Get all the necessary histograms
         TH3D *h3_rl_jetpt_weight_truth_wohf      = (TH3D*) file_truth->Get("h_npair_wohf_mc");
         TH3D *h3_rl_jetpt_weight_wohf            = (TH3D*) file_reco->Get("h3_rl_jetpt_weight_wohf");
         TH3D *h3_rl_jetpt_weight_data_wohf       = (TH3D*) file_data->Get("h3_rl_jetpt_weight_wohf");
@@ -410,52 +390,70 @@ void ClosureTest(int NumEvts = -1,
                 hmc_npair_weight[bin]->Write();
                 hmcreco_npair_weight[bin]->Write();
                 h_npair_weight_mcreco_truth_ratio[bin]->Write();
+
+                hmcreco_eec_whf[bin]->Add(hmcreco_eec_wohf[bin]);
+                hmcreco_eec_whf[bin]->Divide(hmc_eec[bin]);
+                hmcreco_eec_whf[bin]->Write(Form("pseudodata2truth_whfwohf_%i", bin));
         }
         
-        // // // Smearing the Observables
-        // TH1F* hmcreco_eec_smeared[ptbinsize][nRuns]; 
-        // TH1F* h_eec_mcreco_truth_ratio_smeared[ptbinsize][nRuns]; 
-        // TH2D* h2_eec_smeared[nRuns];
+        // Smearing the Observables
 
-        // for (int i = 0; i < nRuns; i++) {
-        //         TH3D *h3_rl_jetpt_weight_smear = (TH3D *)h3_rl_jetpt_weight->Clone(Form("rl_jetpt_weight_smeared%d", i));
-                
-        //         if (smear_by_data)
-        //                 SmearObservables(h3_rl_jetpt_weight_smear, h3_rl_jetpt_weight_data, myRNG);
-                
-        //         // Correct the smeared pseudodata
-        //         h3_rl_jetpt_weight_smear->Multiply(h3_rl_jetpt_weight_smear, h3_purity_rl_jetpt_weight);
-        //         RooUnfoldBayes unfold_rl_jetpt_weight_smear(response_rl_jetpt_weight, h3_rl_jetpt_weight_smear, NumIters);
+        if (!DoShapeClosure) {
+                TH1F* hmcreco_eec_smeared[ptbinsize][niter_ct]; 
+                TH1F* h_eec_mcreco_truth_ratio_smeared[ptbinsize][niter_ct]; 
+                TH2D* h2_eec_smeared[niter_ct];
 
-        //         h3_rl_jetpt_weight_smear = (TH3D *)unfold_rl_jetpt_weight_smear.Hreco();
-                
-        //         h3_rl_jetpt_weight_smear->Divide(h3_rl_jetpt_weight_smear, h3_eff_rl_jetpt_weight);
-                
-        //         // Estimate the EEC for this smeared iteration
-        //         h2_eec_smeared[i] = new TH2D(Form("h2_eec_smeared%i", i), "", nbin_rl_nominal_unfolding, unfolding_rl_nominal_binning, ptbinsize, pt_binedges);
-        //         apply_unfolded_weights(h3_rl_jetpt_weight_smear, h2_eec_smeared[i]);
-
-        //         // Estimate the mcreco/truth ratio in 1D for the smeared thing
-        //         for (int bin = 0 ; bin < ptbinsize ; bin++) {
-        //                 if (h1_jetpt_truth->GetBinContent(bin + 1) == 0)
-        //                         continue;
-
-        //                 hmcreco_eec_smeared[bin][i]              = new TH1F(Form("hmcreco_eec%i_smeared%i",bin,i)            , "", nbin_rl_nominal_unfolding,unfolding_rl_nominal_binning);
-        //                 h_eec_mcreco_truth_ratio_smeared[bin][i] = new TH1F(Form("pseudodata_to_truth_eec%i_smeared%i",bin,i), "", nbin_rl_nominal_unfolding,unfolding_rl_nominal_binning);
+                for (int i = 0; i < niter_ct; i++) {
+                        TH3D *h3_rl_jetpt_weight_smear = (TH3D *)h3_rl_jetpt_weight->Clone(Form("rl_jetpt_weight_smeared%d", i));
                         
-        //                 set_histogram_style(hmcreco_eec_smeared[bin][i], corr_marker_color_jet_pt[bin], std_line_width, corr_marker_style_jet_pt[bin], std_marker_size+1);
+                        SmearObservables(h3_rl_jetpt_weight_smear, h3_rl_jetpt_weight_data, myRNG);
+                        
+                        // Correct the smeared pseudodata
+                        h3_rl_jetpt_weight_smear->Multiply(h3_rl_jetpt_weight_smear, h3_purity_rl_jetpt_weight);
+                        RooUnfoldBayes unfold_rl_jetpt_weight_smear(response_rl_jetpt_weight, h3_rl_jetpt_weight_smear, niter_npair);
 
-        //                 project_nominal_phase_space(h2_eec_smeared[i], hmcreco_eec_smeared[bin][i], bin + 1);
+                        h3_rl_jetpt_weight_smear = (TH3D *)unfold_rl_jetpt_weight_smear.Hreco();
+                        
+                        h3_rl_jetpt_weight_smear->Divide(h3_rl_jetpt_weight_smear, h3_eff_rl_jetpt_weight);
+                        
+                        // Estimate the EEC for this smeared iteration
+                        h2_eec_smeared[i] = new TH2D(Form("h2_eec_smeared%i", i), "", nbin_rl_nominal_unfolding, unfolding_rl_nominal_binning, ptbinsize, pt_binedges);
+                        apply_unfolded_weights(h3_rl_jetpt_weight_smear, h2_eec_smeared[i]);
 
-        //                 hmcreco_eec_smeared[bin][i]->Scale(1./h1_jetpt_pseudodata->GetBinContent(bin + 1),"width");
+                        // Estimate the mcreco/truth ratio in 1D for the smeared thing
+                        for (int bin = 0 ; bin < ptbinsize ; bin++) {
+                                if (h1_jetpt_truth->GetBinContent(bin + 1) == 0)
+                                        continue;
 
-        //                 h_eec_mcreco_truth_ratio_smeared[bin][i]->Divide(hmcreco_eec_smeared[bin][i], hmc_eec[bin]);
+                                hmcreco_eec_smeared[bin][i]              = new TH1F(Form("hmcreco_eec%i_smeared%i",bin,i)            , "", nbin_rl_nominal_unfolding,unfolding_rl_nominal_binning);
+                                h_eec_mcreco_truth_ratio_smeared[bin][i] = new TH1F(Form("pseudodata_to_truth_eec%i_smeared%i",bin,i), "", nbin_rl_nominal_unfolding,unfolding_rl_nominal_binning);
+                                
+                                set_histogram_style(hmcreco_eec_smeared[bin][i], corr_marker_color_jet_pt[bin], std_line_width, corr_marker_style_jet_pt[bin], std_marker_size+1);
 
-        //                 hmcreco_eec_smeared[bin][i]->Write();
-        //                 h_eec_mcreco_truth_ratio_smeared[bin][i]->Write();
-        //         }
-        // }
-        
+                                project_nominal_phase_space(h2_eec_smeared[i], hmcreco_eec_smeared[bin][i], bin + 1);
+
+                                hmcreco_eec_smeared[bin][i]->Scale(1./h1_jetpt_pseudodata->GetBinContent(bin + 1),"width");
+
+                                h_eec_mcreco_truth_ratio_smeared[bin][i]->Divide(hmcreco_eec_smeared[bin][i], hmc_eec[bin]);
+
+                                hmcreco_eec_smeared[bin][i]->Write();
+                                h_eec_mcreco_truth_ratio_smeared[bin][i]->Write();
+                        }
+                }
+
+                // Average the non-closure across samples
+                TH1F* h_eec_mcreco_truth_ratio_average[ptbinsize]; 
+                for (int bin = 0 ; bin < ptbinsize ; bin++) {
+                        h_eec_mcreco_truth_ratio_average[bin] = new TH1F(Form("pseudodata_to_truth_eec%i_average",bin), "", nbin_rl_nominal_unfolding,unfolding_rl_nominal_binning);
+                        
+                        for (int i = 0; i < niter_ct; i++)
+                                h_eec_mcreco_truth_ratio_average[bin]->Add(h_eec_mcreco_truth_ratio_smeared[bin][i]);
+                        
+                        h_eec_mcreco_truth_ratio_average[bin]->Scale(1./niter_ct);
+
+                        h_eec_mcreco_truth_ratio_average[bin]->Write();
+                }
+        }
         //file_write->Write();
         file_write->Close();
 }

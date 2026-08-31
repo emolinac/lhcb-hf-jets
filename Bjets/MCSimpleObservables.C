@@ -20,7 +20,7 @@
 //using namespace fastjet;
 using namespace std;
 
-void MCSimpleObservables(int NumEvts = -1)
+void MCMakeObservable(int NumEvts = -1)
 {
         TFile fread((output_folder + "ntuple_bjets_mc.root").c_str(), "READ");
         TTree *BTree = (TTree *)fread.Get("BTree");

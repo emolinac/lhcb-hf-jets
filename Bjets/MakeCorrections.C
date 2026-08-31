@@ -25,7 +25,7 @@
 
 using namespace std;
 
-void SimpleUnfold(std::string variation = "nominal")
+void MakeCorrections(std::string variation = "nominal")
 {
         if(gSystem->AccessPathName((output_folder + namef_mcreco_variations[variation]).c_str())) {
                 std::cout<<"MCReco file not found. Check file or variation given as input."<<std::endl;
@@ -599,7 +599,7 @@ void SimpleUnfold(std::string variation = "nominal")
                                                         h3_num_purity_rl_jetpt_weight_whf->Fill(rl_info[vector_index], jet_pt, weight_info[vector_index]);
                                                         h2_num_purity_rl_jetpt_whf->Fill(rl_info[vector_index], jet_pt);
 
-                                                        response_npair_whf->Fill(rl_info[vector_index], jet_pt, weight_info[vector_index], truthmatched_rl_info[vector_index], tr_jet_pt, truthmatched_weight_info[vector_index]);
+                                                        response_npair_whf->Fill(rl_info[vector_index], jet_pt, weight_info[vector_index], truthmatched_rl_info[vector_index], tr_jet_pt, truthmatched_weight_info[vector_index],prior_rescale_rl_jetpt_weight);
 
                                                         response_rl_whf->Fill(rl_info[vector_index], truthmatched_rl_info[vector_index]);
                                                         response_weight_whf->Fill(weight_info[vector_index], truthmatched_weight_info[vector_index]);
@@ -608,7 +608,7 @@ void SimpleUnfold(std::string variation = "nominal")
                                                         h3_num_purity_rl_jetpt_weight_wohf->Fill(rl_info[vector_index], jet_pt, weight_info[vector_index]);
                                                         h2_num_purity_rl_jetpt_wohf->Fill(rl_info[vector_index], jet_pt);
 
-                                                        response_npair_wohf->Fill(rl_info[vector_index], jet_pt, weight_info[vector_index], truthmatched_rl_info[vector_index], tr_jet_pt, truthmatched_weight_info[vector_index]);
+                                                        response_npair_wohf->Fill(rl_info[vector_index], jet_pt, weight_info[vector_index], truthmatched_rl_info[vector_index], tr_jet_pt, truthmatched_weight_info[vector_index], prior_rescale_rl_jetpt_weight);
                                                         response_rl_wohf->Fill(rl_info[vector_index], truthmatched_rl_info[vector_index]);
                                                         response_weight_wohf->Fill(weight_info[vector_index], truthmatched_weight_info[vector_index]);
                                                 }

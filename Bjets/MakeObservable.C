@@ -21,7 +21,7 @@
 
 using namespace std;
 
-void SimpleObservables(bool isData = true, std::string variation = "nominal")
+void MakeObservable(bool isData = true, std::string variation = "nominal")
 {
         if(gSystem->AccessPathName((output_folder + namef_corrections[variation]).c_str())) {
                 std::cout<<"Correction file not found!"<<std::endl;

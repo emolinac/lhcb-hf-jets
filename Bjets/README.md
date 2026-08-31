@@ -16,7 +16,7 @@
   ```
 - **`MCSimpleObservalbes.C`**: Processes output of `MCMakeVarTree.C` to obtain truth level distributions used for the (1) closure tests and (2) comparison to final results
   ```bash
-  root -l -b -q "MCSimpleObservables.C(-1, 91599)"
+  root -l -b -q "MCMakeObservable.C(-1, 91599)"
   ```
 - **`MakeVarTree.C`**: Used to create slimmed down TTrees from the DaVinci output for data and reco MC. Each entry of the resulting tree corresponds to a B-jet candidate
   ```bash
@@ -41,34 +41,34 @@
   root -l -b -q "MassFit.C(-1, 91599, 0)" # reco MC
   root -l -b -q "MassFit.C(-1, 91599, 1)" # data
   ```
-- **`SimpleUnfold.C`**: Processes output of `MakeVarTree.C` and `MCSimpleEfficiency.C` for reco MC to obtain (1) purities (purity = # of matched B-jets / # of reco B-jets), (2) response matrices for the unfolding (from matched B-jets), and (3) efficincies (numerator of "# of matched B-jets" combined with denominator from `MCSimpleEfficiencies.C` output)
+- **`MakeCorrections.C`**: Processes output of `MakeVarTree.C` and `MCSimpleEfficiency.C` for reco MC to obtain (1) purities (purity = # of matched B-jets / # of reco B-jets), (2) response matrices for the unfolding (from matched B-jets), and (3) efficincies (numerator of "# of matched B-jets" combined with denominator from `MCSimpleEfficiencies.C` output)
     - Reads in output of `MassFit.C` to make the relevant mass cut
   ```bash
-  root -l -b -q "SimpleUnfold.C(-1, 91599)"
+  root -l -b -q "MakeCorrections.C(-1, 91599)"
   ```
-- **`SimpleObservables.C`**: Processes output of `MakeVarTree.C` to obtain observable distributions for data and reco MC
+- **`MakeObservable.C`**: Processes output of `MakeVarTree.C` to obtain observable distributions for data and reco MC
     - Reads in histograms for trigger / track / pid corrections
     - Reads in output of `MassFit.C` to make the relevant mass cut and perform the sideband subtraction
   ```bash
-  root -l -b -q "SimpleObservables.C(-1, 91599, 0)"
-  root -l -b -q "SimpleObservables.C(-1, 91599, 1)"
+  root -l -b -q "MakeObservable.C(-1, 91599, 0)"
+  root -l -b -q "MakeObservable.C(-1, 91599, 1)"
   ```
-- **`ClosureTest.C`**: Processes output of `SimpleObservables.C` for reco MC, `SimpleUnfold.C`, and `MCSimpleObservables.C` to perform both statistical and shape closure test depending on user arguments 
+- **`ClosureTest.C`**: Processes output of `MakeObservable.C` for reco MC, `MakeCorrections.C`, and `MCMakeObservable.C` to perform both statistical and shape closure test depending on user arguments 
   ```bash
   # statistical closure test
   root -l -b -q "ClosureTest.C(-1, 91599, 91599, 4, 0)"
   # shape closure test
   root -l -b -q "ClosureTest.C(-1, 91599, 91599, 4, 1)"
   ```
-- **`MakeMCWeights.C`**: Creates ratios of $(z, j_{T}, p_{T,\text{jet}})$ distributions in data / reco MC. Used to reweight the response matrix for the prior and shape nonclosure systematic unceratinties
+- **`MakeRMReweightFactors.C`**: Creates ratios of $(z, j_{T}, p_{T,\text{jet}})$ distributions in data / reco MC. Used to reweight the response matrix for the prior and shape nonclosure systematic unceratinties
   ```bash
-  root -l -b -q MakeMCWeights.C
+  root -l -b -q MakeRMReweightFactors.C
   ```
-- **`PlotFinal.C`**: Processes output of `SimpleObservables.C` and `SimpleUnfold.C` to apply the correction chain (purity -> unfolding -> efficiency) to observable distributions in data.
+- **`PlotFinal.C`**: Processes output of `MakeObservable.C` and `MakeCorrections.C` to apply the correction chain (purity -> unfolding -> efficiency) to observable distributions in data.
   ```bash
   root -l -b -q PlotFinal.C
   ```
-- **`Systematics/GetSystematic.C`**: Processes output from `SimpleObservables.C` and `SimpleUnfold.C` ran with approrpiate user arguments for relevant systematic variations to compute systematic uncertainties for the various sources. 
+- **`Systematics/GetSystematic.C`**: Processes output from `MakeObservable.C` and `MakeCorrections.C` ran with approrpiate user arguments for relevant systematic variations to compute systematic uncertainties for the various sources. 
     - User can provide arguments to calculate uncertainties for the different systematic variations. Preparing these inputs is discussed in a subsection below.
   ```bash
   cd Systematics/
@@ -110,7 +110,7 @@
   root -l -b -q GetTotalSys.C
   cd ../
   ```
-- **`PublicationFigures.C`**: Processes output from `PlotFinal.C`, `Systematics/GetTotalSys.C`, and `MCSimpleObservables.C` to obtain final observable distributions with systematic uncertainties and comparison to truth MC
+- **`PublicationFigures.C`**: Processes output from `PlotFinal.C`, `Systematics/GetTotalSys.C`, and `MCMakeObservable.C` to obtain final observable distributions with systematic uncertainties and comparison to truth MC
   ```bash
   root -l -b -q PublicationFigures.C
   ```
@@ -176,10 +176,10 @@ ctrl+D #(detatch from tmux session)
 source runAllMassFit_Systematics.sh
 
 # Systematic variations for purities, response, efficiencies
-source runAllSimpleUnfold_Systematics.sh
+source runAllMakeCorrections_Systematics.sh
 
 # Systematic variations for observable distributions
-source runAllSimpleObservables_Systematics.sh
+source runAllMakeObservable_Systematics.sh
 
 # Calcualte relative systematic uncertainty from the systematic variations (1)
 source CalculateSystematics1.sh

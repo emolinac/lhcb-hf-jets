@@ -13,7 +13,7 @@
 
 using namespace std;
 
-void MakeMCWeights(std::string variation = "nominal")
+void MakeRMReweightFactors(std::string variation = "nominal")
 {
         if(gSystem->AccessPathName((output_folder + namef_simpleobservable_data[variation]).c_str())) {
                 std::cout<<"Data file not found!"<<std::endl;

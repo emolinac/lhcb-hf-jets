@@ -180,38 +180,4 @@ std::string available_systematics[] = {
         "massfit-lower",
         "trackeff-cc"  ,
 };
-
-// std::map<std::string, std::string> systematic_name  = {
-//         {available_systematics[0],"Closure test n.c."},
-//         {available_systematics[1],"Shape closure test n.c."},
-//         {available_systematics[2],"JES-JER"},
-//         {available_systematics[3],"Prior variation"},
-//         {available_systematics[4],"Regularization parameter"},
-//         {available_systematics[5],"Muon eff"},
-//         {available_systematics[6],"Jet ID"},
-//         {available_systematics[7],"ProbNNghost"}
-// };
-
-// std::map<std::string, std::string> systematic_namef = {
-//         {available_systematics[0],"histos_eec_3dcorr_rl_jetpt_weightpt_niter4_niterjet4_statct_niterct1.root"},
-//         {available_systematics[1],"histos_eec_3dcorr_rl_jetpt_weightpt_niter4_niterjet4_shapect.root"},
-//         {available_systematics[2],"histos_eec_3dcorr_rl_jetpt_weightpt_niter4_niterjet4--get-jes-jer.root"},
-//         {available_systematics[3],"histos_eec_3dcorr_rl_jetpt_weightpt_niter4_niterjet4--get-prior.root"},
-//         {available_systematics[4],"histos_eec_3dcorr_rl_jetpt_weightpt_niterjet4--get-regpar.root"},
-//         {available_systematics[5],"histos_eec_3dcorr_rl_jetpt_weightpt_niter4_niterjet4--get-muon.root"},
-//         {available_systematics[6],"histos_eec_3dcorr_rl_jetpt_weightpt_niter4_niterjet4--get-jetid.root"},
-//         {available_systematics[7],"histos_eec_3dcorr_rl_jetpt_weightpt_niter4_niterjet4--get-probnnghost.root"}
-// };
-
-// std::map<std::string, std::string> systematic_errtype = {
-//         {available_systematics[0],"normal"},
-//         {available_systematics[1],"normal"},
-//         {available_systematics[2],"normal"},
-//         {available_systematics[3],"normal"},
-//         {available_systematics[4],"normal"},
-//         {available_systematics[5],"normal"},
-//         {available_systematics[6],"normal"},
-//         {available_systematics[7],"normal"}
-// };
-
 #endif
