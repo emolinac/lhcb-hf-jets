@@ -310,10 +310,12 @@ void MakeCorrectedObservable(int niter_njet = 4, int niter_npair = 4, std::strin
                         h_syst_variation_wohf[bin]->Divide(hdata_eec_nominal_wohf[bin]);
                         h_syst_variation_jet3dcorr[bin]->Divide(hdata_eec_nominal_jet3dcorr[bin]);
 
+                        file_write->cd();
                         h_syst_variation[bin]->Write();
                         h_syst_variation_whf[bin]->Write();
                         h_syst_variation_wohf[bin]->Write();
                         h_syst_variation_jet3dcorr[bin]->Write();
+                        f_nominal->cd();
                 }
         }
 

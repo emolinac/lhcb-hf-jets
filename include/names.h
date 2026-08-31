@@ -14,7 +14,7 @@ std::string namef_ntuple_mcreco_jesjer = "ntuple_bjets_mcreco_jesjer.root";
 std::string namef_ntuple_mc            = "ntuple_bjets_mc.root";
 std::string namef_ntuple_bjets_misid   = "ntuple_bjets_misid.root";
 
-std::string namef_data2mcreco_ratio = "data2mcreco_rl_jetpt_weight.root";
+std::string namef_data2mcreco_ratio                = "data2mcreco_rl_jetpt_weight.root";
 std::string name_histo_data2mcreco_rl_jetpt_weight = "data2mcreco_rl_jetpt_weight_ratio";
 std::string name_histo_data2mcreco_HFpt_eta_jetpt  = "data2mcreco_HFpt_eta_jetpt_ratio";
 std::string name_histo_data2mcreco_jetpt           = "data2mcreco_jetpt_ratio";
@@ -70,7 +70,7 @@ std::map<std::string, std::string> namef_corrections = {
         {"jesjer"       , "bjets_corrections_jesjer.root"},
         {"prior"        , "bjets_corrections_prior.root"},
         {"recseleff"    , "bjets_corrections_recseleff.root"},
-        {"fitsignal"    , "bjets_corrections_recseleff.root"},
+        {"fitsignal"    , "bjets_corrections_fitsignal.root"},
         {"trackeff-hi"  , "bjets_corrections.root"},
         {"trackeff-lo"  , "bjets_corrections.root"},
         {"trigeff-hi"   , "bjets_corrections.root"},
@@ -147,8 +147,8 @@ std::map<std::string, std::string> namef_3duncorrecteddistributions_data = {
         {"massfit-near" , "bjets_3duncorrecteddistributions_data_massfit_near.root"},
         {"massfit-upper", "bjets_3duncorrecteddistributions_data_massfit_upper.root"},
         {"massfit-lower", "bjets_3duncorrecteddistributions_data_massfit_lower.root"},
-        {"regpar-upper" , "bjets_3duncorrecteddistributions_data_regpar_upper.root"},
-        {"regpar-lower" , "bjets_3duncorrecteddistributions_data_regpar_lower.root"},
+        {"regpar-upper" , "bjets_3duncorrecteddistributions_data.root"},
+        {"regpar-lower" , "bjets_3duncorrecteddistributions_data.root"},
         {"trackeff-cc"  , "bjets_3duncorrecteddistributions_data_trackeff_cc.root"},
 };
 
@@ -169,8 +169,8 @@ std::map<std::string, std::string> namef_3duncorrecteddistributions_mcreco = {
         {"massfit-near" , "bjets_3duncorrecteddistributions_mcreco.root"},
         {"massfit-upper", "bjets_3duncorrecteddistributions_mcreco.root"},
         {"massfit-lower", "bjets_3duncorrecteddistributions_mcreco.root"},
-        {"regpar-upper" , "bjets_3duncorrecteddistributions_mcreco_regpar_upper.root"},
-        {"regpar-lower" , "bjets_3duncorrecteddistributions_mcreco_regpar_lower.root"},
+        {"regpar-upper" , "bjets_3duncorrecteddistributions_mcreco.root"},
+        {"regpar-lower" , "bjets_3duncorrecteddistributions_mcreco.root"},
         {"trackeff-cc"  , "bjets_3duncorrecteddistributions_mcreco.root"},
 };
 
@@ -194,6 +194,8 @@ std::map<std::string, std::string> namef_correctedobservable_data = {
         {"regpar-upper" , "bjets_correctedobservable_data_regpar_upper.root"},
         {"regpar-lower" , "bjets_correctedobservable_data_regpar_lower.root"},
         {"trackeff-cc"  , "bjets_correctedobservable_data_trackeff_cc.root"},
+        {"ct-shape"     , "bjets_shapeclosuretest_eec.root"},
+        {"ct-stat"      , "bjets_closuretest_eec.root"},
 };
 
 // About systematics
@@ -215,13 +217,14 @@ std::string available_systematics[] = {
         "massfit-lower",
         "regpar-upper" ,
         "regpar-lower" ,
+        "ct-shape"     ,
+        "ct-stat"      ,
 };
 
-// 
 std::map<std::string, double> available_systematics_scale = {
         {"jetid"        , 1.},
         {"jesjer"       , 1.},
-        {"prior"        , 1.},
+        {"prior"        , 4.},
         {"recseleff"    , 1.},
         {"fitsignal"    , 1.},
         {"trackeff-hi"  , 2.},
@@ -234,8 +237,62 @@ std::map<std::string, double> available_systematics_scale = {
         {"massfit-near" , 4.},
         {"massfit-upper", 4.},
         {"massfit-lower", 4.},
-        {"regpar-upper" , 2.},
-        {"regpar-lower" , 2.},
+        {"regpar-upper" , 8.},
+        {"regpar-lower" , 8.},
+        {"ct-shape"     , 4.},
+        {"ct-stat"      , 4.},
+};
+
+std::map<std::string, std::string> available_systematics_group = {
+        {"jetid"        , "jetid"},
+        {"jesjer"       , "jesjer"},
+        {"prior"        , "prior"},
+        {"recseleff"    , "recseleff"},
+        {"fitsignal"    , "fitsignal"},
+        {"trackeff-hi"  , "trackeff"},
+        {"trackeff-lo"  , "trackeff"},
+        {"trigeff-hi"   , "trigeff"},
+        {"trigeff-lo"   , "trigeff"},
+        {"pideff-hi"    , "pideff"},
+        {"pideff-lo"    , "pideff"},
+        {"massfit-far"  , "massfit"},
+        {"massfit-near" , "massfit"},
+        {"massfit-upper", "massfit"},
+        {"massfit-lower", "massfit"},
+        {"regpar-upper" , "regpar"},
+        {"regpar-lower" , "regpar"},
+        {"ct-shape"     , "ct-shape"},
+        {"ct-stat"      , "ct-stat"},
+};
+
+std::map<std::string, std::string> final_systematics_legends = {
+        {"jetid"    , "Jet ID"},
+        {"jesjer"   , "JES-JER"},
+        {"prior"    , "Prior"},
+        {"recseleff", "B^{#pm} selection"},
+        {"fitsignal", "Mass fit signal"},
+        {"trackeff" , "Tracking eff."},
+        {"trigeff"  , "Trigger eff."},
+        {"pideff"   , "PID eff."},
+        {"massfit"  , "Mass fit window"},
+        {"regpar"   , "Reg. parameter"},
+        {"ct-shape" , "Shape non-closure"},
+        {"ct-stat"  , "Stat. non-closure"},
+};
+
+std::string final_systematics_names[] = {
+        "jetid"    ,
+        "jesjer"   ,
+        "prior"    ,
+        "recseleff",
+        "fitsignal",
+        "trackeff" ,
+        "trigeff"  ,
+        "pideff"   ,
+        "massfit"  ,
+        "regpar"   ,
+        "ct-shape" ,
+        "ct-stat"  ,
 };
 
 #endif

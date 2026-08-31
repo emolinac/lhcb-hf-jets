@@ -20,7 +20,7 @@
 
 using namespace std;
 
-void ClosureTest(int niter_njet = 4, int niter_npair = 4, std::string variation = "nominal", std::string prior_variation = "nominal")
+void ClosureTest(int niter_njet = 4, int niter_npair = 4, std::string prior_variation = "nominal", std::string variation = "nominal")
 {
         if (prior_variation !=  "nominal" && prior_variation != "prior") {
                 std::cout<<"Invalid variation of the prior. Options are: nominal and prior."<<std::endl;
@@ -30,7 +30,7 @@ void ClosureTest(int niter_njet = 4, int niter_npair = 4, std::string variation 
         if (prior_variation == "prior")
                 DoShapeClosure = true;
 
-        if(DoShapeClosure && gSystem->AccessPathName((output_folder + namef_3duncorrecteddistributions_data[variation]).c_str())) {
+        if(gSystem->AccessPathName((output_folder + namef_3duncorrecteddistributions_data[variation]).c_str())) {
                 std::cout<<"Data file not found for smearing. Check file or variation given as input."<<std::endl;
 
                 return;
@@ -42,7 +42,7 @@ void ClosureTest(int niter_njet = 4, int niter_npair = 4, std::string variation 
                 return;
         }
 
-        if(gSystem->AccessPathName((output_folder + namef_corrections[variation]).c_str())) {
+        if(gSystem->AccessPathName((output_folder + namef_corrections[prior_variation]).c_str())) {
                 std::cout<<"Corrections file not found. Check file or variation given as input."<<std::endl;
 
                 return;
@@ -397,6 +397,7 @@ void ClosureTest(int niter_njet = 4, int niter_npair = 4, std::string variation 
         }
         
         // Smearing the Observables
+        TH1F* h_eec_nonclosure_syst[ptbinsize]; 
 
         if (!DoShapeClosure) {
                 TH1F* hmcreco_eec_smeared[ptbinsize][niter_ct]; 
@@ -451,9 +452,25 @@ void ClosureTest(int niter_njet = 4, int niter_npair = 4, std::string variation 
                         
                         h_eec_mcreco_truth_ratio_average[bin]->Scale(1./niter_ct);
 
-                        h_eec_mcreco_truth_ratio_average[bin]->Write();
+                        h_eec_nonclosure_syst[bin] = (TH1F*) hmc_eec[bin]->Clone(Form("h_syst_variation%i",bin));
+
+                        h_eec_nonclosure_syst[bin]->Divide(hmc_eec[bin]);
+
+                        h_eec_nonclosure_syst[bin]->Add(h_eec_mcreco_truth_ratio_average[bin], -1);
+
+                        h_eec_nonclosure_syst[bin]->Write(Form("h_syst_variation%i",bin));
+                }
+        } else {
+                for (int bin = 0 ; bin < ptbinsize ; bin++){
+                        h_eec_nonclosure_syst[bin] = (TH1F*) hmc_eec[bin]->Clone(Form("h_syst_variation%i",bin));
+
+                        h_eec_nonclosure_syst[bin]->Divide(hmc_eec[bin]);
+
+                        h_eec_nonclosure_syst[bin]->Add(h_eec_mcreco_truth_ratio[bin], -1);
+
+                        h_eec_nonclosure_syst[bin]->Write(Form("h_syst_variation%i",bin));
                 }
         }
-        //file_write->Write();
+
         file_write->Close();
 }

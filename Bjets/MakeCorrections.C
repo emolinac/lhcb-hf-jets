@@ -27,6 +27,24 @@ using namespace std;
 
 void MakeCorrections(std::string variation = "nominal")
 {
+        bool SubtractGS    = false;
+        bool DoJESJER      = false;
+        bool DoJetID       = false;
+        bool DoRecSelEff   = false;
+        bool DoSignalSys   = false;
+        bool DoUnfoldPrior = false;
+        
+        if (variation == "jesjer")
+                DoJESJER = true;
+        if (variation == "jetid")
+                DoJetID = true;
+        if (variation == "prior")
+                DoUnfoldPrior = true;
+        if (variation == "recseleff")
+                DoRecSelEff = true;
+        if (variation == "fitsignal")
+                DoSignalSys = true;
+
         if(gSystem->AccessPathName((output_folder + namef_mcreco_variations[variation]).c_str())) {
                 std::cout<<"MCReco file not found. Check file or variation given as input."<<std::endl;
 
@@ -45,23 +63,11 @@ void MakeCorrections(std::string variation = "nominal")
                 return;
         }
 
-        bool SubtractGS    = false;
-        bool DoJESJER      = false;
-        bool DoJetID       = false;
-        bool DoRecSelEff   = false;
-        bool DoSignalSys   = false;
-        bool DoUnfoldPrior = false;
-        
-        if (variation == "jesjer")
-                DoJESJER = true;
-        if (variation == "jetid")
-                DoJetID = true;
-        if (variation == "prior")
-                DoUnfoldPrior = true;
-        if (variation == "recseleff")
-                DoRecSelEff = true;
-        if (variation == "fitsignal")
-                DoSignalSys = true;
+        if(DoUnfoldPrior && gSystem->AccessPathName((output_folder + namef_data2mcreco_ratio).c_str())) {
+                std::cout<<"RM reweight file not found. Check file or variation given as input."<<std::endl;
+
+                return;
+        }
 
         TFile* f_mcreco = new TFile((output_folder + namef_mcreco_variations[variation]).c_str());
 

@@ -1,0 +1,26 @@
+#!/bin/bash
+
+root -b -q "Make3DUncorrDistributions.C(0, \"nominal\")"
+root -b -q "Make3DUncorrDistributions.C(0, \"jetid\")"
+root -b -q "Make3DUncorrDistributions.C(0, \"jesjer\")"
+root -b -q "Make3DUncorrDistributions.C(0, \"prior\")"
+root -b -q "Make3DUncorrDistributions.C(0, \"recseleff\")"
+root -b -q "Make3DUncorrDistributions.C(0, \"fitsignal\")"
+
+root -b -q "Make3DUncorrDistributions.C(1, \"nominal\")"
+root -b -q "Make3DUncorrDistributions.C(1, \"jetid\")"
+root -b -q "Make3DUncorrDistributions.C(1, \"jesjer\")"
+root -b -q "Make3DUncorrDistributions.C(1, \"prior\")"
+root -b -q "Make3DUncorrDistributions.C(1, \"recseleff\")"
+root -b -q "Make3DUncorrDistributions.C(1, \"fitsignal\")"
+root -b -q "Make3DUncorrDistributions.C(1, \"trackeff-hi\")"
+root -b -q "Make3DUncorrDistributions.C(1, \"trackeff-lo\")"
+root -b -q "Make3DUncorrDistributions.C(1, \"trigeff-hi\")"
+root -b -q "Make3DUncorrDistributions.C(1, \"trigeff-lo\")"
+root -b -q "Make3DUncorrDistributions.C(1, \"pideff-hi\")"
+root -b -q "Make3DUncorrDistributions.C(1, \"pideff-lo\")"
+root -b -q "Make3DUncorrDistributions.C(1, \"massfit-far\")"
+root -b -q "Make3DUncorrDistributions.C(1, \"massfit-near\")"
+root -b -q "Make3DUncorrDistributions.C(1, \"massfit-upper\")"
+root -b -q "Make3DUncorrDistributions.C(1, \"massfit-lower\")"
+

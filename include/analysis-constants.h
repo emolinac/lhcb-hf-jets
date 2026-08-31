@@ -26,8 +26,8 @@ const double std_marker_size  = 1.0;
 const int    std_marker_style = 8;
 const int    std_line_width   = 3;
 
-const int std_marker_style_jet_pt[]  = {24,25,27,42,46,40,45};
-const int corr_marker_style_jet_pt[] = {20,21,33,43,47,41,45};
+const int std_marker_style_jet_pt[]  = {42,46,40,45,24,25,27};
+const int corr_marker_style_jet_pt[] = {43,47,41,45,20,21,33};
 
 const int std_marker_color_jet_pt[]  = {868,797,618,41,46,38,418,861,617,1};
 const int corr_marker_color_jet_pt[] = {868,797,618,41,46,38,418,861,617,1};

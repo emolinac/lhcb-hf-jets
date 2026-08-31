@@ -1,0 +1,23 @@
+#!/bin/bash
+
+# root -b -q "MakeCorrectedObservable.C(4, 4, \"nominal\")"
+# root -b -q "MakeCorrectedObservable.C(4, 4, \"jetid\")"
+# root -b -q "MakeCorrectedObservable.C(4, 4, \"jesjer\")"
+# root -b -q "MakeCorrectedObservable.C(4, 4, \"prior\")"
+# root -b -q "MakeCorrectedObservable.C(4, 4, \"recseleff\")"
+# root -b -q "MakeCorrectedObservable.C(4, 4, \"fitsignal\")"
+# root -b -q "MakeCorrectedObservable.C(4, 4, \"trackeff-hi\")"
+# root -b -q "MakeCorrectedObservable.C(4, 4, \"trackeff-lo\")"
+# root -b -q "MakeCorrectedObservable.C(4, 4, \"trigeff-hi\")"
+# root -b -q "MakeCorrectedObservable.C(4, 4, \"trigeff-lo\")"
+# root -b -q "MakeCorrectedObservable.C(4, 4, \"pideff-hi\")"
+# root -b -q "MakeCorrectedObservable.C(4, 4, \"pideff-lo\")"
+# root -b -q "MakeCorrectedObservable.C(4, 4, \"massfit-far\")"
+# root -b -q "MakeCorrectedObservable.C(4, 4, \"massfit-near\")"
+# root -b -q "MakeCorrectedObservable.C(4, 4, \"massfit-upper\")"
+# root -b -q "MakeCorrectedObservable.C(4, 4, \"massfit-lower\")"
+# root -b -q "MakeCorrectedObservable.C(4, 4, \"regpar-upper\")"
+# root -b -q "MakeCorrectedObservable.C(4, 4, \"regpar-lower\")"
+
+root -b -q "ClosureTest.C(4, 4, \"nominal\", \"nominal\")"
+root -b -q "ClosureTest.C(4, 4, \"prior\", \"nominal\")"

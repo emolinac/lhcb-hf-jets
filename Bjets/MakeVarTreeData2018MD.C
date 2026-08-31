@@ -87,7 +87,7 @@ void MakeVarTreeData2018MD(bool DoJetID = false)
         
         double NumEvts = Tree.fChain->GetEntries();
         
-        std::string output_file_name = (DoJetID) ? "ntuple_bjets_data_2018_MD_jetid.root" : "ntuple_bjets_data_2018_MD.root";
+        std::string output_file_name = (DoJetID) ? "ntuple_bjets_data_2018_MD_jetid.root" : "ntuple_bjets_data_2018_MD_nominal.root";
         TFile f((output_folder + output_file_name).c_str(), "RECREATE");
         
         TH1F *h1_TIS    = new TH1F("h1_TIS"   , "", ptJpsibinsize, ptJpsi_binedges);
