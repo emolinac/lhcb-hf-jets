@@ -242,40 +242,45 @@ void regularize_correction_factors(TH3D* h)
         }
 }
 
-void set_histo_with_systematics(TH1F* hrelerror, TH1F* hnominal, TH1F* hsystematic, int syst_index, bool print_table)
+void set_histob_with_grouped_relsyst(TH1F* hrelerror, TH1F* hsystematic, std::string variation)
 {
-        double total_err = 0, total = 0;
-        double n_ct_sources = (syst_index != 2 && syst_index != 5 && syst_index != 6) ? 4. : 1.;
-
         for (int hbin = 1 ; hbin <= hrelerror->GetNbinsX() ; hbin++)
         {
                 double dev     = hrelerror->GetBinContent(hbin);
                 double dev_err = hrelerror->GetBinError(hbin);
                 
-                // Dev values are positive by construction
-                total += hnominal->GetBinContent(hbin);
+                double syst_error = std::abs(dev);
+                
+                hsystematic->SetBinContent(hbin, std::sqrt(syst_error * syst_error / systematics_breakdown_scale[variation] + std::pow(hsystematic->GetBinContent(hbin),2)));
+        }
+}
 
-                // if (dev-dev_err < 0) 
-                //         continue;
-
-                double syst_error            = std::abs(dev)*hnominal->GetBinContent(hbin);
+void set_histo_with_systematics(TH1F* hrelerror, TH1F* hnominal, TH1F* hsystematic, std::string variation)
+{
+        for (int hbin = 1 ; hbin <= hrelerror->GetNbinsX() ; hbin++)
+        {
+                double dev     = hrelerror->GetBinContent(hbin);
+                double dev_err = hrelerror->GetBinError(hbin);
+                
+                double syst_error            = std::abs(dev * hnominal->GetBinContent(hbin));
                 double syst_error_percentage = std::abs(dev);
                 
-                hsystematic->SetBinError(hbin, std::sqrt(syst_error * syst_error / n_ct_sources + std::pow(hsystematic->GetBinError(hbin),2)));
-
-                total_err += hnominal->GetBinContent(hbin)*syst_error_percentage*syst_error_percentage;
+                hsystematic->SetBinError(hbin, std::sqrt(syst_error * syst_error / available_systematics_scale[variation] + std::pow(hsystematic->GetBinError(hbin),2)));
         }
+}
 
-        if (!print_table)
-                return;
+void set_histoa_relerrors_as_histob_content(TH1F* ha, TH1F* hb)
+{
+        for (int i = 1 ; i <= ha->GetNbinsX() ; i++) {
+                double error = ha->GetBinError(i);
+                double content = ha->GetBinContent(i);
+                double nominal_relerror = std::fabs(error/content);
 
-        std::cout.setf(std::ios::fixed, std::ios::floatfield);
-        std::cout.precision(2);
+                if (std::isnan(nominal_relerror))
+                        nominal_relerror = 0;
 
-        if (total > 0)
-                std::cout<<std::sqrt(total_err/total)*100.;
-        else if (total == 0)
-                std::cout<<0;
+                hb->SetBinContent(i, nominal_relerror);
+        }
 }
 
 void set_histoa_errors_as_histob_content(TH1F* ha, TH1F* hb)
@@ -283,12 +288,8 @@ void set_histoa_errors_as_histob_content(TH1F* ha, TH1F* hb)
         for (int i = 1 ; i <= ha->GetNbinsX() ; i++) {
                 double error = ha->GetBinError(i);
                 double content = ha->GetBinContent(i);
-                double nominal_relerror = error/content;
-
-                if (std::isnan(nominal_relerror))
-                        nominal_relerror = 0;
-
-                hb->SetBinContent(i, nominal_relerror);
+                
+                hb->SetBinContent(i, error);
         }
 }
 

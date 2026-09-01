@@ -243,6 +243,28 @@ std::map<std::string, double> available_systematics_scale = {
         {"ct-stat"      , 4.},
 };
 
+std::map<std::string, double> systematics_breakdown_scale = {
+        {"jetid"        , 1.},
+        {"jesjer"       , 1.},
+        {"prior"        , 1.},
+        {"recseleff"    , 1.},
+        {"fitsignal"    , 1.},
+        {"trackeff-hi"  , 2.},
+        {"trackeff-lo"  , 2.},
+        {"trigeff-hi"   , 2.},
+        {"trigeff-lo"   , 2.},
+        {"pideff-hi"    , 2.},
+        {"pideff-lo"    , 2.},
+        {"massfit-far"  , 4.},
+        {"massfit-near" , 4.},
+        {"massfit-upper", 4.},
+        {"massfit-lower", 4.},
+        {"regpar-upper" , 2.},
+        {"regpar-lower" , 2.},
+        {"ct-shape"     , 1.},
+        {"ct-stat"      , 1.},
+};
+
 std::map<std::string, std::string> available_systematics_group = {
         {"jetid"        , "jetid"},
         {"jesjer"       , "jesjer"},
