@@ -851,89 +851,89 @@ void MassFit(bool isData = true, std::string variation = "nominal")
                         sideline2low->Draw("SAME");
                         sideline2high->Draw("SAME");
 
-                        if (i==5) {
-                                Int_t lhcbFont = 132;
-                                Double_t lhcbTSize = 0.05;
-                                Double_t lhcbWidth = 2.00;
+                        // if (i==5) {
+                        //         Int_t lhcbFont = 132;
+                        //         Double_t lhcbTSize = 0.05;
+                        //         Double_t lhcbWidth = 2.00;
                                 
-                                gStyle->SetTextFont(lhcbFont);
-                                gStyle->SetTextSize(lhcbTSize);
-                                gStyle->SetLabelFont(lhcbFont, "x");
-                                gStyle->SetLabelFont(lhcbFont, "y");
-                                gStyle->SetLabelFont(lhcbFont, "z");
-                                gStyle->SetLabelSize(lhcbTSize, "x");
-                                gStyle->SetLabelSize(lhcbTSize, "y");
-                                gStyle->SetLabelSize(lhcbTSize, "z");
-                                gStyle->SetTitleFont(lhcbFont);
-                                gStyle->SetTitleFont(lhcbFont, "x");
-                                gStyle->SetTitleFont(lhcbFont, "y");
-                                gStyle->SetTitleFont(lhcbFont, "z");
-                                gStyle->SetTitleSize(1.2 * lhcbTSize, "x");
-                                gStyle->SetTitleSize(1.2 * lhcbTSize, "y");
-                                gStyle->SetTitleSize(1.2 * lhcbTSize, "z");
+                        //         gStyle->SetTextFont(lhcbFont);
+                        //         gStyle->SetTextSize(lhcbTSize);
+                        //         gStyle->SetLabelFont(lhcbFont, "x");
+                        //         gStyle->SetLabelFont(lhcbFont, "y");
+                        //         gStyle->SetLabelFont(lhcbFont, "z");
+                        //         gStyle->SetLabelSize(lhcbTSize, "x");
+                        //         gStyle->SetLabelSize(lhcbTSize, "y");
+                        //         gStyle->SetLabelSize(lhcbTSize, "z");
+                        //         gStyle->SetTitleFont(lhcbFont);
+                        //         gStyle->SetTitleFont(lhcbFont, "x");
+                        //         gStyle->SetTitleFont(lhcbFont, "y");
+                        //         gStyle->SetTitleFont(lhcbFont, "z");
+                        //         gStyle->SetTitleSize(1.2 * lhcbTSize, "x");
+                        //         gStyle->SetTitleSize(1.2 * lhcbTSize, "y");
+                        //         gStyle->SetTitleSize(1.2 * lhcbTSize, "z");
                                 
-                                TGaxis::SetMaxDigits(3);
+                        //         TGaxis::SetMaxDigits(3);
                                 
-                                TCanvas *c0 = new TCanvas("c0");
-                                c0->cd();
-                                c0->SetBottomMargin(0.15);
-                                c0->SetTopMargin(0.1);
-                                c0->SetLeftMargin(0.15);
-                                c0->SetRightMargin(0.1);
+                        //         TCanvas *c0 = new TCanvas("c0");
+                        //         c0->cd();
+                        //         c0->SetBottomMargin(0.15);
+                        //         c0->SetTopMargin(0.1);
+                        //         c0->SetLeftMargin(0.15);
+                        //         c0->SetRightMargin(0.1);
                                 
-                                RooPlot *xframe_pub = HFMass.frame(Title(Form(";#it{m}_{#mu^{+}#mu^{-}K^{#pm}} [GeV/c^{2}];Candidates/(%.1f MeV/c^{2}) ", binsize * 1000.)));
-                                xframe_pub->SetTitleOffset(1.1, "X");
-                                xframe_pub->SetTitleOffset(0.8, "Y");
+                        //         RooPlot *xframe_pub = HFMass.frame(Title(Form(";#it{m}_{#mu^{+}#mu^{-}K^{#pm}} [GeV/c^{2}];Candidates/(%.1f MeV/c^{2}) ", binsize * 1000.)));
+                        //         xframe_pub->SetTitleOffset(1.1, "X");
+                        //         xframe_pub->SetTitleOffset(0.8, "Y");
                         
-                                B_mass.plotOn(xframe_pub, Name("B_mass"), MarkerStyle(kFullCircle), MarkerSize(4.), LineWidth(2));
-                                // model->plotOn(xframe2);
+                        //         B_mass.plotOn(xframe_pub, Name("B_mass"), MarkerStyle(kFullCircle), MarkerSize(4.), LineWidth(2));
+                        //         // model->plotOn(xframe2);
                         
-                                // Overlay the background component of model with a dashed line
-                                model->plotOn(xframe_pub, Name("sig"), Components(sig), LineStyle(5), LineColor(kGreen + 2), LineWidth(2.));
-                                model->plotOn(xframe_pub, Name("bkg_cheb"), Components(bkg_cheb), LineStyle(kDashed), LineColor(kBlue), LineWidth(2.));
-                                model->plotOn(xframe_pub, Name("dcbPdf"), Components(dcbPdf), FillColor(TColor::GetColorTransparent(kMagenta, 0.7)), FillStyle(3165), LineWidth(0), DrawOption("F"));
-                                model->plotOn(xframe_pub, Name("model"), LineStyle(kSolid), LineColor(kRed), LineWidth(2.));
+                        //         // Overlay the background component of model with a dashed line
+                        //         model->plotOn(xframe_pub, Name("sig"), Components(sig), LineStyle(5), LineColor(kGreen + 2), LineWidth(2.));
+                        //         model->plotOn(xframe_pub, Name("bkg_cheb"), Components(bkg_cheb), LineStyle(kDashed), LineColor(kBlue), LineWidth(2.));
+                        //         model->plotOn(xframe_pub, Name("dcbPdf"), Components(dcbPdf), FillColor(TColor::GetColorTransparent(kMagenta, 0.7)), FillStyle(3165), LineWidth(0), DrawOption("F"));
+                        //         model->plotOn(xframe_pub, Name("model"), LineStyle(kSolid), LineColor(kRed), LineWidth(2.));
 
-                                xframe_pub->Draw("SAME");
+                        //         xframe_pub->Draw("SAME");
 
-                                TLatex Tl;
-                                Tl.SetNDC(kTRUE); // Use normalized coordinates (0-1)
+                        //         TLatex Tl;
+                        //         Tl.SetNDC(kTRUE); // Use normalized coordinates (0-1)
                                 
-                                Tl.SetTextFont(lhcbFont);
-                                Tl.SetTextColor(1);
-                                Tl.SetTextSize(lhcbTSize);
-                                Tl.SetTextAlign(12);
-                                Tl.DrawLatex(0.575, 0.85, "#scale[1.0]{LHCb pp #sqrt{#it{s}} = 13 TeV}");
-                                Tl.DrawLatex(0.575, 0.75, "#scale[1.0]{AK5 #it{B}^{#pm}-tagged jets}");
-                                Tl.DrawLatex(0.575, 0.65, Form("#scale[1.0]{%.1f < #it{p}_{T,B^{#pm}} < %.1f GeV/c}", ptHF_binedges[i], ptHF_binedges[i+1]));
-                                Tl.DrawLatex(0.575, 0.55, Form("#scale[1.0]{#it{p}_{T,jet} > 5 GeV/c}"));
-                                Tl.DrawLatex(0.575, 0.45, "#scale[1.0]{2.5 < #it{y}_{jet} < 4}");
+                        //         Tl.SetTextFont(lhcbFont);
+                        //         Tl.SetTextColor(1);
+                        //         Tl.SetTextSize(lhcbTSize);
+                        //         Tl.SetTextAlign(12);
+                        //         Tl.DrawLatex(0.575, 0.85, "#scale[1.0]{LHCb pp #sqrt{#it{s}} = 13 TeV}");
+                        //         Tl.DrawLatex(0.575, 0.75, "#scale[1.0]{AK5 #it{B}^{#pm}-tagged jets}");
+                        //         Tl.DrawLatex(0.575, 0.65, Form("#scale[1.0]{%.1f < #it{p}_{T,B^{#pm}} < %.1f GeV/c}", ptHF_binedges[i], ptHF_binedges[i+1]));
+                        //         Tl.DrawLatex(0.575, 0.55, Form("#scale[1.0]{#it{p}_{T,jet} > 5 GeV/c}"));
+                        //         Tl.DrawLatex(0.575, 0.45, "#scale[1.0]{2.5 < #it{y}_{jet} < 4}");
 
-                                TLegend *leg_pub = new TLegend(0.2, 0.5, 0.3, 0.85);
-                                leg_pub->SetTextSize(0.05);
-                                leg_pub->SetBorderSize(0);
-                                leg_pub->AddEntry("B_mass", "Data", "PE");
-                                leg_pub->AddEntry("model", "Fit model", "L");
-                                leg_pub->AddEntry("sig", "Signal", "L");
-                                leg_pub->AddEntry("bkg_cheb", "Comb. bkg.", "L");
+                        //         TLegend *leg_pub = new TLegend(0.2, 0.5, 0.3, 0.85);
+                        //         leg_pub->SetTextSize(0.05);
+                        //         leg_pub->SetBorderSize(0);
+                        //         leg_pub->AddEntry("B_mass", "Data", "PE");
+                        //         leg_pub->AddEntry("model", "Fit model", "L");
+                        //         leg_pub->AddEntry("sig", "Signal", "L");
+                        //         leg_pub->AddEntry("bkg_cheb", "Comb. bkg.", "L");
 
-                                linelow->SetY2(5000);
-                                linehigh->SetY2(5000);
-                                sideline1low->SetY2(5000);
-                                sideline1high->SetY2(5000);
-                                sideline2low->SetY2(5000);
-                                sideline2high->SetY2(5000);
+                        //         linelow->SetY2(5000);
+                        //         linehigh->SetY2(5000);
+                        //         sideline1low->SetY2(5000);
+                        //         sideline1high->SetY2(5000);
+                        //         sideline2low->SetY2(5000);
+                        //         sideline2high->SetY2(5000);
                         
-                                linelow->Draw("SAME");
-                                linehigh->Draw("SAME");
-                                sideline1low->Draw("SAME");
-                                sideline1high->Draw("SAME");
-                                sideline2low->Draw("SAME");
-                                sideline2high->Draw("SAME");
-                                leg_pub->Draw("SAME");
+                        //         linelow->Draw("SAME");
+                        //         linehigh->Draw("SAME");
+                        //         sideline1low->Draw("SAME");
+                        //         sideline1high->Draw("SAME");
+                        //         sideline2low->Draw("SAME");
+                        //         sideline2high->Draw("SAME");
+                        //         leg_pub->Draw("SAME");
 
-                                c0->SaveAs("./plots/BMass.pdf");
-                        }
+                        //         c0->SaveAs("./plots/BMass.pdf");
+                        // }
                 }
                 
                 if (!DoSignalSys)
@@ -947,9 +947,6 @@ void MassFit(bool isData = true, std::string variation = "nominal")
                 BkgParams << a1->getVal() << "," << nbkg->getVal() << endl;
                 ResonantParams << mu->getVal() << "," << width->getVal() << "," << alpha1->getVal() << "," << p1->getVal() << "," << alpha2->getVal() << "," << p2->getVal() << "," << nsig->getVal() << endl;
         } // End of mass fit loop
-
-        file_workspace->Close();
-        file_workspace_misid->Close();
 
         latexFile.close();
 
@@ -999,6 +996,9 @@ void MassFit(bool isData = true, std::string variation = "nominal")
         cout << "Total Signal Yield = " << sigyield << endl;
 
         // cout<<exp_c->getVal()<<endl;
+
+        file_workspace->Close();
+        file_workspace_misid->Close();
 
         SigParams.close();
         BkgParams.close();
