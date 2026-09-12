@@ -68,7 +68,7 @@ void macro_print_tau_light_heavy()
         
         TH1F* frame = gPad->DrawFrame(tau_binning[0][0], 0.002, tau_binning[2][nbin_rl_nominal], 0.11);
         s_data->Draw("NOSTACK SAME");
-        frame->SetTitle(";#it{R_{L}} #LT #it{p}_{T, jet} #GT (GeV);#Sigma_{EEC}(#it{R_{L}})#times ln(#LT #it{p}_{T, jet} #GT/GeV)/#LT #it{p}_{T, jet} #GT (GeV^{#minus1})");
+        frame->SetTitle(";#it{R_{L}} #LT #it{p}_{T, jet} #GT [GeV];#Sigma_{EEC}(#it{R_{L}})#times ln(#LT #it{p}_{T, jet} #GT/GeV)/#LT #it{p}_{T, jet} #GT (GeV^{#minus1})");
         l_data->Draw("SAME");
         gPad->SetLogx(1);
         gPad->SetLogy(0);

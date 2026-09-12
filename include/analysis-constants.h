@@ -1,7 +1,7 @@
 #ifndef ANALYSIS_CONSTANTS_H
 #define ANALYSIS_CONSTANTS_H
 
-// Masses (GeV)
+// Masses [GeV]
 const double rho_mass      = 0.77526;  // PDG 2023
 const double omega_mass    = 0.78266; // PDG 2023
 const double eta_mass      = 0.547862; // PDG 2023

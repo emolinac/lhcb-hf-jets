@@ -128,7 +128,7 @@ void macro_print_hf_kinematics()
         l->AddEntry(h_hfpt_data,"data","p");
         
         hs->Draw("NOSTACK");
-        hs->SetTitle(";#it{p}_{T, HF}(GeV);Normalized distributions");
+        hs->SetTitle(";#it{p}_{T, HF}[GeV];Normalized distributions");
 
         l->Draw("same");
 
@@ -166,7 +166,7 @@ void macro_print_hf_kinematics()
         l->AddEntry(h_mass_data, "data","p");
         
         hs->Draw("NOSTACK");
-        hs->SetTitle(";#it{M}_{HF}(GeV);Normalized distributions");
+        hs->SetTitle(";#it{M}_{HF}[GeV];Normalized distributions");
 
         l->Draw("same");
 
@@ -185,7 +185,7 @@ void macro_print_hf_kinematics()
         l->AddEntry(h_jpsi_mass_data, "data","p");
         
         hs->Draw("NOSTACK");
-        hs->SetTitle(";#it{M}_{J/#{Psi}}(GeV);Normalized distributions");
+        hs->SetTitle(";#it{M}_{J/#{Psi}}[GeV];Normalized distributions");
 
         l->Draw("same");
 
@@ -204,7 +204,7 @@ void macro_print_hf_kinematics()
         l->AddEntry(h_kaon_mass_data, "data","p");
         
         hs->Draw("NOSTACK");
-        hs->SetTitle(";#it{M}_{Kaon}(GeV);Normalized distributions");
+        hs->SetTitle(";#it{M}_{Kaon}[GeV];Normalized distributions");
 
         l->Draw("same");
 

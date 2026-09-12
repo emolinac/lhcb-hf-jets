@@ -137,6 +137,8 @@ void MakeCorrections(std::string variation = "nominal")
         TH1D *h1_jetpt          = new TH1D("jetpt"      , "", ptbinsize, pt_binedges);
         TH1D *h1_jetpt_truth    = new TH1D("jetpt_truth", "", ptbinsize, pt_binedges);
         TH2D *h2_response_jetpt = new TH2D("h2_response_jetpt", "", ptbinsize, pt_binedges, ptbinsize, pt_binedges);
+
+        TH2D *h2_response_jetpt_detail = new TH2D("h2_response_jetpt_detail", "", 100, 5, 100, 100, 5, 100);
         
         TH3D *h3_meas_HFptetajetpt = new TH3D("h3_meas_HFptetajetpt", "", ptHFbinsize, ptHF_binedges, HFetabinsize, HFeta_binedges, ptbinsize, pt_binedges);
         TH3D *h3_true_HFptetajetpt = new TH3D("h3_true_HFptetajetpt", "", ptHFbinsize, ptHF_binedges, HFetabinsize, HFeta_binedges, ptbinsize, pt_binedges);
@@ -146,6 +148,9 @@ void MakeCorrections(std::string variation = "nominal")
         // 1D RMs (for visualization purposes)
         TH1D *h1_form_rl     = new TH1D("h1_form_rl"    , "", nbin_rl_nominal_unfolding, unfolding_rl_nominal_binning);
         TH1D *h1_form_weight = new TH1D("h1_form_weight", "", nbin_weight, weight_binning);
+        
+        TH2D* h2_response_rl_detail = new TH2D("h2_response_rl_detail","",100,unfolding_rl_nominal_binning[0],unfolding_rl_nominal_binning[nbin_rl_nominal_unfolding],100,unfolding_rl_nominal_binning[0],unfolding_rl_nominal_binning[nbin_rl_nominal_unfolding]);
+        TH2D* h2_response_weight_detail = new TH2D("h2_response_weight_detail","",100,weight_binning[0],weight_binning[nbin_weight],100,weight_binning[0],weight_binning[nbin_weight]);
         
         RooUnfoldResponse *response_rl     = new RooUnfoldResponse(h1_form_rl    , h1_form_rl    , "response_rl");
         RooUnfoldResponse *response_weight = new RooUnfoldResponse(h1_form_weight, h1_form_weight, "response_weight");
@@ -211,6 +216,10 @@ void MakeCorrections(std::string variation = "nominal")
         TH2D* h2_denom_efficiency_rl_jetpt = new TH2D("h2_denom_efficiency_rl_jetpt", "", nbin_rl_nominal_unfolding, unfolding_rl_nominal_binning, ptbinsize, pt_binedges);
         TH2D* h2_efficiency_rl_jetpt       = new TH2D("h2_efficiency_rl_jetpt"      , "", nbin_rl_nominal_unfolding, unfolding_rl_nominal_binning, ptbinsize, pt_binedges);
         
+        TH2D* h2_num_efficiency_rl_weight   = new TH2D("h2_num_efficiency_rl_weight"  , "", nbin_rl_nominal_unfolding, unfolding_rl_nominal_binning, nbin_weight, weight_binning);
+        TH2D* h2_denom_efficiency_rl_weight = new TH2D("h2_denom_efficiency_rl_weight", "", nbin_rl_nominal_unfolding, unfolding_rl_nominal_binning, nbin_weight, weight_binning);
+        TH2D* h2_efficiency_rl_weight       = new TH2D("h2_efficiency_rl_weight"      , "", nbin_rl_nominal_unfolding, unfolding_rl_nominal_binning, nbin_weight, weight_binning);
+        
         TH2D* h2_num_efficiency_rl_jetpt_whf   = new TH2D("h2_num_efficiency_rl_jetpt_whf"  , "", nbin_rl_nominal_unfolding, unfolding_rl_nominal_binning, ptbinsize, pt_binedges);
         TH2D* h2_denom_efficiency_rl_jetpt_whf = new TH2D("h2_denom_efficiency_rl_jetpt_whf", "", nbin_rl_nominal_unfolding, unfolding_rl_nominal_binning, ptbinsize, pt_binedges);
         TH2D* h2_efficiency_rl_jetpt_whf       = new TH2D("h2_efficiency_rl_jetpt_whf"      , "", nbin_rl_nominal_unfolding, unfolding_rl_nominal_binning, ptbinsize, pt_binedges);
@@ -251,6 +260,10 @@ void MakeCorrections(std::string variation = "nominal")
         TH2D* h2_num_purity_rl_jetpt   = new TH2D("h2_num_purity_rl_jetpt"   , "", nbin_rl_nominal_unfolding, unfolding_rl_nominal_binning, ptbinsize, pt_binedges);
         TH2D* h2_denom_purity_rl_jetpt = new TH2D("h2_denom_purity_rl_jetpt" , "", nbin_rl_nominal_unfolding, unfolding_rl_nominal_binning, ptbinsize, pt_binedges);
         TH2D* h2_purity_rl_jetpt       = new TH2D("h2_purity_rl_jetpt"       , "", nbin_rl_nominal_unfolding, unfolding_rl_nominal_binning, ptbinsize, pt_binedges);
+
+        TH2D* h2_num_purity_rl_weight   = new TH2D("h2_num_purity_rl_weight"   , "", nbin_rl_nominal_unfolding, unfolding_rl_nominal_binning, nbin_weight, weight_binning);
+        TH2D* h2_denom_purity_rl_weight = new TH2D("h2_denom_purity_rl_weight" , "", nbin_rl_nominal_unfolding, unfolding_rl_nominal_binning, nbin_weight, weight_binning);
+        TH2D* h2_purity_rl_weight       = new TH2D("h2_purity_rl_weight"       , "", nbin_rl_nominal_unfolding, unfolding_rl_nominal_binning, nbin_weight, weight_binning);
 
         TH2D* h2_num_purity_rl_jetpt_whf   = new TH2D("h2_num_purity_rl_jetpt_whf"   , "", nbin_rl_nominal_unfolding, unfolding_rl_nominal_binning, ptbinsize, pt_binedges);
         TH2D* h2_denom_purity_rl_jetpt_whf = new TH2D("h2_denom_purity_rl_jetpt_whf" , "", nbin_rl_nominal_unfolding, unfolding_rl_nominal_binning, ptbinsize, pt_binedges);
@@ -468,6 +481,8 @@ void MakeCorrections(std::string variation = "nominal")
                         }
 
                         h2_response_jetpt->Fill(jet_pt, tr_jet_pt, prior_rescale_jetpt);
+
+                        h2_response_jetpt_detail->Fill(jet_pt, tr_jet_pt, prior_rescale_jetpt);
                         
                         response_HFptetajetpt->Fill(HF_pt, HFmeson.Rapidity(), jet_pt, tr_HF_pt, tr_HFmeson.Rapidity(), tr_jet_pt, prior_rescale_HFpt_eta_jetpt);
 
@@ -492,6 +507,9 @@ void MakeCorrections(std::string variation = "nominal")
                                         h_num_efficiency_rl_jetptHFpt_weight->Fill(rl_info[vector_index], tr_jetptHFpt_mapped, weight_info[vector_index]);
 
                                         h2_num_efficiency_rl_jetpt->Fill(rl_info[vector_index], tr_jet_pt);
+
+                                        if (tr_jet_pt > 20.)
+                                                h2_num_efficiency_rl_weight->Fill(rl_info[vector_index], weight_info[vector_index]);
 
                                         if (chargeprod_info[vector_index] > 0)
                                                 h3_num_efficiency_rl_jetpt_weight_eqch->Fill(rl_info[vector_index], tr_jet_pt, weight_info[vector_index]);
@@ -526,6 +544,9 @@ void MakeCorrections(std::string variation = "nominal")
                                         h_denom_efficiency_rl_jetptHFpt_weight->Fill(rl_info[vector_index], tr_jetptHFpt_mapped, weight_info[vector_index]);
 
                                         h2_denom_efficiency_rl_jetpt->Fill(rl_info[vector_index], tr_jet_pt);
+
+                                        if (tr_jet_pt > 20.)
+                                                h2_denom_efficiency_rl_weight->Fill(rl_info[vector_index], weight_info[vector_index]);
 
                                         if (chargeprod_info[vector_index] > 0)
                                                 h3_denom_efficiency_rl_jetpt_weight_eqch->Fill(rl_info[vector_index], tr_jet_pt, weight_info[vector_index]);
@@ -576,6 +597,9 @@ void MakeCorrections(std::string variation = "nominal")
 
                                                 h2_num_purity_rl_jetpt->Fill(rl_info[vector_index], jet_pt);
 
+                                                if (jet_pt > 20)
+                                                        h2_num_purity_rl_weight->Fill(rl_info[vector_index], weight_info[vector_index]);
+
                                                 response_npair->Fill(rl_info[vector_index], jet_pt, weight_info[vector_index], 
                                                         truthmatched_rl_info[vector_index], tr_jet_pt, truthmatched_weight_info[vector_index], prior_rescale_rl_jetpt_weight);
 
@@ -583,7 +607,11 @@ void MakeCorrections(std::string variation = "nominal")
                                       
                                                 response_rl->Fill(rl_info[vector_index], truthmatched_rl_info[vector_index]);
 
+                                                h2_response_rl_detail->Fill(rl_info[vector_index], truthmatched_rl_info[vector_index]);
+
                                                 response_weight->Fill(weight_info[vector_index], truthmatched_weight_info[vector_index]);
+
+                                                h2_response_weight_detail->Fill(weight_info[vector_index], truthmatched_weight_info[vector_index]);
                                                 
                                                 if (chargeprod_info[vector_index] > 0) {
                                                         h3_num_purity_rl_jetpt_weight_eqch->Fill(rl_info[vector_index], jet_pt, weight_info[vector_index]);
@@ -622,6 +650,9 @@ void MakeCorrections(std::string variation = "nominal")
                                         h_denom_purity_rl_jetptHFpt_weight->Fill(rl_info[vector_index], jetptHFpt_mapped, weight_info[vector_index]);
 
                                         h2_denom_purity_rl_jetpt->Fill(rl_info[vector_index], jet_pt);
+
+                                        if (jet_pt > 20)
+                                                h2_denom_purity_rl_weight->Fill(rl_info[vector_index], weight_info[vector_index]);
 
                                         if (chargeprod_info[vector_index] > 0)
                                                 h3_denom_purity_rl_jetpt_weight_eqch->Fill(rl_info[vector_index], jet_pt, weight_info[vector_index]);
@@ -688,8 +719,11 @@ void MakeCorrections(std::string variation = "nominal")
         f->cd();
 
         h2_response_jetpt->Write("h2_response_jetpt");
+        h2_response_jetpt_detail->Write("h2_response_jetpt_detail");
         h2_response_rl->Write("response_rl");
+        h2_response_rl_detail->Write("response_rl_detail");
         h2_response_weight->Write("response_weight");
+        h2_response_weight_detail->Write("response_weight_detail");
         h2_response_rl_whf->Write("response_rl_whf");
         h2_response_weight_whf->Write("response_weight_whf");
         h2_response_rl_wohf->Write("response_rl_wohf");
@@ -755,6 +789,7 @@ void MakeCorrections(std::string variation = "nominal")
         
         h_efficiency_rl_jetptHFpt_weight->Divide(h_num_efficiency_rl_jetptHFpt_weight, h_denom_efficiency_rl_jetptHFpt_weight, 1, 1, "B");
         
+        h2_efficiency_rl_weight->Divide(h2_num_efficiency_rl_weight, h2_denom_efficiency_rl_weight, 1, 1, "B");
         h2_efficiency_rl_jetpt->Divide(h2_num_efficiency_rl_jetpt, h2_denom_efficiency_rl_jetpt, 1, 1, "B");
         h2_efficiency_rl_jetpt_whf->Divide(h2_num_efficiency_rl_jetpt_whf, h2_denom_efficiency_rl_jetpt_whf, 1, 1, "B");
         h2_efficiency_rl_jetpt_wohf->Divide(h2_num_efficiency_rl_jetpt_wohf, h2_denom_efficiency_rl_jetpt_wohf, 1, 1, "B");
@@ -769,6 +804,7 @@ void MakeCorrections(std::string variation = "nominal")
 
         h_purity_rl_jetptHFpt_weight->Divide(h_num_purity_rl_jetptHFpt_weight, h_denom_purity_rl_jetptHFpt_weight, 1, 1, "B");
         
+        h2_purity_rl_weight->Divide(h2_num_purity_rl_weight, h2_denom_purity_rl_weight, 1, 1, "B");
         h2_purity_rl_jetpt->Divide(h2_num_purity_rl_jetpt, h2_denom_purity_rl_jetpt, 1, 1, "B");
         h2_purity_rl_jetpt_whf->Divide(h2_num_purity_rl_jetpt_whf, h2_denom_purity_rl_jetpt_whf, 1, 1, "B");
         h2_purity_rl_jetpt_wohf->Divide(h2_num_purity_rl_jetpt_wohf, h2_denom_purity_rl_jetpt_wohf, 1, 1, "B");
@@ -785,6 +821,7 @@ void MakeCorrections(std::string variation = "nominal")
         h1_efficiency_jetpt->Write("efficiency_jetpt");
         h1_purity_jetpt->Write("purity_jetpt");
         
+        h2_efficiency_rl_weight->Write("efficiency_rl_weight");
         h2_efficiency_rl_jetpt->Write("efficiency_rl_jetpt");
         h2_efficiency_rl_jetpt_whf->Write("efficiency_rl_jetpt_whf");
         h2_efficiency_rl_jetpt_wohf->Write("efficiency_rl_jetpt_wohf");
@@ -799,6 +836,7 @@ void MakeCorrections(std::string variation = "nominal")
 
         h_efficiency_rl_jetptHFpt_weight->Write("efficiency_rl_jetptHFpt_weight");
         
+        h2_purity_rl_weight->Write("purity_rl_weight");
         h2_purity_rl_jetpt->Write("purity_rl_jetpt");
         h2_purity_rl_jetpt_whf->Write("purity_rl_jetpt_whf");
         h2_purity_rl_jetpt_wohf->Write("purity_rl_jetpt_wohf");

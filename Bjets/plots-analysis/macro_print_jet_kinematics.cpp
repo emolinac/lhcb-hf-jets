@@ -76,7 +76,7 @@ void macro_print_jet_kinematics()
         l->AddEntry(h_jetpt_data,"data","p");
         
         hs->Draw("NOSTACK");
-        hs->SetTitle(";#it{p}_{T, jet}(GeV);Normalized distributions");
+        hs->SetTitle(";#it{p}_{T, jet}[GeV];Normalized distributions");
 
         l->Draw("same");
 
