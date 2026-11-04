@@ -110,8 +110,12 @@ void PrintBreakdownRelSyst2RelStat()
         
         TH1F* h_final_syst_variation[nsyst_final][ptbinsize];
 
+        std::cout<<"Source & $20<p_{T, jet}<30$ & $30<p_{T, jet}<50$ & $50<p_{T, jet}<100$ \\\\"<<std::endl;
+        std::cout<<"\\hline"<<std::endl;
         for (int final_syst_index = 0 ; final_syst_index < nsyst_final ; final_syst_index++) {
                 std::string final_syst_name = final_systematics_names[final_syst_index];
+
+                std::cout<<final_systematics_legends[final_syst_name]<<" & ";
 
                 for (int bin = 0 ; bin < ptbinsize ; bin++) {
                         h_final_syst_variation[final_syst_index][bin] = new TH1F(Form("%i%i",final_syst_index,bin), 
@@ -131,6 +135,21 @@ void PrintBreakdownRelSyst2RelStat()
                                 }
                         } // Finished grouping
                         
+                        if (bin > 3) {
+                                std::cout.setf(std::ios::fixed, std::ios::floatfield);
+                                std::cout.precision(1);
+
+                                // if (h_final_syst_variation[final_syst_index][bin]->GetMinimum()*100. > 0.001)
+                                        std::cout<<"$"<<h_final_syst_variation[final_syst_index][bin]->GetMinimum()*100.<<"\\% - "<<h_final_syst_variation[final_syst_index][bin]->GetMaximum()*100.<<"\\%$";
+                                // else
+                                //         std::cout<<"$< "<<h_final_syst_variation[final_syst_index][bin]->GetMaximum()*100.<<"\\%$";
+
+                                if (bin != ptbinsize-1) 
+                                        std::cout<<" & ";
+                                else
+                                        std::cout<<" \\\\ ";
+                        }
+
                         set_histogram_style(h_final_syst_variation[final_syst_index][bin], 
                                             corr_marker_color_jet_pt[final_syst_index], std_line_width - 1, 
                                             std_marker_style_jet_pt[final_syst_index] , std_marker_size + 2);
@@ -138,6 +157,8 @@ void PrintBreakdownRelSyst2RelStat()
                         s[bin]->Add(h_final_syst_variation[final_syst_index][bin],"HIST PL");
                         l[bin]->AddEntry(h_final_syst_variation[final_syst_index][bin],final_systematics_legends[final_syst_name].c_str(),"p");
                 }
+
+                std::cout<<std::endl;
         }
 
         for (int i = 0 ; i < ptbinsize ; i++) {

@@ -10,6 +10,7 @@
 #include "../../include/analysis-cuts.cpp"
 #include "../../include/analysis-cuts.h"
 #include "../../include/directories.h"
+#include "../../include/names.h"
 #include "../../include/TBJetsMC.h"
 #include "../../include/TBJetsMC.C"
 #include "../../include/utils.cpp"
@@ -38,7 +39,7 @@ void draw_three_pads_eec(THStack* h_jetpt_0, THStack* h_jetpt_1, THStack* h_jetp
 
 void macro_print_eec_light_heavy(const int bin = 0)
 {
-        TFile* f_heavy      = new TFile((output_folder + "bjets_nominal_eec.root").c_str());
+        TFile* f_heavy      = new TFile((output_folder + "bjets_correctedobservable_data.root").c_str());
         TFile* f_light      = new TFile((output_folder + "zjets_ct_eec.root").c_str());
         TFile* f_light_data = new TFile((output_folder + "zjets_nominal_eec.root").c_str());
         

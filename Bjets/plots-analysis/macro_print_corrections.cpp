@@ -62,7 +62,7 @@ void macro_print_corrections(std::string variation = "nominal")
         
         // Print all the relevant corrections
         // TCanvas* c = new TCanvas("c","",800,600);
-        TCanvas* c = new TCanvas("c","",1080,720);
+        TCanvas* c = new TCanvas("c","",1280,720);
         c->Draw();
 
         // h2_efficiency_HFptjetpt
@@ -135,7 +135,7 @@ void macro_print_corrections(std::string variation = "nominal")
                 }
         }
         
-        h2_purity_rl_jetpt->SetTitle("Purity Correction;#it{R_{L}};#it{p}_{T,jet}[GeV]");
+        h2_purity_rl_jetpt->SetTitle("Purity Correction;#it{R}_{L};#it{p}_{T,jet}[GeV]");
         h2_purity_rl_jetpt->GetXaxis()->SetRangeUser(rl_nominal_binning[0],rl_nominal_binning[nbin_rl_nominal]);
         h2_purity_rl_jetpt->GetYaxis()->SetRangeUser(jet_pt_binning[0], jet_pt_binning[3]);
         
@@ -158,7 +158,7 @@ void macro_print_corrections(std::string variation = "nominal")
                 }
         }
         
-        h2_efficiency_rl_jetpt->SetTitle("Purity Correction;#it{R_{L}};#it{p}_{T,jet}[GeV]");
+        h2_efficiency_rl_jetpt->SetTitle("Purity Correction;#it{R}_{L};#it{p}_{T,jet}[GeV]");
         h2_efficiency_rl_jetpt->GetXaxis()->SetRangeUser(rl_nominal_binning[0],rl_nominal_binning[nbin_rl_nominal]);
         h2_efficiency_rl_jetpt->GetYaxis()->SetRangeUser(jet_pt_binning[0], jet_pt_binning[3]);
         
@@ -186,7 +186,7 @@ void macro_print_corrections(std::string variation = "nominal")
                 }
         }
         
-        h2_purity_rl_weight->SetTitle("Purity Correction;#it{R_{L}}; Momentum weights");
+        h2_purity_rl_weight->SetTitle("Purity Correction;#it{R}_{L}; Momentum weights");
         h2_purity_rl_weight->GetXaxis()->SetRangeUser(rl_nominal_binning[0],rl_nominal_binning[nbin_rl_nominal]);
         h2_purity_rl_weight->GetYaxis()->SetRangeUser(10E-6, 0.3);
         
@@ -212,7 +212,7 @@ void macro_print_corrections(std::string variation = "nominal")
                 }
         }
         
-        h2_efficiency_rl_weight->SetTitle("Efficiency Correction;#it{R_{L}}; Momentum weights");
+        h2_efficiency_rl_weight->SetTitle("Efficiency Correction;#it{R}_{L}; Momentum weights");
         h2_efficiency_rl_weight->GetXaxis()->SetRangeUser(rl_nominal_binning[0],rl_nominal_binning[nbin_rl_nominal]);
         h2_efficiency_rl_weight->GetYaxis()->SetRangeUser(10E-6, 0.3);
         
@@ -221,209 +221,209 @@ void macro_print_corrections(std::string variation = "nominal")
         
         c->Print("./plots/npairs-reconstruction-efficiency-rl-weight.pdf");
 
-        // RM rl
-        TLatex* lhcb_print = new TLatex();
-        lhcb_print->SetTextAlign(22);
-        lhcb_print->SetLineWidth(1);
-        lhcb_print->SetTextFont(133);
-        lhcb_print->SetTextSize(size_latex_tag);
+        // // RM rl
+        // TLatex* lhcb_print = new TLatex();
+        // lhcb_print->SetTextAlign(22);
+        // lhcb_print->SetLineWidth(1);
+        // lhcb_print->SetTextFont(133);
+        // lhcb_print->SetTextSize(size_latex_tag);
 
-        response_rl->GetXaxis()->SetLabelFont(133);
-        response_rl->GetXaxis()->SetTitleFont(133);
-        response_rl->GetXaxis()->SetLabelSize(size_xlabel_text);
-        response_rl->GetXaxis()->SetLabelOffset(0.005);
-        response_rl->GetXaxis()->SetTitleSize(size_xtitle_text);
-        response_rl->GetXaxis()->SetTitleOffset(xtitle_offset);        
-        response_rl->GetYaxis()->SetLabelFont(133);
-        response_rl->GetYaxis()->SetTitleFont(133);
-        response_rl->GetYaxis()->SetLabelSize(size_ylabel_text);
-        response_rl->GetYaxis()->SetLabelOffset(0.0075);
-        response_rl->GetYaxis()->SetTitleSize(size_ytitle_text);
-        response_rl->GetYaxis()->SetTitleOffset(ytitle_offset);
-        response_rl->GetZaxis()->SetLabelFont(133);
-        response_rl->GetZaxis()->SetTitleFont(133);
-        response_rl->GetZaxis()->SetLabelSize(size_ylabel_text);
-        response_rl->GetZaxis()->SetTitleSize(size_ytitle_text);
+        // response_rl->GetXaxis()->SetLabelFont(133);
+        // response_rl->GetXaxis()->SetTitleFont(133);
+        // response_rl->GetXaxis()->SetLabelSize(size_xlabel_text);
+        // response_rl->GetXaxis()->SetLabelOffset(0.005);
+        // response_rl->GetXaxis()->SetTitleSize(size_xtitle_text);
+        // response_rl->GetXaxis()->SetTitleOffset(xtitle_offset);        
+        // response_rl->GetYaxis()->SetLabelFont(133);
+        // response_rl->GetYaxis()->SetTitleFont(133);
+        // response_rl->GetYaxis()->SetLabelSize(size_ylabel_text);
+        // response_rl->GetYaxis()->SetLabelOffset(0.0075);
+        // response_rl->GetYaxis()->SetTitleSize(size_ytitle_text);
+        // response_rl->GetYaxis()->SetTitleOffset(ytitle_offset);
+        // response_rl->GetZaxis()->SetLabelFont(133);
+        // response_rl->GetZaxis()->SetTitleFont(133);
+        // response_rl->GetZaxis()->SetLabelSize(size_ylabel_text);
+        // response_rl->GetZaxis()->SetTitleSize(size_ytitle_text);
 
-        response_rl->Draw("colz");
+        // response_rl->Draw("colz");
         
-        response_rl->Draw("colz");
-        response_rl->GetXaxis()->SetRangeUser(0.01,1);
-        response_rl->GetYaxis()->SetRangeUser(0.01,1); 
-        response_rl->SetTitle("Response matrix of #it{R_{L}};#it{R}_{#it{L}}^{rec};#it{R}_{#it{L}}^{gen}");
+        // response_rl->Draw("colz");
+        // response_rl->GetXaxis()->SetRangeUser(0.01,1);
+        // response_rl->GetYaxis()->SetRangeUser(0.01,1); 
+        // response_rl->SetTitle("Response matrix of #it{R}_{L};#it{R}_{L}^{det};#it{R}_{L}^{part}");
 
-        gPad->SetRightMargin(0.15);
-        gPad->SetTopMargin(0.08);
-        gPad->SetLogx(1);
-        gPad->SetLogy(1);
-        gPad->SetLogz(1);
+        // gPad->SetRightMargin(0.15);
+        // gPad->SetTopMargin(0.08);
+        // gPad->SetLogx(1);
+        // gPad->SetLogy(1);
+        // gPad->SetLogz(1);
         
-        lhcb_print->DrawLatexNDC(0.52, 0.96, "LHCb simulation");
+        // lhcb_print->DrawLatexNDC(0.52, 0.96, "LHCb simulation");
         
-        c->Print("./plots/responsematrix_rl.pdf");
+        // c->Print("./plots/responsematrix_rl.pdf");
 
-        // RM weight
-        response_weight->GetXaxis()->SetLabelFont(133);
-        response_weight->GetXaxis()->SetTitleFont(133);
-        response_weight->GetXaxis()->SetLabelSize(size_xlabel_text);
-        response_weight->GetXaxis()->SetLabelOffset(0.005);
-        response_weight->GetXaxis()->SetTitleSize(size_xtitle_text);
-        response_weight->GetXaxis()->SetTitleOffset(xtitle_offset);        
-        response_weight->GetYaxis()->SetLabelFont(133);
-        response_weight->GetYaxis()->SetTitleFont(133);
-        response_weight->GetYaxis()->SetLabelSize(size_ylabel_text);
-        response_weight->GetYaxis()->SetLabelOffset(0.0075);
-        response_weight->GetYaxis()->SetTitleSize(size_ytitle_text);
-        response_weight->GetYaxis()->SetTitleOffset(ytitle_offset);
-        response_weight->GetZaxis()->SetLabelFont(133);
-        response_weight->GetZaxis()->SetTitleFont(133);
-        response_weight->GetZaxis()->SetLabelSize(size_ylabel_text);
-        response_weight->GetZaxis()->SetTitleSize(size_ytitle_text);
+        // // RM weight
+        // response_weight->GetXaxis()->SetLabelFont(133);
+        // response_weight->GetXaxis()->SetTitleFont(133);
+        // response_weight->GetXaxis()->SetLabelSize(size_xlabel_text);
+        // response_weight->GetXaxis()->SetLabelOffset(0.005);
+        // response_weight->GetXaxis()->SetTitleSize(size_xtitle_text);
+        // response_weight->GetXaxis()->SetTitleOffset(xtitle_offset);        
+        // response_weight->GetYaxis()->SetLabelFont(133);
+        // response_weight->GetYaxis()->SetTitleFont(133);
+        // response_weight->GetYaxis()->SetLabelSize(size_ylabel_text);
+        // response_weight->GetYaxis()->SetLabelOffset(0.0075);
+        // response_weight->GetYaxis()->SetTitleSize(size_ytitle_text);
+        // response_weight->GetYaxis()->SetTitleOffset(ytitle_offset);
+        // response_weight->GetZaxis()->SetLabelFont(133);
+        // response_weight->GetZaxis()->SetTitleFont(133);
+        // response_weight->GetZaxis()->SetLabelSize(size_ylabel_text);
+        // response_weight->GetZaxis()->SetTitleSize(size_ytitle_text);
 
-        response_weight->Draw("colz");
-        response_weight->GetXaxis()->SetRangeUser(10E-6,0.4);
-        response_weight->GetYaxis()->SetRangeUser(10E-6,0.4); 
-        response_weight->SetTitle("Response matrix of #it{R_{L}};#it{w}^{rec};#it{w}^{gen}");
+        // response_weight->Draw("colz");
+        // response_weight->GetXaxis()->SetRangeUser(10E-6,0.4);
+        // response_weight->GetYaxis()->SetRangeUser(10E-6,0.4); 
+        // response_weight->SetTitle("Response matrix of #it{R}_{L};#it{w}^{det};#it{w}^{part}");
 
-        gPad->SetRightMargin(0.15);
-        gPad->SetTopMargin(0.08);
-        gPad->SetLogx(1);
-        gPad->SetLogy(1);
-        gPad->SetLogz(1);
+        // gPad->SetRightMargin(0.15);
+        // gPad->SetTopMargin(0.08);
+        // gPad->SetLogx(1);
+        // gPad->SetLogy(1);
+        // gPad->SetLogz(1);
         
-        lhcb_print->DrawLatexNDC(0.52, 0.96, "LHCb simulation");
+        // lhcb_print->DrawLatexNDC(0.52, 0.96, "LHCb simulation");
         
-        c->Print("./plots/responsematrix_weight.pdf");
+        // c->Print("./plots/responsematrix_weight.pdf");
 
-        // RM weight
-        response_jetpt->GetXaxis()->SetLabelFont(133);
-        response_jetpt->GetXaxis()->SetTitleFont(133);
-        response_jetpt->GetXaxis()->SetLabelSize(size_xlabel_text);
-        response_jetpt->GetXaxis()->SetLabelOffset(0.005);
-        response_jetpt->GetXaxis()->SetTitleSize(size_xtitle_text);
-        response_jetpt->GetXaxis()->SetTitleOffset(xtitle_offset);        
-        response_jetpt->GetYaxis()->SetLabelFont(133);
-        response_jetpt->GetYaxis()->SetTitleFont(133);
-        response_jetpt->GetYaxis()->SetLabelSize(size_ylabel_text);
-        response_jetpt->GetYaxis()->SetLabelOffset(0.0075);
-        response_jetpt->GetYaxis()->SetTitleSize(size_ytitle_text);
-        response_jetpt->GetYaxis()->SetTitleOffset(ytitle_offset);
-        response_jetpt->GetZaxis()->SetLabelFont(133);
-        response_jetpt->GetZaxis()->SetTitleFont(133);
-        response_jetpt->GetZaxis()->SetLabelSize(size_ylabel_text);
-        response_jetpt->GetZaxis()->SetTitleSize(size_ytitle_text);
+        // // RM weight
+        // response_jetpt->GetXaxis()->SetLabelFont(133);
+        // response_jetpt->GetXaxis()->SetTitleFont(133);
+        // response_jetpt->GetXaxis()->SetLabelSize(size_xlabel_text);
+        // response_jetpt->GetXaxis()->SetLabelOffset(0.005);
+        // response_jetpt->GetXaxis()->SetTitleSize(size_xtitle_text);
+        // response_jetpt->GetXaxis()->SetTitleOffset(xtitle_offset);        
+        // response_jetpt->GetYaxis()->SetLabelFont(133);
+        // response_jetpt->GetYaxis()->SetTitleFont(133);
+        // response_jetpt->GetYaxis()->SetLabelSize(size_ylabel_text);
+        // response_jetpt->GetYaxis()->SetLabelOffset(0.0075);
+        // response_jetpt->GetYaxis()->SetTitleSize(size_ytitle_text);
+        // response_jetpt->GetYaxis()->SetTitleOffset(ytitle_offset);
+        // response_jetpt->GetZaxis()->SetLabelFont(133);
+        // response_jetpt->GetZaxis()->SetTitleFont(133);
+        // response_jetpt->GetZaxis()->SetLabelSize(size_ylabel_text);
+        // response_jetpt->GetZaxis()->SetTitleSize(size_ytitle_text);
 
-        response_jetpt->Draw("colz");
-        response_jetpt->GetXaxis()->SetRangeUser(10E-6,0.4);
-        response_jetpt->GetYaxis()->SetRangeUser(10E-6,0.4); 
-        response_jetpt->SetTitle("Response matrix of #it{R_{L}};#it{p}_{T, jet}^{rec}[GeV];#it{p}_{T, jet}^{gen}[GeV]");
+        // response_jetpt->Draw("colz");
+        // response_jetpt->GetXaxis()->SetRangeUser(10E-6,0.4);
+        // response_jetpt->GetYaxis()->SetRangeUser(10E-6,0.4); 
+        // response_jetpt->SetTitle("Response matrix of #it{R}_{L};#it{p}_{T, jet}^{det}[GeV];#it{p}_{T, jet}^{part}[GeV]");
 
-        gPad->SetRightMargin(0.15);
-        gPad->SetTopMargin(0.08);
-        gPad->SetLogx(1);
-        gPad->SetLogy(1);
-        gPad->SetLogz(1);
+        // gPad->SetRightMargin(0.15);
+        // gPad->SetTopMargin(0.08);
+        // gPad->SetLogx(1);
+        // gPad->SetLogy(1);
+        // gPad->SetLogz(1);
         
-        lhcb_print->DrawLatexNDC(0.52, 0.96, "LHCb simulation");
+        // lhcb_print->DrawLatexNDC(0.52, 0.96, "LHCb simulation");
         
-        c->Print("./plots/responsematrix_jetpt.pdf");
+        // c->Print("./plots/responsematrix_jetpt.pdf");
 
-        // RM rl
-        response_rl_detail->GetXaxis()->SetLabelFont(133);
-        response_rl_detail->GetXaxis()->SetTitleFont(133);
-        response_rl_detail->GetXaxis()->SetLabelSize(size_xlabel_text);
-        response_rl_detail->GetXaxis()->SetLabelOffset(0.005);
-        response_rl_detail->GetXaxis()->SetTitleSize(size_xtitle_text);
-        response_rl_detail->GetXaxis()->SetTitleOffset(xtitle_offset);        
-        response_rl_detail->GetYaxis()->SetLabelFont(133);
-        response_rl_detail->GetYaxis()->SetTitleFont(133);
-        response_rl_detail->GetYaxis()->SetLabelSize(size_ylabel_text);
-        response_rl_detail->GetYaxis()->SetLabelOffset(0.0075);
-        response_rl_detail->GetYaxis()->SetTitleSize(size_ytitle_text);
-        response_rl_detail->GetYaxis()->SetTitleOffset(ytitle_offset);
-        response_rl_detail->GetZaxis()->SetLabelFont(133);
-        response_rl_detail->GetZaxis()->SetTitleFont(133);
-        response_rl_detail->GetZaxis()->SetLabelSize(size_ylabel_text);
-        response_rl_detail->GetZaxis()->SetTitleSize(size_ytitle_text);
+        // // RM rl
+        // response_rl_detail->GetXaxis()->SetLabelFont(133);
+        // response_rl_detail->GetXaxis()->SetTitleFont(133);
+        // response_rl_detail->GetXaxis()->SetLabelSize(size_xlabel_text);
+        // response_rl_detail->GetXaxis()->SetLabelOffset(0.005);
+        // response_rl_detail->GetXaxis()->SetTitleSize(size_xtitle_text);
+        // response_rl_detail->GetXaxis()->SetTitleOffset(xtitle_offset);        
+        // response_rl_detail->GetYaxis()->SetLabelFont(133);
+        // response_rl_detail->GetYaxis()->SetTitleFont(133);
+        // response_rl_detail->GetYaxis()->SetLabelSize(size_ylabel_text);
+        // response_rl_detail->GetYaxis()->SetLabelOffset(0.0075);
+        // response_rl_detail->GetYaxis()->SetTitleSize(size_ytitle_text);
+        // response_rl_detail->GetYaxis()->SetTitleOffset(ytitle_offset);
+        // response_rl_detail->GetZaxis()->SetLabelFont(133);
+        // response_rl_detail->GetZaxis()->SetTitleFont(133);
+        // response_rl_detail->GetZaxis()->SetLabelSize(size_ylabel_text);
+        // response_rl_detail->GetZaxis()->SetTitleSize(size_ytitle_text);
 
-        response_rl_detail->Draw("colz");
-        response_rl_detail->GetXaxis()->SetRangeUser(0.01,1);
-        response_rl_detail->GetYaxis()->SetRangeUser(0.01,1); 
-        response_rl_detail->SetTitle("Response matrix of #it{R_{L}};#it{R}_{#it{L}}^{rec};#it{R}_{#it{L}}^{gen}");
+        // response_rl_detail->Draw("colz");
+        // response_rl_detail->GetXaxis()->SetRangeUser(0.01,1);
+        // response_rl_detail->GetYaxis()->SetRangeUser(0.01,1); 
+        // response_rl_detail->SetTitle("Response matrix of #it{R}_{L};#it{R}_{L}^{det};#it{R}_{L}^{part}");
 
-        gPad->SetRightMargin(0.15);
-        gPad->SetTopMargin(0.08);
-        gPad->SetLogx(0);
-        gPad->SetLogy(0);
-        gPad->SetLogz(1);
+        // gPad->SetRightMargin(0.15);
+        // gPad->SetTopMargin(0.08);
+        // gPad->SetLogx(0);
+        // gPad->SetLogy(0);
+        // gPad->SetLogz(1);
         
-        lhcb_print->DrawLatexNDC(0.52, 0.96, "LHCb simulation");
+        // lhcb_print->DrawLatexNDC(0.52, 0.96, "LHCb simulation");
         
-        c->Print("./plots/responsematrix_rl_detail.pdf");
+        // c->Print("./plots/responsematrix_rl_detail.pdf");
 
-        // RM weight
-        response_weight_detail->GetXaxis()->SetLabelFont(133);
-        response_weight_detail->GetXaxis()->SetTitleFont(133);
-        response_weight_detail->GetXaxis()->SetLabelSize(size_xlabel_text);
-        response_weight_detail->GetXaxis()->SetLabelOffset(0.005);
-        response_weight_detail->GetXaxis()->SetTitleSize(size_xtitle_text);
-        response_weight_detail->GetXaxis()->SetTitleOffset(xtitle_offset);        
-        response_weight_detail->GetYaxis()->SetLabelFont(133);
-        response_weight_detail->GetYaxis()->SetTitleFont(133);
-        response_weight_detail->GetYaxis()->SetLabelSize(size_ylabel_text);
-        response_weight_detail->GetYaxis()->SetLabelOffset(0.0075);
-        response_weight_detail->GetYaxis()->SetTitleSize(size_ytitle_text);
-        response_weight_detail->GetYaxis()->SetTitleOffset(ytitle_offset);
-        response_weight_detail->GetZaxis()->SetLabelFont(133);
-        response_weight_detail->GetZaxis()->SetTitleFont(133);
-        response_weight_detail->GetZaxis()->SetLabelSize(size_ylabel_text);
-        response_weight_detail->GetZaxis()->SetTitleSize(size_ytitle_text);
+        // // RM weight
+        // response_weight_detail->GetXaxis()->SetLabelFont(133);
+        // response_weight_detail->GetXaxis()->SetTitleFont(133);
+        // response_weight_detail->GetXaxis()->SetLabelSize(size_xlabel_text);
+        // response_weight_detail->GetXaxis()->SetLabelOffset(0.005);
+        // response_weight_detail->GetXaxis()->SetTitleSize(size_xtitle_text);
+        // response_weight_detail->GetXaxis()->SetTitleOffset(xtitle_offset);        
+        // response_weight_detail->GetYaxis()->SetLabelFont(133);
+        // response_weight_detail->GetYaxis()->SetTitleFont(133);
+        // response_weight_detail->GetYaxis()->SetLabelSize(size_ylabel_text);
+        // response_weight_detail->GetYaxis()->SetLabelOffset(0.0075);
+        // response_weight_detail->GetYaxis()->SetTitleSize(size_ytitle_text);
+        // response_weight_detail->GetYaxis()->SetTitleOffset(ytitle_offset);
+        // response_weight_detail->GetZaxis()->SetLabelFont(133);
+        // response_weight_detail->GetZaxis()->SetTitleFont(133);
+        // response_weight_detail->GetZaxis()->SetLabelSize(size_ylabel_text);
+        // response_weight_detail->GetZaxis()->SetTitleSize(size_ytitle_text);
 
-        response_weight_detail->Draw("colz");
-        response_weight_detail->GetXaxis()->SetRangeUser(10E-6,0.4);
-        response_weight_detail->GetYaxis()->SetRangeUser(10E-6,0.4); 
-        response_weight_detail->SetTitle("Response matrix of #it{R_{L}};#it{w}^{rec};#it{w}^{gen}");
+        // response_weight_detail->Draw("colz");
+        // response_weight_detail->GetXaxis()->SetRangeUser(10E-6,0.4);
+        // response_weight_detail->GetYaxis()->SetRangeUser(10E-6,0.4); 
+        // response_weight_detail->SetTitle("Response matrix of #it{R}_{L};#it{w}^{det};#it{w}^{part}");
 
-        gPad->SetRightMargin(0.15);
-        gPad->SetTopMargin(0.08);
-        gPad->SetLogx(0);
-        gPad->SetLogy(0);
-        gPad->SetLogz(1);
+        // gPad->SetRightMargin(0.15);
+        // gPad->SetTopMargin(0.08);
+        // gPad->SetLogx(0);
+        // gPad->SetLogy(0);
+        // gPad->SetLogz(1);
         
-        lhcb_print->DrawLatexNDC(0.52, 0.96, "LHCb simulation");
+        // lhcb_print->DrawLatexNDC(0.52, 0.96, "LHCb simulation");
         
-        c->Print("./plots/responsematrix_weight_detail.pdf");
+        // c->Print("./plots/responsematrix_weight_detail.pdf");
 
-        // RM weight
-        response_jetpt_detail->GetXaxis()->SetLabelFont(133);
-        response_jetpt_detail->GetXaxis()->SetTitleFont(133);
-        response_jetpt_detail->GetXaxis()->SetLabelSize(size_xlabel_text);
-        response_jetpt_detail->GetXaxis()->SetLabelOffset(0.005);
-        response_jetpt_detail->GetXaxis()->SetTitleSize(size_xtitle_text);
-        response_jetpt_detail->GetXaxis()->SetTitleOffset(xtitle_offset);        
-        response_jetpt_detail->GetYaxis()->SetLabelFont(133);
-        response_jetpt_detail->GetYaxis()->SetTitleFont(133);
-        response_jetpt_detail->GetYaxis()->SetLabelSize(size_ylabel_text);
-        response_jetpt_detail->GetYaxis()->SetLabelOffset(0.0075);
-        response_jetpt_detail->GetYaxis()->SetTitleSize(size_ytitle_text);
-        response_jetpt_detail->GetYaxis()->SetTitleOffset(ytitle_offset);
-        response_jetpt_detail->GetZaxis()->SetLabelFont(133);
-        response_jetpt_detail->GetZaxis()->SetTitleFont(133);
-        response_jetpt_detail->GetZaxis()->SetLabelSize(size_ylabel_text);
-        response_jetpt_detail->GetZaxis()->SetTitleSize(size_ytitle_text);
+        // // RM weight
+        // response_jetpt_detail->GetXaxis()->SetLabelFont(133);
+        // response_jetpt_detail->GetXaxis()->SetTitleFont(133);
+        // response_jetpt_detail->GetXaxis()->SetLabelSize(size_xlabel_text);
+        // response_jetpt_detail->GetXaxis()->SetLabelOffset(0.005);
+        // response_jetpt_detail->GetXaxis()->SetTitleSize(size_xtitle_text);
+        // response_jetpt_detail->GetXaxis()->SetTitleOffset(xtitle_offset);        
+        // response_jetpt_detail->GetYaxis()->SetLabelFont(133);
+        // response_jetpt_detail->GetYaxis()->SetTitleFont(133);
+        // response_jetpt_detail->GetYaxis()->SetLabelSize(size_ylabel_text);
+        // response_jetpt_detail->GetYaxis()->SetLabelOffset(0.0075);
+        // response_jetpt_detail->GetYaxis()->SetTitleSize(size_ytitle_text);
+        // response_jetpt_detail->GetYaxis()->SetTitleOffset(ytitle_offset);
+        // response_jetpt_detail->GetZaxis()->SetLabelFont(133);
+        // response_jetpt_detail->GetZaxis()->SetTitleFont(133);
+        // response_jetpt_detail->GetZaxis()->SetLabelSize(size_ylabel_text);
+        // response_jetpt_detail->GetZaxis()->SetTitleSize(size_ytitle_text);
 
-        response_jetpt_detail->Draw("colz");
-        response_jetpt_detail->GetXaxis()->SetRangeUser(10E-6,0.4);
-        response_jetpt_detail->GetYaxis()->SetRangeUser(10E-6,0.4); 
-        response_jetpt_detail->SetTitle("Response matrix of #it{R_{L}};#it{p}_{T, jet}^{rec}[GeV];#it{p}_{T, jet}^{gen}[GeV]");
+        // response_jetpt_detail->Draw("colz");
+        // response_jetpt_detail->GetXaxis()->SetRangeUser(10E-6,0.4);
+        // response_jetpt_detail->GetYaxis()->SetRangeUser(10E-6,0.4); 
+        // response_jetpt_detail->SetTitle("Response matrix of #it{R}_{L};#it{p}_{T, jet}^{det}[GeV];#it{p}_{T, jet}^{part}[GeV]");
 
-        gPad->SetRightMargin(0.15);
-        gPad->SetTopMargin(0.08);
-        gPad->SetLogx(0);
-        gPad->SetLogy(0);
-        gPad->SetLogz(1);
+        // gPad->SetRightMargin(0.15);
+        // gPad->SetTopMargin(0.08);
+        // gPad->SetLogx(0);
+        // gPad->SetLogy(0);
+        // gPad->SetLogz(1);
         
-        lhcb_print->DrawLatexNDC(0.52, 0.96, "LHCb simulation");
+        // lhcb_print->DrawLatexNDC(0.52, 0.96, "LHCb simulation");
         
-        c->Print("./plots/responsematrix_jetpt_detail.pdf");
+        // c->Print("./plots/responsematrix_jetpt_detail.pdf");
 }

@@ -16,7 +16,7 @@
   ```
 - **`MCSimpleObservalbes.C`**: Processes output of `MCMakeVarTree.C` to obtain truth level distributions used for the (1) closure tests and (2) comparison to final results
   ```bash
-  root -l -b -q "MCMake3DUncorrDistributions.C(-1, 91599)"
+  root -l -b -q "MCSimpleObservalbes.C(-1, 91599)"
   ```
 - **`MakeVarTree.C`**: Used to create slimmed down TTrees from the DaVinci output for data and reco MC. Each entry of the resulting tree corresponds to a B-jet candidate
   ```bash

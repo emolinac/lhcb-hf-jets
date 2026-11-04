@@ -6,6 +6,9 @@
 #include "../../include/analysis-cuts.cpp"
 #include "../../include/analysis-cuts.h"
 #include "../../include/directories.h"
+#include "../../include/names.h"
+#include "../../include/TBJetsMC.h"
+#include "../../include/TBJetsMC.C"
 #include "../../include/utils.cpp"
 #include "../../include/utils.h"
 #include "../../include/utils-visual.cpp"
@@ -13,7 +16,7 @@
 
 void macro_determine_weight_binning()
 {
-        const int nbin_weight_test = 30;
+        const int nbin_weight_test = 20;
 
         double binning_weight[nbin_weight_test + 1];
         

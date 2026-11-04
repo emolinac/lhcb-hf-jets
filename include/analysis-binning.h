@@ -18,10 +18,21 @@ const double jet_e_max      = 4000;
 const double eta_min        = 2.;
 const double eta_max        = 4.5;
 
+// Note: be careful with the binning of the weightes!
+// Data:
+// const double weight_absmax  = 0.26;
+// const double weight_absmin  = 5E-6;
+// MCreco:
+// const double weight_absmax  = 0.26;
+// const double weight_absmin  = 6E-6;
+// MC:
+const double weight_absmax  = 0.265;
+const double weight_absmin  = 6E-6;
+
 const double weight_max     = 0.1;
 const double weight_min     = 0.0001;
-const double weight_absmax  = 0.35;
-const double weight_absmin  = 2E-6;
+// const double weight_absmax  = 0.35;
+// const double weight_absmin  = 2E-6;
 
 const double ptprod_absmax  = 2000.;
 const double ptprod_absmin  = 0.05;
@@ -45,7 +56,7 @@ const int nbin_jet_pt_unfolding  = nbin_jet_pt+2;
 const double z_pt_binning[]   = {15,20,30,75};
 
 const int nbin_weight = 20;
-const double weight_binning[] = {weight_absmin, 3.65748e-06, 6.68858e-06, 1.22317e-05, 2.23685e-05, 4.09062e-05, 7.48069e-05, 0.000136802, 0.000250176, 0.000457506, 0.00083666, 0.00153003, 0.00279803, 0.00511687, 0.00935743, 0.0171123, 0.031294, 0.0572285, 0.104656, 0.191389, weight_absmax};
+const double weight_binning[] = {weight_absmin, 1.02425e-05, 1.74848e-05, 2.9848e-05, 5.0953e-05, 8.69811e-05, 0.000148484, 0.000253475, 0.000432702, 0.000738659, 0.00126095, 0.00215255, 0.00367458, 0.00627282, 0.0107082, 0.0182798, 0.0312052, 0.0532699, 0.0909361, 0.155236, weight_absmax};
 
 // const int nbin_weight = 30;
 // const double weight_binning[] = {weight_absmin, 2.99087e-06, 4.47266e-06, 6.68858e-06, 1.00023e-05, 1.49579e-05, 2.23685e-05, 3.34507e-05, 5.00234e-05, 7.48069e-05, 0.000111869, 0.000167293, 0.000250176, 0.000374122, 0.000559476, 0.00083666, 0.00125117, 0.00187105, 0.00279803, 0.00418428, 0.00625732, 0.00935743, 0.0139934, 0.0209263, 0.031294, 0.0467981, 0.0699836, 0.104656, 0.156506, 0.234045, weight_absmax};

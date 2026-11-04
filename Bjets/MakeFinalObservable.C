@@ -34,7 +34,7 @@ double size_latex_tag = 35;
 double xtitle_offset = 1.0;
 double ytitle_offset = 1.50;
 
-void set_histo_with_systematics(TH1F* hrelerror, TH1F* hnominal, TH1F* hsystematic, std::string variation);
+// void set_histo_with_systematics(TH1F* hrelerror, TH1F* hnominal, TH1F* hsystematic, std::string variation);
 void draw_three_pads_eec(THStack* h_jetpt_0, THStack* h_jetpt_1, THStack* h_jetpt_2, TLegend* l0, TLegend* l1, TLegend* l2, TLatex* lhcb_print);
 
 void MakeFinalObservable()
@@ -253,16 +253,16 @@ void draw_three_pads_eec(THStack* h_jetpt_0, THStack* h_jetpt_1, THStack* h_jetp
         c->Print("./plots-analysis/threepad_eec_data_mc.pdf");
 }
 
-void set_histo_with_systematics(TH1F* hrelerror, TH1F* hnominal, TH1F* hsystematic, std::string variation)
-{
-        for (int hbin = 1 ; hbin <= hrelerror->GetNbinsX() ; hbin++)
-        {
-                double dev     = hrelerror->GetBinContent(hbin);
-                double dev_err = hrelerror->GetBinError(hbin);
+// void set_histo_with_systematics(TH1F* hrelerror, TH1F* hnominal, TH1F* hsystematic, std::string variation)
+// {
+//         for (int hbin = 1 ; hbin <= hrelerror->GetNbinsX() ; hbin++)
+//         {
+//                 double dev     = hrelerror->GetBinContent(hbin);
+//                 double dev_err = hrelerror->GetBinError(hbin);
                 
-                double syst_error            = std::abs(dev * hnominal->GetBinContent(hbin));
-                double syst_error_percentage = std::abs(dev);
+//                 double syst_error            = std::abs(dev * hnominal->GetBinContent(hbin));
+//                 double syst_error_percentage = std::abs(dev);
                 
-                hsystematic->SetBinError(hbin, std::sqrt(syst_error * syst_error / available_systematics_scale[variation] + std::pow(hsystematic->GetBinError(hbin),2)));
-        }
-}
+//                 hsystematic->SetBinError(hbin, std::sqrt(syst_error * syst_error / available_systematics_scale[variation] + std::pow(hsystematic->GetBinError(hbin),2)));
+//         }
+// }

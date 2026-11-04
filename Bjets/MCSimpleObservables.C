@@ -9,6 +9,7 @@
 #include "../include/analysis-cuts.cpp"
 #include "../include/analysis-cuts.h"
 #include "../include/directories.h"
+#include "../include/names.h"
 #include "../include/utils.cpp"
 #include "../include/utils.h"
 #include "../include/utils-visual.cpp"
@@ -20,7 +21,7 @@
 //using namespace fastjet;
 using namespace std;
 
-void MCMake3DUncorrDistributions(int NumEvts = -1)
+void MCSimpleObservables(int NumEvts = -1)
 {
         TFile fread((output_folder + "ntuple_bjets_mc.root").c_str(), "READ");
         TTree *BTree = (TTree *)fread.Get("BTree");
