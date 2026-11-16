@@ -10,6 +10,7 @@
 #include "../../include/analysis-cuts.cpp"
 #include "../../include/analysis-cuts.h"
 #include "../../include/directories.h"
+#include "../../include/names.h"
 #include "../../include/TBJetsMC.h"
 #include "../../include/TBJetsMC.C"
 #include "../../include/utils.cpp"
@@ -18,6 +19,15 @@
 #include "../../include/utils-visual.h"
 
 using namespace std;
+
+// Visual specs
+double size_xlabel_text = 0.05;
+double size_ylabel_text = 0.05;
+
+double size_xtitle_text = 0.062;
+double size_ytitle_text = 0.062;
+
+double size_legend_text = 0.062;
 
 void macro_print_hf_kinematics()
 {
@@ -30,7 +40,12 @@ void macro_print_hf_kinematics()
         TTree* t_data   = (TTree*) f_data->Get("BTree");
 
         THStack* hs = new THStack();
-        TLegend* l = new TLegend();
+        
+        TLegend* l_hfpt  = new TLegend();
+        TLegend* l_y     = new TLegend();
+        TLegend* l_jpsim = new TLegend();
+        TLegend* l_kaonm = new TLegend();
+        TLegend* l_hfm   = new TLegend(0.7,0.7,0.9,0.9);
 
         TH1F* h_hfpt_mc     = new TH1F("h_hfpt_mc"    , "", 50,12.5, 100);
         TH1F* h_hfpt_mcreco = new TH1F("h_hfpt_mcreco", "", 50,12.5, 100);
@@ -52,25 +67,25 @@ void macro_print_hf_kinematics()
         TH1F* h_kaon_mass_mcreco = new TH1F("h_kaon_mass_mcreco", "", 50, 0.47, 0.52);
         TH1F* h_kaon_mass_data   = new TH1F("h_kaon_mass_data"  , "", 50, 0.47, 0.52);
 
-        set_histogram_style(h_hfpt_mc, corr_marker_color_jet_pt[0], std_line_width-1, corr_marker_style_jet_pt[0], std_marker_size + 0.5);
-        set_histogram_style(h_hfpt_mcreco, corr_marker_color_jet_pt[1], std_line_width-1, corr_marker_style_jet_pt[1], std_marker_size + 0.5);
-        set_histogram_style(h_hfpt_data, corr_marker_color_jet_pt[2], std_line_width-1, corr_marker_style_jet_pt[0], std_marker_size + 0.5);
+        set_histogram_style(h_hfpt_mc, corr_marker_color_jet_pt[0], std_line_width-1, std_marker_style, std_marker_size + 0.5);
+        set_histogram_style(h_hfpt_mcreco, corr_marker_color_jet_pt[1], std_line_width-1, std_marker_style, std_marker_size + 0.5);
+        set_histogram_style(h_hfpt_data, corr_marker_color_jet_pt[2], std_line_width-1, std_marker_style, std_marker_size + 0.5);
 
-        set_histogram_style(h_y_mc, corr_marker_color_jet_pt[0], std_line_width-1, corr_marker_style_jet_pt[0], std_marker_size + 0.5);
-        set_histogram_style(h_y_mcreco, corr_marker_color_jet_pt[1], std_line_width-1, corr_marker_style_jet_pt[1], std_marker_size + 0.5);
-        set_histogram_style(h_y_data, corr_marker_color_jet_pt[2], std_line_width-1, corr_marker_style_jet_pt[0], std_marker_size + 0.5);
+        set_histogram_style(h_y_mc, corr_marker_color_jet_pt[0], std_line_width-1, std_marker_style, std_marker_size + 0.5);
+        set_histogram_style(h_y_mcreco, corr_marker_color_jet_pt[1], std_line_width-1, std_marker_style, std_marker_size + 0.5);
+        set_histogram_style(h_y_data, corr_marker_color_jet_pt[2], std_line_width-1, std_marker_style, std_marker_size + 0.5);
 
-        set_histogram_style(h_mass_mc, corr_marker_color_jet_pt[0], std_line_width-1, corr_marker_style_jet_pt[0], std_marker_size + 0.5);
-        set_histogram_style(h_mass_mcreco, corr_marker_color_jet_pt[1], std_line_width-1, corr_marker_style_jet_pt[1], std_marker_size + 0.5);
-        set_histogram_style(h_mass_data, corr_marker_color_jet_pt[2], std_line_width-1, corr_marker_style_jet_pt[0], std_marker_size + 0.5);
+        set_histogram_style(h_mass_mc, corr_marker_color_jet_pt[0], std_line_width-1, std_marker_style, std_marker_size + 0.5);
+        set_histogram_style(h_mass_mcreco, corr_marker_color_jet_pt[1], std_line_width-1, std_marker_style, std_marker_size + 0.5);
+        set_histogram_style(h_mass_data, corr_marker_color_jet_pt[2], std_line_width-1, std_marker_style, std_marker_size + 0.5);
 
-        set_histogram_style(h_jpsi_mass_mc, corr_marker_color_jet_pt[0], std_line_width-1, corr_marker_style_jet_pt[0], std_marker_size + 0.5);
-        set_histogram_style(h_jpsi_mass_mcreco, corr_marker_color_jet_pt[1], std_line_width-1, corr_marker_style_jet_pt[1], std_marker_size + 0.5);
-        set_histogram_style(h_jpsi_mass_data, corr_marker_color_jet_pt[2], std_line_width-1, corr_marker_style_jet_pt[0], std_marker_size + 0.5);
+        set_histogram_style(h_jpsi_mass_mc, corr_marker_color_jet_pt[0], std_line_width-1, std_marker_style, std_marker_size + 0.5);
+        set_histogram_style(h_jpsi_mass_mcreco, corr_marker_color_jet_pt[1], std_line_width-1, std_marker_style, std_marker_size + 0.5);
+        set_histogram_style(h_jpsi_mass_data, corr_marker_color_jet_pt[2], std_line_width-1, std_marker_style, std_marker_size + 0.5);
 
-        set_histogram_style(h_kaon_mass_mc, corr_marker_color_jet_pt[0], std_line_width-1, corr_marker_style_jet_pt[0], std_marker_size + 0.5);
-        set_histogram_style(h_kaon_mass_mcreco, corr_marker_color_jet_pt[1], std_line_width-1, corr_marker_style_jet_pt[1], std_marker_size + 0.5);
-        set_histogram_style(h_kaon_mass_data, corr_marker_color_jet_pt[2], std_line_width-1, corr_marker_style_jet_pt[0], std_marker_size + 0.5);
+        set_histogram_style(h_kaon_mass_mc, corr_marker_color_jet_pt[0], std_line_width-1, std_marker_style, std_marker_size + 0.5);
+        set_histogram_style(h_kaon_mass_mcreco, corr_marker_color_jet_pt[1], std_line_width-1, std_marker_style, std_marker_size + 0.5);
+        set_histogram_style(h_kaon_mass_data, corr_marker_color_jet_pt[2], std_line_width-1, std_marker_style, std_marker_size + 0.5);
 
         t_mc->Project("h_hfpt_mc","HF_pt",Form("jet_pt>%f&&jet_pt<%f", 12.5, 100.));
         t_mcreco->Project("h_hfpt_mcreco","HF_pt",Form("jet_pt>%f&&jet_pt<%f", 12.5, 100.));
@@ -116,6 +131,10 @@ void macro_print_hf_kinematics()
         h_kaon_mass_mcreco->Scale(1./h_kaon_mass_mcreco->Integral());
         h_kaon_mass_data->Scale(1./h_kaon_mass_data->Integral());
 
+        gStyle->SetPaintTextFormat("4.2f");
+        gStyle->SetLegendFont(133);
+        gStyle->SetLegendTextSize(size_legend_text);
+
         TCanvas* c = new TCanvas("c", "", 800, 600);
         c->Draw();
 
@@ -124,16 +143,19 @@ void macro_print_hf_kinematics()
         hs->Add(h_hfpt_data, "P E1");
 
         // l->AddEntry(h_hfpt_mc,"h_hfpt_mc","p");
-        l->AddEntry(h_hfpt_mcreco,"mc(reco)","p");
-        l->AddEntry(h_hfpt_data,"data","p");
+        l_hfpt->AddEntry(h_hfpt_mcreco,"mc(reco)","p");
+        l_hfpt->AddEntry(h_hfpt_data,"data","p");
         
         hs->Draw("NOSTACK");
         hs->SetTitle(";#it{p}_{T, HF}[GeV];Normalized distributions");
-
-        l->Draw("same");
+        hs->GetXaxis()->SetLabelSize(size_xlabel_text);
+        hs->GetXaxis()->SetTitleSize(size_xtitle_text);
+        hs->GetYaxis()->SetLabelSize(size_ylabel_text);
+        hs->GetYaxis()->SetTitleSize(size_ytitle_text);
 
         gPad->SetLogy(1);
-        
+        l_hfpt->Draw("same");
+
         c->Print("./plots/kinematics_hf_pt.pdf");
 
         // Plotting jet rapidity
@@ -142,16 +164,18 @@ void macro_print_hf_kinematics()
         hs->Add(h_y_data, "P E1");
 
         // l->AddEntry(h_hfpt_mc,"h_hfpt_mc","p");
-        l = new TLegend();
-        l->AddEntry(h_y_mcreco, "mc(reco)","p");
-        l->AddEntry(h_y_data, "data","p");
+        l_y->AddEntry(h_y_mcreco, "mc(reco)","p");
+        l_y->AddEntry(h_y_data, "data","p");
         
         hs->Draw("NOSTACK");
         hs->SetTitle(";#it{y}_{HF};Normalized distributions");
-
-        l->Draw("same");
+        hs->GetXaxis()->SetLabelSize(size_xlabel_text);
+        hs->GetXaxis()->SetTitleSize(size_xtitle_text);
+        hs->GetYaxis()->SetLabelSize(size_ylabel_text);
+        hs->GetYaxis()->SetTitleSize(size_ytitle_text);
 
         gPad->SetLogy(0);
+        l_y->Draw("same");
 
         c->Print("./plots/kinematics_hf_rapidity.pdf");
 
@@ -161,16 +185,18 @@ void macro_print_hf_kinematics()
         hs->Add(h_mass_data, "P E1");
 
         // l->AddEntry(h_hfpt_mc,"h_hfpt_mc","p");
-        l = new TLegend(0.7,0.7,0.9,0.9);
-        l->AddEntry(h_mass_mcreco, "mc(reco)","p");
-        l->AddEntry(h_mass_data, "data","p");
+        l_hfm->AddEntry(h_mass_mcreco, "mc(reco)","p");
+        l_hfm->AddEntry(h_mass_data, "data","p");
         
         hs->Draw("NOSTACK");
-        hs->SetTitle(";#it{M}_{HF}[GeV];Normalized distributions");
-
-        l->Draw("same");
+        hs->SetTitle(";M_{HF}[GeV];Normalized distributions");
+        hs->GetXaxis()->SetLabelSize(size_xlabel_text);
+        hs->GetXaxis()->SetTitleSize(size_xtitle_text);
+        hs->GetYaxis()->SetLabelSize(size_ylabel_text);
+        hs->GetYaxis()->SetTitleSize(size_ytitle_text);
 
         gPad->SetLogy(0);
+        l_hfm->Draw("same");
 
         c->Print("./plots/kinematics_hf_mass.pdf");
 
@@ -180,16 +206,18 @@ void macro_print_hf_kinematics()
         hs->Add(h_jpsi_mass_data, "P E1");
 
         // l->AddEntry(h_hfpt_mc,"h_hfpt_mc","p");
-        l = new TLegend(0.7,0.7,0.9,0.9);
-        l->AddEntry(h_jpsi_mass_mcreco, "mc(reco)","p");
-        l->AddEntry(h_jpsi_mass_data, "data","p");
+        l_jpsim->AddEntry(h_jpsi_mass_mcreco, "mc(reco)","p");
+        l_jpsim->AddEntry(h_jpsi_mass_data, "data","p");
         
         hs->Draw("NOSTACK");
-        hs->SetTitle(";#it{M}_{J/#{Psi}}[GeV];Normalized distributions");
-
-        l->Draw("same");
+        hs->SetTitle(";M_{J/#{Psi}}[GeV];Normalized distributions");
+        hs->GetXaxis()->SetLabelSize(size_xlabel_text);
+        hs->GetXaxis()->SetTitleSize(size_xtitle_text);
+        hs->GetYaxis()->SetLabelSize(size_ylabel_text);
+        hs->GetYaxis()->SetTitleSize(size_ytitle_text);
 
         gPad->SetLogy(0);
+        l_jpsim->Draw("same");
 
         c->Print("./plots/kinematics_jpsi_mass.pdf");
 
@@ -199,16 +227,18 @@ void macro_print_hf_kinematics()
         hs->Add(h_kaon_mass_data, "P E1");
 
         // l->AddEntry(h_hfpt_mc,"h_hfpt_mc","p");
-        l = new TLegend(0.7,0.7,0.9,0.9);
-        l->AddEntry(h_kaon_mass_mcreco, "mc(reco)","p");
-        l->AddEntry(h_kaon_mass_data, "data","p");
+        l_kaonm->AddEntry(h_kaon_mass_mcreco, "mc(reco)","p");
+        l_kaonm->AddEntry(h_kaon_mass_data, "data","p");
         
         hs->Draw("NOSTACK");
-        hs->SetTitle(";#it{M}_{Kaon}[GeV];Normalized distributions");
-
-        l->Draw("same");
+        hs->SetTitle(";M_{Kaon}[GeV];Normalized distributions");
+        hs->GetXaxis()->SetLabelSize(size_xlabel_text);
+        hs->GetXaxis()->SetTitleSize(size_xtitle_text);
+        hs->GetYaxis()->SetLabelSize(size_ylabel_text);
+        hs->GetYaxis()->SetTitleSize(size_ytitle_text);
 
         gPad->SetLogy(1);
+        l_kaonm->Draw("same");
 
         c->Print("./plots/kinematics_kaon_mass.pdf");
 }

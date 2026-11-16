@@ -578,7 +578,6 @@ void Make3DUncorrDistributions(bool isData = true, std::string variation = "nomi
                         }
                 } else if (DoTrackEff == 2) {
                         trkeff_ratio_K = trkeff_ratio_K - trkeff_ratio_K_errlo;
-                        trkeff_ratio_K = (1 - 0.0127) * trkeff_ratio_K; // Material Budget of 1.27% on Kaons
                         trkeff_ratio_mum = trkeff_ratio_mum - trkeff_ratio_mum_errlo;
                         trkeff_ratio_mup = trkeff_ratio_mup - trkeff_ratio_mup_errlo;
 

@@ -10,6 +10,7 @@
 #include "../../include/analysis-cuts.cpp"
 #include "../../include/analysis-cuts.h"
 #include "../../include/directories.h"
+#include "../../include/names.h"
 #include "../../include/TBJetsMC.h"
 #include "../../include/TBJetsMC.C"
 #include "../../include/utils.cpp"
@@ -18,6 +19,15 @@
 #include "../../include/utils-visual.h"
 
 using namespace std;
+
+// Visual specs
+double size_xlabel_text = 0.05;
+double size_ylabel_text = 0.05;
+
+double size_xtitle_text = 0.062;
+double size_ytitle_text = 0.062;
+
+double size_legend_text = 0.062;
 
 void macro_print_pairs_kinematics()
 {
@@ -30,7 +40,8 @@ void macro_print_pairs_kinematics()
         TTree* t_data   = (TTree*) f_data->Get("BTree");
 
         THStack* hs = new THStack();
-        TLegend* l = new TLegend();
+        TLegend* l_rl = new TLegend();
+        TLegend* l_w = new TLegend();
 
         TH1F* h_rl_mc     = new TH1F("h_rl_mc"    , "", nbin_rl_nominal, rl_nominal_binning);
         TH1F* h_rl_mcreco = new TH1F("h_rl_mcreco", "", nbin_rl_nominal, rl_nominal_binning);
@@ -44,17 +55,17 @@ void macro_print_pairs_kinematics()
         TH1F* h_eec_mcreco = new TH1F("h_eec_mcreco", "", nbin_rl_nominal, rl_nominal_binning);
         TH1F* h_eec_data   = new TH1F("h_eec_data"  , "", nbin_rl_nominal, rl_nominal_binning);
 
-        set_histogram_style(h_rl_mc, corr_marker_color_jet_pt[0], std_line_width-1, corr_marker_style_jet_pt[0], std_marker_size + 0.5);
-        set_histogram_style(h_rl_mcreco, corr_marker_color_jet_pt[1], std_line_width-1, corr_marker_style_jet_pt[1], std_marker_size + 0.5);
-        set_histogram_style(h_rl_data, corr_marker_color_jet_pt[2], std_line_width-1, corr_marker_style_jet_pt[0], std_marker_size + 0.5);
+        set_histogram_style(h_rl_mc, corr_marker_color_jet_pt[0], std_line_width-1, std_marker_style, std_marker_size + 0.5);
+        set_histogram_style(h_rl_mcreco, corr_marker_color_jet_pt[1], std_line_width-1, std_marker_style, std_marker_size + 0.5);
+        set_histogram_style(h_rl_data, corr_marker_color_jet_pt[2], std_line_width-1, std_marker_style, std_marker_size + 0.5);
 
-        set_histogram_style(h_weights_mc, corr_marker_color_jet_pt[0], std_line_width-1, corr_marker_style_jet_pt[0], std_marker_size + 0.5);
-        set_histogram_style(h_weights_mcreco, corr_marker_color_jet_pt[1], std_line_width-1, corr_marker_style_jet_pt[1], std_marker_size + 0.5);
-        set_histogram_style(h_weights_data, corr_marker_color_jet_pt[2], std_line_width-1, corr_marker_style_jet_pt[0], std_marker_size + 0.5);
+        set_histogram_style(h_weights_mc, corr_marker_color_jet_pt[0], std_line_width-1, std_marker_style, std_marker_size + 0.5);
+        set_histogram_style(h_weights_mcreco, corr_marker_color_jet_pt[1], std_line_width-1, std_marker_style, std_marker_size + 0.5);
+        set_histogram_style(h_weights_data, corr_marker_color_jet_pt[2], std_line_width-1, std_marker_style, std_marker_size + 0.5);
 
-        set_histogram_style(h_eec_mc, corr_marker_color_jet_pt[0], std_line_width-1, corr_marker_style_jet_pt[0], std_marker_size + 0.5);
-        set_histogram_style(h_eec_mcreco, corr_marker_color_jet_pt[1], std_line_width-1, corr_marker_style_jet_pt[1], std_marker_size + 0.5);
-        set_histogram_style(h_eec_data, corr_marker_color_jet_pt[2], std_line_width-1, corr_marker_style_jet_pt[0], std_marker_size + 0.5);
+        set_histogram_style(h_eec_mc, corr_marker_color_jet_pt[0], std_line_width-1, std_marker_style, std_marker_size + 0.5);
+        set_histogram_style(h_eec_mcreco, corr_marker_color_jet_pt[1], std_line_width-1, std_marker_style, std_marker_size + 0.5);
+        set_histogram_style(h_eec_data, corr_marker_color_jet_pt[2], std_line_width-1, std_marker_style, std_marker_size + 0.5);
 
         t_mc->Project("h_rl_mc","pair_rl",Form("jet_pt>%f&&jet_pt<%f", 12.5, 100.));
         t_mcreco->Project("h_rl_mcreco","pair_rl",Form("jet_pt>%f&&jet_pt<%f", 12.5, 100.));
@@ -139,6 +150,10 @@ void macro_print_pairs_kinematics()
         h_eec_mcreco->Scale(1./h_eec_mcreco->Integral());
         h_eec_data->Scale(1./h_eec_data->Integral());
 
+        gStyle->SetPaintTextFormat("4.2f");
+        gStyle->SetLegendFont(133);
+        gStyle->SetLegendTextSize(size_legend_text);
+
         TCanvas* c = new TCanvas("c", "", 800, 600);
         c->Draw();
 
@@ -147,13 +162,17 @@ void macro_print_pairs_kinematics()
         hs->Add(h_rl_data, "P E1");
 
         // l->AddEntry(h_rl_mc,"h_rl_mc","p");
-        l->AddEntry(h_rl_mcreco,"mc(reco)","p");
-        l->AddEntry(h_rl_data,"data","p");
+        l_rl->AddEntry(h_rl_mcreco,"mc(reco)","p");
+        l_rl->AddEntry(h_rl_data,"data","p");
         
         hs->Draw("NOSTACK");
-        hs->SetTitle(";#it{R_{L}};Normalized distributions");
+        hs->SetTitle(";#it{R}_{L};Normalized distributions");
+        hs->GetXaxis()->SetLabelSize(size_xlabel_text);
+        hs->GetXaxis()->SetTitleSize(size_xtitle_text);
+        hs->GetYaxis()->SetLabelSize(size_ylabel_text);
+        hs->GetYaxis()->SetTitleSize(size_ytitle_text);
 
-        l->Draw("same");
+        l_rl->Draw("same");
 
         gPad->SetLogx(1);
         gPad->SetLogy(1);
@@ -166,37 +185,41 @@ void macro_print_pairs_kinematics()
         hs->Add(h_weights_data, "P E1");
 
         // l->AddEntry(h_rl_mc,"h_rl_mc","p");
-        l = new TLegend();
-        l->AddEntry(h_weights_mcreco, "mc(reco)","p");
-        l->AddEntry(h_weights_data, "data","p");
+        l_w->AddEntry(h_weights_mcreco, "mc(reco)","p");
+        l_w->AddEntry(h_weights_data, "data","p");
         
         hs->Draw("NOSTACK");
         hs->SetTitle(";weights;Normalized distributions");
+        hs->GetXaxis()->SetLabelSize(size_xlabel_text);
+        hs->GetXaxis()->SetTitleSize(size_xtitle_text);
+        hs->GetYaxis()->SetLabelSize(size_ylabel_text);
+        hs->GetYaxis()->SetTitleSize(size_ytitle_text);
+        hs->SetMaximum(0.4);
 
-        l->Draw("same");
+        l_w->Draw("same");
 
         gPad->SetLogx(1);
         gPad->SetLogy(1);
         
         c->Print("./plots/kinematics_pairs_weights.pdf");
 
-        // Plotting hf mass
-        hs = new THStack();
-        hs->Add(h_eec_mcreco, "P E1");
-        hs->Add(h_eec_data, "P E1");
+        // // Plotting hf mass
+        // hs = new THStack();
+        // hs->Add(h_eec_mcreco, "P E1");
+        // hs->Add(h_eec_data, "P E1");
 
-        // l->AddEntry(h_rl_mc,"h_rl_mc","p");
-        l = new TLegend();
-        l->AddEntry(h_eec_mcreco, "mc(reco)","p");
-        l->AddEntry(h_eec_data, "data","p");
+        // // l->AddEntry(h_rl_mc,"h_rl_mc","p");
+        // l = new TLegend();
+        // l->AddEntry(h_eec_mcreco, "mc(reco)","p");
+        // l->AddEntry(h_eec_data, "data","p");
         
-        hs->Draw("NOSTACK");
-        hs->SetTitle(";#it{R_{L}};Normalized distributions");
+        // hs->Draw("NOSTACK");
+        // hs->SetTitle(";#it{R_{L}};Normalized distributions");
 
-        l->Draw("same");
+        // l->Draw("same");
 
-        gPad->SetLogx(1);
-        gPad->SetLogy(1);
+        // gPad->SetLogx(1);
+        // gPad->SetLogy(1);
         
-        c->Print("./plots/kinematics_eec_rl.pdf");
+        // c->Print("./plots/kinematics_eec_rl.pdf");
 }

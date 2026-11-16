@@ -10,6 +10,7 @@
 #include "../../include/analysis-cuts.cpp"
 #include "../../include/analysis-cuts.h"
 #include "../../include/directories.h"
+#include "../../include/names.h"
 #include "../../include/TBJetsMC.h"
 #include "../../include/TBJetsMC.C"
 #include "../../include/utils.cpp"
@@ -18,6 +19,15 @@
 #include "../../include/utils-visual.h"
 
 using namespace std;
+
+// Visual specs
+double size_xlabel_text = 0.05;
+double size_ylabel_text = 0.05;
+
+double size_xtitle_text = 0.062;
+double size_ytitle_text = 0.062;
+
+double size_legend_text = 0.062;
 
 void macro_print_jet_kinematics()
 {
@@ -30,7 +40,8 @@ void macro_print_jet_kinematics()
         TTree* t_data   = (TTree*) f_data->Get("BTree");
 
         THStack* hs = new THStack();
-        TLegend* l = new TLegend();
+        TLegend* l_pt = new TLegend();
+        TLegend* l_y = new TLegend();
 
         TH1F* h_jetpt_mc     = new TH1F("h_jetpt_mc"    , "", 50,12.5, 100);
         TH1F* h_jetpt_mcreco = new TH1F("h_jetpt_mcreco", "", 50,12.5, 100);
@@ -40,13 +51,13 @@ void macro_print_jet_kinematics()
         TH1F* h_y_mcreco = new TH1F("h_y_mcreco", "", 50,2.5, 4);
         TH1F* h_y_data   = new TH1F("h_y_data"  , "", 50,2.5, 4);
 
-        set_histogram_style(h_jetpt_mc, corr_marker_color_jet_pt[0], std_line_width-1, corr_marker_style_jet_pt[0], std_marker_size + 0.5);
-        set_histogram_style(h_jetpt_mcreco, corr_marker_color_jet_pt[1], std_line_width-1, corr_marker_style_jet_pt[1], std_marker_size + 0.5);
-        set_histogram_style(h_jetpt_data, corr_marker_color_jet_pt[2], std_line_width-1, corr_marker_style_jet_pt[0], std_marker_size + 0.5);
+        set_histogram_style(h_jetpt_mc, corr_marker_color_jet_pt[0], std_line_width-1, std_marker_style, std_marker_size + 0.5);
+        set_histogram_style(h_jetpt_mcreco, corr_marker_color_jet_pt[1], std_line_width-1, std_marker_style, std_marker_size + 0.5);
+        set_histogram_style(h_jetpt_data, corr_marker_color_jet_pt[2], std_line_width-1, std_marker_style, std_marker_size + 0.5);
 
-        set_histogram_style(h_y_mc, corr_marker_color_jet_pt[0], std_line_width-1, corr_marker_style_jet_pt[0], std_marker_size + 0.5);
-        set_histogram_style(h_y_mcreco, corr_marker_color_jet_pt[1], std_line_width-1, corr_marker_style_jet_pt[1], std_marker_size + 0.5);
-        set_histogram_style(h_y_data, corr_marker_color_jet_pt[2], std_line_width-1, corr_marker_style_jet_pt[0], std_marker_size + 0.5);
+        set_histogram_style(h_y_mc, corr_marker_color_jet_pt[0], std_line_width-1, std_marker_style, std_marker_size + 0.5);
+        set_histogram_style(h_y_mcreco, corr_marker_color_jet_pt[1], std_line_width-1, std_marker_style, std_marker_size + 0.5);
+        set_histogram_style(h_y_data, corr_marker_color_jet_pt[2], std_line_width-1, std_marker_style, std_marker_size + 0.5);
 
         t_mc->Project("h_jetpt_mc","jet_pt",Form("jet_pt>%f&&jet_pt<%f", 12.5, 100.));
         t_mcreco->Project("h_jetpt_mcreco","jet_pt",Form("jet_pt>%f&&jet_pt<%f", 12.5, 100.));
@@ -64,6 +75,10 @@ void macro_print_jet_kinematics()
         h_y_mcreco->Scale(1./h_y_mcreco->Integral());
         h_y_data->Scale(1./h_y_data->Integral());
 
+        gStyle->SetPaintTextFormat("4.2f");
+        gStyle->SetLegendFont(133);
+        gStyle->SetLegendTextSize(size_legend_text);
+
         TCanvas* c = new TCanvas("c", "", 800, 600);
         c->Draw();
 
@@ -72,13 +87,17 @@ void macro_print_jet_kinematics()
         hs->Add(h_jetpt_data, "P E1");
 
         // l->AddEntry(h_jetpt_mc,"h_jetpt_mc","p");
-        l->AddEntry(h_jetpt_mcreco,"mc(reco)","p");
-        l->AddEntry(h_jetpt_data,"data","p");
+        l_pt->AddEntry(h_jetpt_mcreco,"mc(reco)","p");
+        l_pt->AddEntry(h_jetpt_data,"data","p");
         
         hs->Draw("NOSTACK");
         hs->SetTitle(";#it{p}_{T, jet}[GeV];Normalized distributions");
+        hs->GetXaxis()->SetLabelSize(size_xlabel_text);
+        hs->GetXaxis()->SetTitleSize(size_xtitle_text);
+        hs->GetYaxis()->SetLabelSize(size_ylabel_text);
+        hs->GetYaxis()->SetTitleSize(size_ytitle_text);
 
-        l->Draw("same");
+        l_pt->Draw("same");
 
         gPad->SetLogy(1);
         
@@ -90,14 +109,17 @@ void macro_print_jet_kinematics()
         hs->Add(h_y_data, "P E1");
 
         // l->AddEntry(h_jetpt_mc,"h_jetpt_mc","p");
-        l = new TLegend();
-        l->AddEntry(h_y_mcreco, "mc(reco)","p");
-        l->AddEntry(h_y_data, "data","p");
+        l_y->AddEntry(h_y_mcreco, "mc(reco)","p");
+        l_y->AddEntry(h_y_data, "data","p");
         
         hs->Draw("NOSTACK");
         hs->SetTitle(";#it{y}_{jet};Normalized distributions");
+        hs->GetXaxis()->SetLabelSize(size_xlabel_text);
+        hs->GetXaxis()->SetTitleSize(size_xtitle_text);
+        hs->GetYaxis()->SetLabelSize(size_ylabel_text);
+        hs->GetYaxis()->SetTitleSize(size_ytitle_text);
 
-        l->Draw("same");
+        l_y->Draw("same");
 
         gPad->SetLogy(0);
 
